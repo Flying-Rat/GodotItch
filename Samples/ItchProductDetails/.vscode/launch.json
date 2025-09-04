@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "🐛 Debug GDScript",
+            "type": "godot",
+            "request": "launch",
+            "project": "${workspaceFolder}",
+            "port": 6007,
+            "address": "127.0.0.1"
+        },
+        {
+            "name": "🔗 Attach to Running Godot",
+            "type": "godot",
+            "request": "attach",
+            "address": "127.0.0.1",
+            "port": 6007
+        },
+        {
+            "name": "🚀 Launch GodotItch Auto-Demo",
+            "type": "godot",
+            "request": "launch",
+            "project": "${workspaceFolder}",
+            "port": 6007,
+            "address": "127.0.0.1",
+            "scene": "main"
+        },
+        {
+            "name": "🎮 Launch Current Scene",
+            "type": "godot",
+            "request": "launch",
+            "project": "${workspaceFolder}",
+            "port": 6007,
+            "address": "127.0.0.1",
+            "scene": "current"
+        }
+    ]
+}

@@ -1,0 +1,3 @@
+[application]
+config/name="GodotItch"
+run/main_scene="res://examples/fetch_demo.tscn"
