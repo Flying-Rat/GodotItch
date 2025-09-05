@@ -19,3 +19,4 @@ mono_crash.*.json
 *.obj
 .vscode/c_cpp_properties.json
 .editorconfig
+.vscode/
