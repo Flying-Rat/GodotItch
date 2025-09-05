@@ -17,7 +17,7 @@ func _ready():
 		print("[Demo] Connected to ItchAPI autoload")
 	else:
 		print("[Demo] Creating local ItchAPI instance")
-		var Itch = preload("res://addons/godot_itch/itch.gd")
+		var Itch = preload("res://addons/godot_itch/core/itch_api.gd")
 		itch = Itch.new()
 		itch.name = "ItchAPI"
 		add_child(itch)

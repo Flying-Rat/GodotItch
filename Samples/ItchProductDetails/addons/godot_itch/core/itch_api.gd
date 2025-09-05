@@ -49,6 +49,7 @@ func fetch_public_project(project_identifier: String) -> void:
 		print("[ItchAPI] ERROR: Request failed with code %d" % request_error)
 		fetch_failed.emit("request_start_failed")
 
+
 ## Handles HTTP request completion and parses Open Graph metadata
 ##
 ## @param result: HTTPRequest result code
