@@ -17,3 +17,5 @@ mono_crash.*.json
 
 .sconsign.dblite
 *.obj
+.vscode/c_cpp_properties.json
+.editorconfig
