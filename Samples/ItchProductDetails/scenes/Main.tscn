@@ -1,7 +1,0 @@
-[gd_scene load_steps=1 format=2]
-
-[node name="Main" type="Node2D"]
-
-[node name="Label" type="Label" parent="."]
-text = "Hello, GodotItch"
-rect_position = Vector2(200, 150)

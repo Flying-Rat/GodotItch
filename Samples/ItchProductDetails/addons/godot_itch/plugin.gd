@@ -13,16 +13,18 @@ func _enter_tree() -> void:
 	# Add project settings for GodotItch plugin
 	_add_project_settings()
 	
-	# Register the ItchAPI as an autoload singleton so game code can access it easily
-	if not ProjectSettings.has_setting("autoload/ItchAPI"):
-		add_autoload_singleton("ItchAPI", "res://addons/godot_itch/core/itch_api.gd")
+	# Register the Itch autoload as part of the plugin
+	if not ProjectSettings.has_setting("autoload/Itch"):
+		add_autoload_singleton("Itch", "res://addons/godot_itch/autoload/itch.gd")
 		_autoload_added = true
+		print("[GodotItch] Plugin enabled - Itch autoload registered")
 
 func _exit_tree() -> void:
-	# Remove autoload when plugin is disabled to clean up properly
-	if _autoload_added and ProjectSettings.has_setting("autoload/ItchAPI"):
-		remove_autoload_singleton("ItchAPI")
+	# Remove autoload when plugin is disabled
+	if _autoload_added and ProjectSettings.has_setting("autoload/Itch"):
+		remove_autoload_singleton("Itch")
 		_autoload_added = false
+		print("[GodotItch] Plugin disabled - Itch autoload removed")
 	
 	# Note: We don't remove project settings when plugin is disabled
 	# as users might want to keep their configuration
@@ -72,6 +74,17 @@ func _add_project_settings() -> void:
 			"hint_string": "1,30,1"
 		}
 		ProjectSettings.add_property_info(cache_duration_info)
+	
+	# Debug logging setting
+	if not ProjectSettings.has_setting("godot_itch/debug_logging"):
+		ProjectSettings.set_setting("godot_itch/debug_logging", false)
+		var debug_logging_info := {
+			"name": "godot_itch/debug_logging",
+			"type": TYPE_BOOL,
+			"hint": PROPERTY_HINT_NONE,
+			"hint_string": ""
+		}
+		ProjectSettings.add_property_info(debug_logging_info)
 	
 	# Save the project settings
 	ProjectSettings.save()

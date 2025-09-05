@@ -12,13 +12,13 @@ config_version=5
 
 config/name="GodotItch"
 config/version="0.1.0"
-run/main_scene="res://examples/verification_test.tscn"
+run/main_scene="res://examples/purchase_verification_example.tscn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
-ItchAPI="*res://addons/godot_itch/core/itch_api.gd"
+Itch="*res://addons/godot_itch/autoload/itch.gd"
 
 [display]
 
@@ -36,6 +36,7 @@ api_key="5F2BrjiAXZAD4RYYRzd0tVvxU0aFvDps4OJ38yum"
 game_id="3719972"
 require_verification=true
 cache_duration_days=7
+debug_logging=false
 
 [rendering]
 
