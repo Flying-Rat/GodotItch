@@ -1,30 +1,44 @@
 // GDExtension registration for Godot 4
 #include "register_types.h"
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/core/defs.hpp>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/defs.hpp>
+#include <godot_cpp/godot.hpp>
 
 #include "godotitch.h"
 
 using namespace godot;
 
+static Itch *ItchPtr = nullptr;
+
+
 void initialize_godotitch_module(ModuleInitializationLevel level) {
-    if (level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-        ClassDB::register_class<Itch>();
-        // Add Project Setting for autoload
-        ProjectSettings *ps = ProjectSettings::get_singleton();
-        const String autoload_key = "godot_itch/auto_autoload";
-        if (ps && !ps->has_setting(autoload_key)) {
-            ps->set_setting(autoload_key, false);
-        }
-    // Note: Autoload registration must be done from an EditorPlugin (GDScript).
-    // This C++ module exposes the setting only; the plugin should act on it.
-    }
+    	if(level == MODULE_INITIALIZATION_LEVEL_CORE){
+		ClassDB::register_class<Itch>();
+		ItchPtr = memnew(Itch);
+		Engine::get_singleton()->register_singleton("Itch", Itch::get_singleton());
+
+		// Note: GLOBAL_DEF_BASIC is not available in GDExtensions
+		// Settings should be managed through other means
+		// For now, we'll initialize with default values
+		uint32_t app_id = 0;
+		bool auto_init = false;
+		bool embed_callbacks = false;
+
+		if (auto_init){
+			// Prevent intializing Itch from the editor itself
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
+			Itch::get_singleton()->itchInitEx(app_id, embed_callbacks);
+		}
+	}
 }
 
 void uninitialize_godotitch_module(ModuleInitializationLevel level) {
-	if (level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		// Engine removes singletons automatically on shutdown; nothing to do.
+	if(level == MODULE_INITIALIZATION_LEVEL_CORE){
+		Engine::get_singleton()->unregister_singleton("Itch");
+		memdelete(ItchPtr);
 	}
 }
 

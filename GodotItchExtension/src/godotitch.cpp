@@ -1,6 +1,7 @@
 #include "godotitch.h"
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 
 using namespace godot;
 
@@ -9,13 +10,13 @@ static Itch *s_singleton = nullptr;
 
 void Itch::_bind_methods() {
 	// Methods reading from ProjectSettings
-	ClassDB::bind_method(D_METHOD("verify_user_ps", "username"), &Itch::verify_user_ps);
-	ClassDB::bind_method(D_METHOD("is_game_bought_ps", "username"), &Itch::is_game_bought_ps);
-	// Backward-compatible explicit variants
-	ClassDB::bind_method(D_METHOD("verify_user", "api_key", "username"), &Itch::verify_user);
-	ClassDB::bind_method(D_METHOD("is_game_bought", "game_id", "username", "api_key"), &Itch::is_game_bought);
-	ClassDB::bind_method(D_METHOD("_on_request_completed", "result", "response_code", "headers", "body"), &Itch::_on_request_completed);
-	ADD_SIGNAL(MethodInfo("itch_api_result", PropertyInfo(Variant::STRING, "request_type"), PropertyInfo(Variant::DICTIONARY, "result")));
+	// ClassDB::bind_method(D_METHOD("verify_user_ps", "username"), &Itch::verify_user_ps);
+	// ClassDB::bind_method(D_METHOD("is_game_bought_ps", "username"), &Itch::is_game_bought_ps);
+	// // Backward-compatible explicit variants
+	// ClassDB::bind_method(D_METHOD("verify_user", "api_key", "username"), &Itch::verify_user);
+	// ClassDB::bind_method(D_METHOD("is_game_bought", "game_id", "username", "api_key"), &Itch::is_game_bought);
+	// ClassDB::bind_method(D_METHOD("_on_request_completed", "result", "response_code", "headers", "body"), &Itch::_on_request_completed);
+	// ADD_SIGNAL(MethodInfo("itch_api_result", PropertyInfo(Variant::STRING, "request_type"), PropertyInfo(Variant::DICTIONARY, "result")));
 }
 
 
@@ -36,38 +37,6 @@ Itch *Itch::get_singleton() {
 bool Itch::itchInitEx(uint32_t app_id, bool embed_callbacks) {
 	is_initialized = true;
 	return true;
-}
-
-void Itch::verify_user(const String &api_key, const String &username) {
-	pending_request_type = "verify_user";
-	pending_username = username;
-	String url = "https://itch.io/api/1/" + api_key + "/user/" + username;
-	if (http_request) {
-		http_request->request(url);
-	}
-}
-
-void Itch::is_game_bought(const String &game_id, const String &username, const String &api_key) {
-	pending_request_type = "is_game_bought";
-	pending_username = username;
-	pending_game_id = game_id;
-	String url = "https://itch.io/api/1/" + api_key + "/game/" + game_id + "/purchases";
-	if (http_request) {
-		http_request->request(url);
-	}
-}
-
-void Itch::_on_request_completed(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body) {
-	Dictionary output;
-	output["http_result"] = result;
-	output["response_code"] = response_code;
-	String body_str = String::utf8((const char *)body.ptr(), body.size());
-	output["raw_body"] = body_str;
-	Variant json_result = JSON::parse_string(body_str);
-	if (json_result.get_type() != Variant::NIL) {
-		output["json"] = json_result;
-	}
-	emit_signal("itch_api_result", pending_request_type, output);
 }
 
 void Itch::ensure_project_settings() {
@@ -97,35 +66,4 @@ String Itch::get_game_id_from_settings() const {
 	if (v.get_type() == Variant::STRING)
 		return v;
 	return "";
-}
-
-void Itch::verify_user_ps(const String &username) {
-	String api_key = get_api_key_from_settings();
-	verify_user(api_key, username);
-}
-
-void Itch::is_game_bought_ps(const String &username) {
-	String api_key = get_api_key_from_settings();
-	String game_id = get_game_id_from_settings();
-	is_game_bought(game_id, username, api_key);
-}
-
-void Itch::_notification(int what) {
-	switch (what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (!http_request) {
-				http_request = memnew(HTTPRequest);
-				add_child(http_request);
-				http_request->connect("request_completed", Callable(this, "_on_request_completed"));
-			}
-		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			if (http_request) {
-				http_request->disconnect("request_completed", Callable(this, "_on_request_completed"));
-				remove_child(http_request);
-				memdelete(http_request);
-				http_request = nullptr;
-			}
-		} break;
-	}
 }
