@@ -2,6 +2,20 @@
 
 A Godot plugin for itch.io purchase verification. Verify that players have legitimately purchased your game by validating their download keys against the itch.io API.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+- [Input Formats](#input-formats)
+- [Plugin Architecture](#plugin-architecture)
+- [Testing & Validation](#testing--validation)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Features
 
 - ✅ Download key validation and verification
@@ -12,46 +26,52 @@ A Godot plugin for itch.io purchase verification. Verify that players have legit
 - ✅ Comprehensive error handling and validation
 - ✅ Debug logging support
 
-## Quick Start
-
-### 1. Installation
+## Installation
 
 1. Copy the `addons/godot_itch` folder to your project's `addons/` directory
-2. Enable the plugin in Project Settings > Plugins
-3. Configure your itch.io credentials in Project Settings
+2. Enable the plugin in **Project Settings > Plugins**
+3. Restart Godot to initialize the autoload
+4. Configure your itch.io credentials (see [Configuration](#configuration))
 
-### 2. Configuration
+## Configuration
 
-Set these values in Project Settings:
+Set these values in **Project Settings**:
 
-- **`godot_itch/api_key`**: Your itch.io API key (from your [itch.io account settings](https://itch.io/user/settings/api-keys))
+- **`godot_itch/api_key`**: Your itch.io API key (from [itch.io account settings](https://itch.io/user/settings/api-keys))
 - **`godot_itch/game_id`**: Your game's numeric ID from itch.io
-- **`godot_itch/require_verification`**: Whether verification is mandatory (default: true)
-- **`godot_itch/debug_logging`**: Enable debug output (default: false)
+- **`godot_itch/require_verification`**: Whether verification is mandatory (default: `true`)
+- **`godot_itch/debug_logging`**: Enable debug output (default: `false`)
 
-### 3. Basic Usage
+## Quick Start
+
+### Basic Usage
 
 ```gdscript
 extends Control
 
 func _ready():
-    # Connect to verification signals
+    # Connect to verification signals (no call_deferred needed!)
     GodotItch.connect_verification_completed(_on_verification_completed)
     GodotItch.connect_verification_failed(_on_verification_failed)
-    
+
     # Verify a download key
     GodotItch.verify("user_download_key_here")
 
 func _on_verification_completed(user_info: Dictionary):
     print("Verification successful!")
     print("User: ", user_info.display_name)
-    print("User ID: ", user_info.user_id)
     # Grant access to premium content
 
 func _on_verification_failed(error_message: String, error_code: String):
     print("Verification failed: ", error_message)
     # Handle verification failure
 ```
+
+### Key Findings from Testing
+
+- **Use `GodotItch` class** (recommended) instead of accessing `/root/Itch` directly
+- **`call_deferred()` is unnecessary** - autoloads are available immediately in `_ready()`
+- The plugin includes built-in validation and error handling for robustness
 
 ## API Reference
 
@@ -61,7 +81,7 @@ The primary interface for interacting with the plugin.
 
 #### Static Methods
 
-- **`verify(download_input: String)`** - Verify a download key or URL
+- **`verify(download_input: String)`** - Start verification flow (validates then performs network call)
 - **`validate(download_input: String) -> Dictionary`** - Validate input without network request
 - **`get_verification_status() -> Dictionary`** - Get current verification state
 - **`clear_verification()`** - Clear verification status
@@ -73,21 +93,6 @@ The primary interface for interacting with the plugin.
 - **`verification_started()`** - Emitted when verification begins
 - **`verification_completed(user_info: Dictionary)`** - Emitted on successful verification
 - **`verification_failed(error_message: String, error_code: String)`** - Emitted on failure
-
-### Input Formats
-
-The plugin accepts multiple input formats:
-
-```gdscript
-# Raw download key
-GodotItch.verify("abc123def456...")
-
-# Full itch.io download URL
-GodotItch.verify("https://username.itch.io/game/download/12345?key=abc123def456...")
-
-# Download URL with key parameter
-GodotItch.verify("https://itch.io/game-download/?key=abc123def456...")
-```
 
 ### Verification Result
 
@@ -103,44 +108,32 @@ The `verification_completed` signal provides a dictionary with user information:
 }
 ```
 
+## Input Formats
+
+The plugin accepts multiple input formats:
+
+```gdscript
+# Raw download key
+GodotItch.verify("abc123def456...")
+
+# Full itch.io download URL
+GodotItch.verify("https://username.itch.io/game/download/12345?key=abc123def456...")
+
+# Download URL with key parameter
+GodotItch.verify("https://itch.io/game-download/?key=abc123def456...")
+```
+
 ## Plugin Architecture
 
 ### Core Classes
 
-#### `GodotItch` (godot_itch.gd)
-- **Purpose**: Clean static API interface for easy plugin access
-- **Usage**: Primary interface for developers
-- **Features**: Static methods and signal access, no autoload dependency in user code
-
-#### `Itch` (autoload/itch.gd) 
-- **Purpose**: Main autoload singleton managing verification workflow
-- **Features**: Signal management, input validation, verification orchestration
-- **Internal**: Automatically registered as autoload when plugin is enabled
-
-#### `ItchVerificationClient` (verification/verification_client.gd)
-- **Purpose**: HTTP client for itch.io API communication
-- **Features**: API request handling, response parsing, error management
-- **Extends**: HTTPRequest for network functionality
-
-#### `ItchVerificationResult` (verification/verification_result.gd)
-- **Purpose**: Data structure for verification results
-- **Features**: User info storage, success/failure state, serialization support
-- **Extends**: Resource for easy data handling
-
-#### `ItchDownloadKey` (core/download_key.gd)
-- **Purpose**: Download key validation and URL parsing utilities
-- **Features**: Format validation, URL extraction, error reporting
-- **Type**: Static utility class
-
-#### `ItchInputProcessor` (core/input_processor.gd)
-- **Purpose**: Input processing and validation logic
-- **Features**: Multi-format input handling, validation results
-- **Type**: Static utility class
-
-#### `GodotItchConfig` (core/config.gd)
-- **Purpose**: Project settings management and validation
-- **Features**: Setting access, configuration validation
-- **Type**: Static configuration helper
+- **`GodotItch`** (`godot_itch.gd`) - Clean static API interface
+- **`Itch`** (`autoload/itch.gd`) - Main autoload singleton
+- **`ItchVerificationClient`** (`verification/verification_client.gd`) - HTTP client for API
+- **`ItchVerificationResult`** (`verification/verification_result.gd`) - Result data structure
+- **`ItchDownloadKey`** (`core/download_key.gd`) - Key validation utilities
+- **`ItchInputProcessor`** (`core/input_processor.gd`) - Input processing logic
+- **`GodotItchConfig`** (`core/config.gd`) - Configuration helper
 
 ### Plugin Structure
 
@@ -148,73 +141,79 @@ The `verification_completed` signal provides a dictionary with user information:
 addons/godot_itch/
 ├── godot_itch.gd           # Main API interface
 ├── plugin.cfg              # Plugin configuration
-├── plugin.gd               # Plugin registration and setup
+├── plugin.gd               # Plugin registration
 ├── autoload/
 │   └── itch.gd             # Main autoload singleton
 ├── core/
 │   ├── config.gd           # Configuration helper
-│   ├── download_key.gd     # Key validation utilities
-│   └── input_processor.gd  # Input processing logic
+│   ├── download_key.gd     # Key validation
+│   └── input_processor.gd  # Input processing
 └── verification/
     ├── verification_client.gd  # API client
-    └── verification_result.gd  # Result data structure
+    └── verification_result.gd  # Result structure
 ```
 
-## Error Handling
+## Testing & Validation
 
-The plugin provides detailed error information:
+Several test scenes validate timing and behavior:
 
-- **`INVALID_INPUT`** - Invalid download key format or URL
-- **`CONFIG_ERROR`** - Missing or invalid API configuration
-- **`API_ERROR`** - Network or itch.io API errors
+- `tests/access_method_test.tscn` - Checks autoload access and GodotItch class
+- `tests/autoload_analysis.tscn` - Deep-dive into autoload discovery
+- `tests/call_deferred_test.tscn` - Verifies `call_deferred` necessity (it's not!)
+- `tests/final_validation.tscn` - Final smoke tests
 
-## Security Considerations
-
-- API keys are stored in project settings (use environment variables in production)
-- Download keys are validated client-side before API calls
-- Network requests use HTTPS for secure communication
-- No sensitive data is logged unless debug mode is enabled
+Run tests with:
+```bash
+godot --headless tests/final_validation.tscn
+```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **"Plugin not enabled" or "Failed to retrieve non-existent singleton 'Itch'"**
-   - Enable the plugin in Project Settings > Plugins
-   - **Important**: Restart Godot after enabling the plugin for the autoload to be properly initialized
-   - Check that the autoload appears in Project Settings > AutoLoad
+1. **"Plugin not enabled" or "Failed to retrieve singleton 'Itch'"**
+   - Enable plugin in **Project Settings > Plugins**
+   - **Restart Godot** after enabling for autoload initialization
+   - Verify "Itch" appears in **Project Settings > AutoLoad**
 
 2. **"API key not set"**
-   - Set your itch.io API key in Project Settings > godot_itch/api_key
+   - Set `godot_itch/api_key` in Project Settings
 
 3. **"Game ID not set"**
-   - Set your game's numeric ID in Project Settings > godot_itch/game_id
+   - Set `godot_itch/game_id` in Project Settings
 
 4. **"Invalid download key format"**
-   - Ensure the key is 20-64 characters, alphanumeric with underscores
+   - Keys must be 20-64 characters, alphanumeric with underscores
 
-5. **Autoload not found after enabling plugin**
-   - Disable the plugin, restart Godot, then re-enable the plugin
-   - Check Project Settings > AutoLoad for "Itch" entry
-   - Verify the path points to `res://addons/godot_itch/autoload/itch.gd`
+5. **Autoload not found**
+   - Disable plugin, restart Godot, re-enable plugin
+   - Check autoload path: `res://addons/godot_itch/autoload/itch.gd`
 
 ### Debug Mode
 
-Enable debug logging in Project Settings:
+Enable debug logging:
 ```
 godot_itch/debug_logging = true
 ```
 
-This will output detailed verification steps to the console.
+This outputs detailed verification steps to the console.
 
-## Examples
+### Error Codes
 
-See `examples/purchase_verification_example.gd` for a complete implementation example with UI.
+- **`INVALID_INPUT`** - Invalid key format or URL
+- **`CONFIG_ERROR`** - Missing API configuration
+- **`API_ERROR`** - Network or itch.io API errors
+
+## Contributing
+
+- Code organized into `autoload/`, `core/`, and `verification/`
+- Update `GodotItch._get_itch_singleton()` if autoload registration changes
+- See main project for contribution guidelines
 
 ## License
 
 This plugin is provided as-is for itch.io game developers. See the main project license for details.
 
-## Support
+---
 
-For issues and support, please refer to the main GodotItch repository.
+**Updated based on tests**: Using `GodotItch` class is recommended; `call_deferred()` is unnecessary for connecting/calling from `_ready()`.

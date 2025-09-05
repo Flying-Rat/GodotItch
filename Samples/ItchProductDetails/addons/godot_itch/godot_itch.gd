@@ -23,8 +23,9 @@ class_name GodotItch
 static func _get_itch_singleton():
 	# Access the autoload directly through the scene tree
 	var main_loop = Engine.get_main_loop()
-	if main_loop and main_loop.has_method("get_node"):
-		return main_loop.get_node_or_null("/root/Itch")
+	if main_loop is SceneTree:
+		var scene_tree = main_loop as SceneTree
+		return scene_tree.root.get_node_or_null("Itch")
 	return null
 
 

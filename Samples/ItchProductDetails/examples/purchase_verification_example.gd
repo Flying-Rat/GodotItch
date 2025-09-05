@@ -13,7 +13,7 @@ extends Control
 
 func _ready() -> void:
 	verify_button.pressed.connect(_on_verify_pressed)
-	call_deferred("_connect_to_plugin")
+	_connect_to_plugin()
 	
 	# Load configuration from project settings
 	var api_key: String = ProjectSettings.get_setting("godot_itch/api_key", "")
@@ -26,33 +26,34 @@ func _ready() -> void:
 		game_id_input.text = game_id
 
 func _connect_to_plugin() -> void:
-	# Connect to the GodotItch autoload
-	var itch = get_node_or_null("/root/Itch")
-	if itch:
-		itch.verification_started.connect(_on_verification_started)
-		itch.verification_completed.connect(_on_verification_completed)
-		itch.verification_failed.connect(_on_verification_failed)
-		
-		# Check current verification status
-		var status = itch.get_verification_status()
-		if status.verified:
-			result_area.text = "[color=green]User already verified![/color]\n"
-			result_area.text += "User: %s\n" % status.user_info.get("display_name", "Unknown")
-			result_area.text += "Verified at: %s\n" % status.user_info.get("verified_at", "Unknown")
-			status_label.text = "Verified"
+	# Connect using the GodotItch class - cleaner and more robust
+	GodotItch.connect_verification_started(_on_verification_started)
+	GodotItch.connect_verification_completed(_on_verification_completed)
+	GodotItch.connect_verification_failed(_on_verification_failed)
+	
+	# Check current verification status
+	var status = GodotItch.get_verification_status()
+	if status.verified:
+		result_area.text = "[color=green]User already verified![/color]\n"
+		result_area.text += "User: %s\n" % status.user_info.get("display_name", "Unknown")
+		result_area.text += "Verified at: %s\n" % status.user_info.get("verified_at", "Unknown")
+		status_label.text = "Verified"
 	else:
-		status_label.text = "Plugin not available"
-		result_area.text = "[color=red]GodotItch plugin not found.[/color]\nPlease ensure the plugin is enabled and restart Godot."
+		var plugin_info = GodotItch.get_plugin_info()
+		if not plugin_info.plugin_enabled:
+			status_label.text = "Plugin not available"
+			result_area.text = "[color=red]GodotItch plugin not found.[/color]\nPlease ensure the plugin is enabled and restart Godot."
 
 func _on_verify_pressed() -> void:
 	var download_key := key_input.text.strip_edges()
 	var api_key := api_key_input.text.strip_edges()
 	var game_id := game_id_input.text.strip_edges()
 	
-	var itch = get_node_or_null("/root/Itch")
-	if not itch:
+	# Check plugin availability using GodotItch class
+	var plugin_info = GodotItch.get_plugin_info()
+	if not plugin_info.plugin_enabled:
 		status_label.text = "Error: Plugin not available"
-		result_area.text = "[color=red]Error:[/color]\nGodotItch plugin autoload is not available"
+		result_area.text = "[color=red]Error:[/color]\nGodotItch plugin is not available"
 		return
 	
 	# Update project settings if they've been changed
@@ -68,8 +69,8 @@ func _on_verify_pressed() -> void:
 	result_area.text = ""
 	status_label.text = "Validating input..."
 	
-	# Validate download key input
-	var validation_result = itch.validate(download_key)
+	# Validate download key input using GodotItch class
+	var validation_result = GodotItch.validate(download_key)
 	
 	# Show validation results
 	result_area.text = "[color=blue]Input Validation:[/color]\n"
@@ -99,7 +100,7 @@ func _on_verify_pressed() -> void:
 	
 	result_area.text += "\n[color=yellow]Starting verification with itch.io...[/color]\n"
 	verify_button.disabled = true
-	itch.verify(download_key)
+	GodotItch.verify(download_key)
 
 func _on_verification_started() -> void:
 	status_label.text = "Verifying with itch.io API..."
