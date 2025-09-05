@@ -14,3 +14,9 @@ config/name="demo"
 run/main_scene="uid://13lhyugvlplp"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
+
+[godot_itch]
+
+auto_autoload=true
+api_key=""
+game_id=""
