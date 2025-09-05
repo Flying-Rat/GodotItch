@@ -4,6 +4,8 @@
 
 using namespace godot;
 
+static Itch *s_singleton = nullptr;
+
 
 void Itch::_bind_methods() {
 	// Methods reading from ProjectSettings
@@ -19,14 +21,23 @@ void Itch::_bind_methods() {
 
 Itch::Itch() {
 	ensure_project_settings();
+	s_singleton = this;
 }
 
 
 Itch::~Itch() {
-	// Add your cleanup here.
+	if (s_singleton == this) s_singleton = nullptr;
 }
 
-// Helper function to perform HTTP GET request (simplified, blocking)
+Itch *Itch::get_singleton() {
+	return s_singleton;
+}
+
+bool Itch::itchInitEx(uint32_t app_id, bool embed_callbacks) {
+	is_initialized = true;
+	return true;
+}
+
 void Itch::verify_user(const String &api_key, const String &username) {
 	pending_request_type = "verify_user";
 	pending_username = username;
@@ -57,26 +68,6 @@ void Itch::_on_request_completed(int result, int response_code, const PackedStri
 		output["json"] = json_result;
 	}
 	emit_signal("itch_api_result", pending_request_type, output);
-}
-
-void Itch::_notification(int what) {
-	switch (what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (!http_request) {
-				http_request = memnew(HTTPRequest);
-				add_child(http_request);
-				http_request->connect("request_completed", Callable(this, "_on_request_completed"));
-			}
-		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			if (http_request) {
-				http_request->disconnect("request_completed", Callable(this, "_on_request_completed"));
-				remove_child(http_request);
-				memdelete(http_request);
-				http_request = nullptr;
-			}
-		} break;
-	}
 }
 
 void Itch::ensure_project_settings() {
@@ -117,4 +108,24 @@ void Itch::is_game_bought_ps(const String &username) {
 	String api_key = get_api_key_from_settings();
 	String game_id = get_game_id_from_settings();
 	is_game_bought(game_id, username, api_key);
+}
+
+void Itch::_notification(int what) {
+	switch (what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (!http_request) {
+				http_request = memnew(HTTPRequest);
+				add_child(http_request);
+				http_request->connect("request_completed", Callable(this, "_on_request_completed"));
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (http_request) {
+				http_request->disconnect("request_completed", Callable(this, "_on_request_completed"));
+				remove_child(http_request);
+				memdelete(http_request);
+				http_request = nullptr;
+			}
+		} break;
+	}
 }
