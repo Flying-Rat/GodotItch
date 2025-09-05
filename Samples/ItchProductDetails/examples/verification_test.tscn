@@ -48,7 +48,6 @@ text = "API Key:"
 [node name="APIKeyInput" type="LineEdit" parent="VBox"]
 layout_mode = 2
 placeholder_text = "Your itch.io API key"
-secret = true
 editable = false
 
 [node name="GameIDLabel" type="Label" parent="VBox"]
