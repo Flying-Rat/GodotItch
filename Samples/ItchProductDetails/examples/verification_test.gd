@@ -24,12 +24,31 @@ func _ready() -> void:
 	# Enable debug logging
 	verification_client.debug_logging = true
 	
-	# Prefill test values
+	# Prefill test values - check project settings first
 	key_input.text = "https://hubacekjakub.itch.io/godot-quick-start/download/T_bHe2heYWkHBA6i9doZhsn78oqDjGReBfAxyCR8"
-	api_key_input.text = "5F2BrjiAXZAD4RYYRzd0tVvxU0aFvDps4OJ38yum"
-	game_id_input.text = "3719972"
 	
-	status_label.text = "Ready for verification (test values prefilled)"
+	# Load API key and game ID from project settings if available
+	var config_api_key := GodotItchConfig.get_api_key()
+	var config_game_id := GodotItchConfig.get_game_id()
+	
+	if not config_api_key.is_empty():
+		api_key_input.text = config_api_key
+		status_label.text = "Ready for verification (using project settings)"
+	else:
+		api_key_input.text = "5F2BrjiAXZAD4RYYRzd0tVvxU0aFvDps4OJ38yum"
+		status_label.text = "Ready for verification (using fallback values - configure in project settings)"
+	
+	if not config_game_id.is_empty():
+		game_id_input.text = config_game_id
+	else:
+		game_id_input.text = "3719972"
+	
+	# Show configuration status
+	var config_summary := GodotItchConfig.get_config_summary()
+	if config_summary["is_configured"]:
+		print("[VerificationTest] Using project settings - API Key: %s, Game ID: %s" % [config_summary["api_key_preview"], config_summary["game_id"]])
+	else:
+		print("[VerificationTest] Project settings not configured, using fallback values")
 
 func _on_verify_pressed() -> void:
 	var download_key := key_input.text.strip_edges()
