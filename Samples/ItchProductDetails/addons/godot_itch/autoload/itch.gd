@@ -45,13 +45,7 @@ var _verification_client: Node
 
 
 func _ready() -> void:
-	# Load debug setting from project settings
 	debug_mode = ProjectSettings.get_setting("godot_itch/debug_logging", false)
-	
-	if debug_mode:
-		print("[Itch] Autoload initialized - Debug mode enabled")
-	
-	# Validate configuration on startup
 	_validate_configuration()
 
 
@@ -183,8 +177,6 @@ func get_verification_status() -> Dictionary:
 
 
 ## Clear current verification status
-##
-## Useful for logout functionality or account switching
 func clear_verification() -> void:
 	_verification_status = {
 		"verified": false,
@@ -192,9 +184,6 @@ func clear_verification() -> void:
 		"error": "",
 		"timestamp": 0
 	}
-	
-	if debug_mode:
-		print("[Itch] Verification status cleared")
 
 
 ## Check if verification is required based on project settings
@@ -295,13 +284,7 @@ func _check_configuration() -> String:
 
 ## Internal: Common failure handling
 func _handle_verification_failed(error_message: String, error_code: String) -> void:
-	if debug_mode:
-		print("[Itch] Verification failed: %s (%s)" % [error_message, error_code])
-	
-	# Update status
 	_verification_status.verified = false
 	_verification_status.error = error_message
 	_verification_status.timestamp = Time.get_unix_time_from_system()
-	
-	# Emit failure signal
 	verification_failed.emit(error_message, error_code)

@@ -10,24 +10,16 @@ const SETTING_REQUIRE_VERIFICATION := "godot_itch/require_verification"
 const SETTING_CACHE_DURATION_DAYS := "godot_itch/cache_duration_days"
 
 func _enter_tree() -> void:
-	# Add project settings for GodotItch plugin
 	_add_project_settings()
 	
-	# Register the Itch autoload as part of the plugin
 	if not ProjectSettings.has_setting("autoload/Itch"):
 		add_autoload_singleton("Itch", "res://addons/godot_itch/autoload/itch.gd")
 		_autoload_added = true
-		print("[GodotItch] Plugin enabled - Itch autoload registered")
 
 func _exit_tree() -> void:
-	# Remove autoload when plugin is disabled
 	if _autoload_added and ProjectSettings.has_setting("autoload/Itch"):
 		remove_autoload_singleton("Itch")
 		_autoload_added = false
-		print("[GodotItch] Plugin disabled - Itch autoload removed")
-	
-	# Note: We don't remove project settings when plugin is disabled
-	# as users might want to keep their configuration
 
 ## Adds GodotItch project settings to the project settings dialog
 func _add_project_settings() -> void:

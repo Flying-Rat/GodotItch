@@ -13,49 +13,46 @@ extends Control
 
 func _ready() -> void:
 	verify_button.pressed.connect(_on_verify_pressed)
-	
-	# Connect to the GodotItch plugin
-	var itch = get_node_or_null("/root/Itch")
-	if itch:
-		itch.verification_started.connect(_on_verification_started)
-		itch.verification_completed.connect(_on_verification_completed)
-		itch.verification_failed.connect(_on_verification_failed)
-		print("[VerificationExample] Connected to GodotItch plugin")
-	else:
-		print("[VerificationExample] ERROR: GodotItch plugin not found. Please enable the plugin in Project Settings.")
-		status_label.text = "Plugin not enabled"
-		result_area.text = "[color=red]GodotItch plugin not found.[/color]\nPlease enable the plugin in Project Settings > Plugins."
-		return
+	call_deferred("_connect_to_plugin")
 	
 	# Load configuration from project settings
 	var api_key: String = ProjectSettings.get_setting("godot_itch/api_key", "")
 	var game_id: String = ProjectSettings.get_setting("godot_itch/game_id", "")
-	
+
 	if not api_key.is_empty():
 		api_key_input.text = api_key
 	
 	if not game_id.is_empty():
 		game_id_input.text = game_id
-	
-	# Check current verification status
+
+func _connect_to_plugin() -> void:
+	# Connect to the GodotItch autoload
+	var itch = get_node_or_null("/root/Itch")
 	if itch:
+		itch.verification_started.connect(_on_verification_started)
+		itch.verification_completed.connect(_on_verification_completed)
+		itch.verification_failed.connect(_on_verification_failed)
+		
+		# Check current verification status
 		var status = itch.get_verification_status()
 		if status.verified:
 			result_area.text = "[color=green]User already verified![/color]\n"
 			result_area.text += "User: %s\n" % status.user_info.get("display_name", "Unknown")
 			result_area.text += "Verified at: %s\n" % status.user_info.get("verified_at", "Unknown")
 			status_label.text = "Verified"
+	else:
+		status_label.text = "Plugin not available"
+		result_area.text = "[color=red]GodotItch plugin not found.[/color]\nPlease ensure the plugin is enabled and restart Godot."
 
 func _on_verify_pressed() -> void:
 	var download_key := key_input.text.strip_edges()
 	var api_key := api_key_input.text.strip_edges()
 	var game_id := game_id_input.text.strip_edges()
 	
-	# Get the GodotItch plugin
 	var itch = get_node_or_null("/root/Itch")
 	if not itch:
-		status_label.text = "Error: Plugin not enabled"
-		result_area.text = "[color=red]Error:[/color]\nGodotItch plugin is not enabled or not working"
+		status_label.text = "Error: Plugin not available"
+		result_area.text = "[color=red]Error:[/color]\nGodotItch plugin autoload is not available"
 		return
 	
 	# Update project settings if they've been changed
@@ -92,23 +89,20 @@ func _on_verify_pressed() -> void:
 	# Check if configuration is complete
 	if api_key.is_empty():
 		status_label.text = "Error: API key required"
-		result_area.text += "\n[color=red]Configuration Error:[/color]\nAPI key is required for verification.\nPlease set it in Project Settings > godot_itch/api_key"
+		result_area.text += "\n[color=red]Configuration Error:[/color]\nAPI key is required for verification."
 		return
 	
 	if game_id.is_empty():
 		status_label.text = "Error: Game ID required"
-		result_area.text += "\n[color=red]Configuration Error:[/color]\nGame ID is required for verification.\nPlease set it in Project Settings > godot_itch/game_id"
+		result_area.text += "\n[color=red]Configuration Error:[/color]\nGame ID is required for verification."
 		return
 	
 	result_area.text += "\n[color=yellow]Starting verification with itch.io...[/color]\n"
 	verify_button.disabled = true
-	
-	# Start verification using the plugin
 	itch.verify(download_key)
 
 func _on_verification_started() -> void:
 	status_label.text = "Verifying with itch.io API..."
-	result_area.text += "[color=yellow]Contacting itch.io servers...[/color]\n"
 
 func _on_verification_completed(user_info: Dictionary) -> void:
 	status_label.text = "Purchase verification successful!"
@@ -121,8 +115,6 @@ func _on_verification_completed(user_info: Dictionary) -> void:
 	result_area.text += "Username: %s\n" % user_info.get("username", "N/A")
 	result_area.text += "Game: %s\n" % user_info.get("game_title", "N/A")
 	result_area.text += "Verified: %s\n" % user_info.get("verified_at", "N/A")
-	
-	result_area.text += "\n[color=green]The user has a valid purchase and can access the game.[/color]"
 
 func _on_verification_failed(error_message: String, error_code: String) -> void:
 	status_label.text = "Purchase verification failed"
@@ -132,13 +124,3 @@ func _on_verification_failed(error_message: String, error_code: String) -> void:
 	result_area.text += "[b]Error Details:[/b]\n"
 	result_area.text += "Message: %s\n" % error_message
 	result_area.text += "Code: %s\n" % error_code
-	
-	# Provide helpful guidance based on error type
-	if error_code == "INVALID_INPUT":
-		result_area.text += "\n[color=yellow]Please check that you entered a valid download key or itch.io URL.[/color]"
-	elif error_code == "CONFIG_ERROR":
-		result_area.text += "\n[color=yellow]Please check your API key and Game ID in the project settings.[/color]"
-	elif error_code == "API_ERROR":
-		result_area.text += "\n[color=yellow]This could indicate an invalid download key, network issue, or API problem.[/color]"
-	
-	result_area.text += "\n[color=orange]The user cannot access premium content until verification succeeds.[/color]"

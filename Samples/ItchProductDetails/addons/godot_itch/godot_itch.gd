@@ -5,8 +5,8 @@
 ##
 ## Usage:
 ##   # Connect to signals
-##   GodotItch.verification_completed.connect(_on_verified)
-##   GodotItch.verification_failed.connect(_on_failed)
+##   GodotItch.connect_verification_completed(_on_verified)
+##   GodotItch.connect_verification_failed(_on_failed)
 ##   
 ##   # Verify a download key  
 ##   GodotItch.verify("user_download_key_or_url")
@@ -21,13 +21,11 @@ class_name GodotItch
 
 ## Access the internal Itch autoload singleton
 static func _get_itch_singleton():
-	var itch = Engine.get_singleton("Itch")
-	if not itch:
-		# Fallback to node tree access
-		var main_loop = Engine.get_main_loop()
-		if main_loop and main_loop.has_method("get_node"):
-			itch = main_loop.get_node_or_null("/root/Itch")
-	return itch
+	# Access the autoload directly through the scene tree
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop.has_method("get_node"):
+		return main_loop.get_node_or_null("/root/Itch")
+	return null
 
 
 ## Verify a download key or URL
@@ -91,6 +89,8 @@ static func connect_verification_started(callable: Callable) -> void:
 	if itch and itch.has_signal("verification_started"):
 		if not itch.verification_started.is_connected(callable):
 			itch.verification_started.connect(callable)
+	else:
+		push_warning("[GodotItch] Cannot connect to verification_started signal - plugin not available")
 
 
 ## Connect to verification completed signal
@@ -101,6 +101,8 @@ static func connect_verification_completed(callable: Callable) -> void:
 	if itch and itch.has_signal("verification_completed"):
 		if not itch.verification_completed.is_connected(callable):
 			itch.verification_completed.connect(callable)
+	else:
+		push_warning("[GodotItch] Cannot connect to verification_completed signal - plugin not available")
 
 
 ## Connect to verification failed signal
@@ -111,6 +113,8 @@ static func connect_verification_failed(callable: Callable) -> void:
 	if itch and itch.has_signal("verification_failed"):
 		if not itch.verification_failed.is_connected(callable):
 			itch.verification_failed.connect(callable)
+	else:
+		push_warning("[GodotItch] Cannot connect to verification_failed signal - plugin not available")
 
 
 ## Disconnect from verification started signal
