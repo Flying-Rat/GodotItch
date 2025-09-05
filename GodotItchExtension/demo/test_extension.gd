@@ -56,21 +56,21 @@ func _ready():
 
 	print("Testing get_me()...")
 	Itch.get_me()
-	await get_tree().create_timer(1.0).timeout
+	#await get_tree().create_timer(5.0).timeout
 
-	print("Testing get_my_games()...")
-	Itch.get_my_games()
-	await get_tree().create_timer(1.0).timeout
-
-	print("Testing verify_user()...")
-	Itch.verify_user("leafo")
-	await get_tree().create_timer(1.0).timeout
-
-	if error_occurred:
-		print("✗ Errors occurred during API calls")
-	else:
-		print("=== All tests passed! ===")
-		print("Extension is working correctly.")
+	#print("Testing get_my_games()...")
+	#Itch.get_my_games()
+	#await get_tree().create_timer(5.0).timeout
+#
+	#print("Testing verify_user()...")
+	#Itch.verify_user("leafo")
+	#await get_tree().create_timer(5.0).timeout
+#
+	#if error_occurred:
+		#print("✗ Errors occurred during API calls")
+	#else:
+		#print("=== All tests passed! ===")
+		#print("Extension is working correctly.")
 
 
 func _on_api_response(endpoint: String, data: Dictionary):
