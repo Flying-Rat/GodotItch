@@ -35,6 +35,9 @@ Future development plans and architectural evolution for the GodotItch plugin.
 - **Enhanced Debug Tools** - Network request inspector and response viewer
 - **Setup Wizard** - Guided first-time configuration process
 
+#### 2.4 Settings & Maintenance
+- **Relocate "Test Connection"** - The in-panel "Test Connection" button will be removed from the Project Settings UI and instead provided as a developer tool tracked in this roadmap. This reduces accidental API calls from the editor and centralizes testing workflows in a dedicated maintenance/diagnostics area.
+
 ### Phase 3: Advanced Features (Q1-Q2 2026)
 
 #### 3.1 Analytics and Insights

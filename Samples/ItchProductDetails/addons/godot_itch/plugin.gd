@@ -6,15 +6,11 @@ var _autoload_added := false
 # Project settings keys
 const SETTING_API_KEY := "godot_itch/api_key"
 const SETTING_GAME_ID := "godot_itch/game_id"
-const SETTING_REQUIRE_VERIFICATION := "godot_itch/require_verification"
-const SETTING_CACHE_DURATION_DAYS := "godot_itch/cache_duration_days"
 
 # UI elements for the Itch panel
 var itch_panel
 var api_key_edit
 var game_id_edit
-var require_verification_check
-var cache_duration_edit
 var debug_logging_check
 
 func _enter_tree() -> void:
@@ -58,28 +54,6 @@ func _add_project_settings() -> void:
 		}
 		ProjectSettings.add_property_info(game_id_info)
 	
-	# Require verification setting
-	if not ProjectSettings.has_setting(SETTING_REQUIRE_VERIFICATION):
-		ProjectSettings.set_setting(SETTING_REQUIRE_VERIFICATION, true)
-		var require_verification_info := {
-			"name": SETTING_REQUIRE_VERIFICATION,
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": ""
-		}
-		ProjectSettings.add_property_info(require_verification_info)
-	
-	# Cache duration setting
-	if not ProjectSettings.has_setting(SETTING_CACHE_DURATION_DAYS):
-		ProjectSettings.set_setting(SETTING_CACHE_DURATION_DAYS, 7)
-		var cache_duration_info := {
-			"name": SETTING_CACHE_DURATION_DAYS,
-			"type": TYPE_INT,
-			"hint": PROPERTY_HINT_RANGE,
-			"hint_string": "1,30,1"
-		}
-		ProjectSettings.add_property_info(cache_duration_info)
-	
 	# Debug logging setting
 	if not ProjectSettings.has_setting("godot_itch/debug_logging"):
 		ProjectSettings.set_setting("godot_itch/debug_logging", false)
@@ -100,52 +74,35 @@ func _create_itch_project_settings_panel() -> void:
 	var scene = load("res://addons/godot_itch/itch_settings_panel.tscn")
 	if scene:
 		itch_panel = scene.instantiate()
-		# Wire UI elements from the scene. Use find_child recursively so minor
-		# scene layout changes won't break the plugin.
-		api_key_edit = itch_panel.find_child("APIKey", true, false)
-		game_id_edit = itch_panel.find_child("GameID", true, false)
-		require_verification_check = itch_panel.find_child("RequireVerification", true, false)
-		cache_duration_edit = itch_panel.find_child("CacheDuration", true, false)
-		debug_logging_check = itch_panel.find_child("DebugLogging", true, false)
-		var save_button = itch_panel.find_child("SaveButton", true, false)
-		var test_button = itch_panel.find_child("TestButton", true, false)
+		# Wire UI elements from the scene using exact paths for better performance
+		api_key_edit = itch_panel.get_node("MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid/APIKey")
+		game_id_edit = itch_panel.get_node("MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid/GameID")
+		debug_logging_check = itch_panel.get_node("MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/OptionsSection/OptionsGrid/DebugLogging")
+		var save_button = itch_panel.get_node("MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/ButtonsSection/Buttons/SaveButton")
 		
 		if save_button:
 			save_button.connect("pressed", Callable(self, "_on_save_settings"))
 		else:
-			printerr("Itch plugin: SaveButton not found in itch_settings_panel.tscn")
-			
-		if test_button:
-			test_button.connect("pressed", Callable(self, "_on_test_connection"))
-		else:
-			printerr("Itch plugin: TestButton not found in itch_settings_panel.tscn")
+			printerr("Itch plugin: SaveButton not found at expected path")
+		
+		# Test connection removed from settings UI; testing is tracked in the roadmap
 
 		# Initialize values (guard each node)
 		if api_key_edit:
 			api_key_edit.text = get_api_key()
 		else:
-			printerr("Itch plugin: APIKey control missing")
+			printerr("Itch plugin: APIKey control missing at expected path")
 			_debug_dump_scene_tree(itch_panel)
 
 		if game_id_edit:
 			game_id_edit.text = get_game_id()
 		else:
-			printerr("Itch plugin: GameID control missing")
-
-		if require_verification_check:
-			require_verification_check.set_pressed(get_require_verification())
-		else:
-			printerr("Itch plugin: RequireVerification control missing")
-
-		if cache_duration_edit:
-			cache_duration_edit.value = get_cache_duration_days()
-		else:
-			printerr("Itch plugin: CacheDuration control missing")
+			printerr("Itch plugin: GameID control missing at expected path")
 
 		if debug_logging_check:
 			debug_logging_check.set_pressed(ProjectSettings.get_setting("godot_itch/debug_logging", false))
 		else:
-			printerr("Itch plugin: DebugLogging control missing")
+			printerr("Itch plugin: DebugLogging control missing at expected path")
 			_debug_dump_scene_tree(itch_panel)
 
 		add_control_to_container(CustomControlContainer.CONTAINER_PROJECT_SETTING_TAB_RIGHT, itch_panel)
@@ -169,8 +126,6 @@ func _remove_itch_project_settings_panel() -> void:
 func _on_save_settings() -> void:
 	ProjectSettings.set_setting(SETTING_API_KEY, api_key_edit.text)
 	ProjectSettings.set_setting(SETTING_GAME_ID, game_id_edit.text)
-	ProjectSettings.set_setting(SETTING_REQUIRE_VERIFICATION, require_verification_check.is_pressed())
-	ProjectSettings.set_setting(SETTING_CACHE_DURATION_DAYS, int(cache_duration_edit.value))
 	ProjectSettings.set_setting("godot_itch/debug_logging", debug_logging_check.is_pressed())
 	ProjectSettings.save()
 	print("Itch plugin: Settings saved successfully!")
@@ -230,14 +185,6 @@ static func get_api_key() -> String:
 ## Gets the game ID from project settings
 static func get_game_id() -> String:
 	return ProjectSettings.get_setting(SETTING_GAME_ID, "")
-
-## Gets whether verification is required from project settings
-static func get_require_verification() -> bool:
-	return ProjectSettings.get_setting(SETTING_REQUIRE_VERIFICATION, true)
-
-## Gets the cache duration in days from project settings
-static func get_cache_duration_days() -> int:
-	return ProjectSettings.get_setting(SETTING_CACHE_DURATION_DAYS, 7)
 
 ## Debug helper: dump scene tree to help find missing nodes
 func _debug_dump_scene_tree(scene_root) -> void:

@@ -35,12 +35,18 @@ A Godot plugin for itch.io purchase verification. Verify that players have legit
 
 ## Configuration
 
-Set these values in **Project Settings**:
+The plugin includes a user-friendly settings panel accessible through **Project > Project Settings**. Look for the "Itch" panel on the right side of the Project Settings dialog.
+
+### Required Settings
 
 - **`godot_itch/api_key`**: Your itch.io API key (from [itch.io account settings](https://itch.io/user/settings/api-keys))
 - **`godot_itch/game_id`**: Your game's numeric ID from itch.io
-- **`godot_itch/require_verification`**: Whether verification is mandatory (default: `true`)
+
+### Optional Settings
+
 - **`godot_itch/debug_logging`**: Enable debug output (default: `false`)
+
+You can also access the settings panel by using the **Tools > Itch Settings** menu in the Godot editor.
 
 ## Quick Start
 
@@ -85,7 +91,6 @@ The primary interface for interacting with the plugin.
 - **`validate(download_input: String) -> Dictionary`** - Validate input without network request
 - **`get_verification_status() -> Dictionary`** - Get current verification state
 - **`clear_verification()`** - Clear verification status
-- **`is_verification_required() -> bool`** - Check if verification is mandatory
 - **`get_plugin_info() -> Dictionary`** - Get plugin status information
 
 #### Static Signals
