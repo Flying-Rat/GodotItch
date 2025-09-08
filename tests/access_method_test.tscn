@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bx8g5k37bjnd0"]
+
+[ext_resource type="Script" path="res://tests/access_method_test.gd" id="1_yxj7s"]
+
+[node name="AccessMethodTest" type="Node"]
+script = ExtResource("1_yxj7s")

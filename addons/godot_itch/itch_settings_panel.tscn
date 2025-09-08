@@ -1,0 +1,281 @@
+[gd_scene load_steps=3 format=3 uid="uid://cdfw1lsiymm8e"]
+
+[sub_resource type="Theme" id="theme_1"]
+
+[sub_resource type="StyleBoxFlat" id="stylebox_1"]
+bg_color = Color(0.15, 0.15, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.6, 0.8, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Itch" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = SubResource("theme_1")
+
+[node name="MainMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="HBoxRoot" type="HSplitContainer" parent="MainMargin"]
+layout_mode = 2
+split_offset = 450
+dragger_visibility = 1
+
+[node name="LeftPanel" type="PanelContainer" parent="MainMargin/HBoxRoot"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("stylebox_1")
+
+[node name="LeftMargin" type="MarginContainer" parent="MainMargin/HBoxRoot/LeftPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="LeftVBox" type="VBoxContainer" parent="MainMargin/HBoxRoot/LeftPanel/LeftMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderContainer" type="VBoxContainer" parent="MainMargin/HBoxRoot/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LeftTitle" type="Label" parent="MainMargin/HBoxRoot/LeftPanel/LeftMargin/LeftVBox/HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.6, 0.8, 1)
+theme_override_font_sizes/font_size = 24
+text = "📚 Godot Itch Plugin Guide"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="MainMargin/HBoxRoot/LeftPanel/LeftMargin/LeftVBox/HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "Purchase verification for itch.io games"
+horizontal_alignment = 1
+
+[node name="Separator1" type="HSeparator" parent="MainMargin/HBoxRoot/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+
+[node name="InstructionsScroll" type="ScrollContainer" parent="MainMargin/HBoxRoot/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LeftInstructions" type="RichTextLabel" parent="MainMargin/HBoxRoot/LeftPanel/LeftMargin/LeftVBox/InstructionsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+text = "[color=#6699CC][b]🚀 Quick Start[/b][/color]
+
+[color=#99CCFF]1. Get your credentials:[/color]
+   • Visit [color=#66AAFF][url=https://itch.io/user/settings/api-keys]itch.io API keys[/url][/color]
+   • Generate a new API key
+   • Copy your game's numeric ID from its URL
+
+[color=#99CCFF]2. Configure settings:[/color]
+   • Enter your API Key and Game ID on the right
+   • Enable debug logging if needed for troubleshooting
+
+[color=#99CCFF]3. Save and integrate:[/color]
+   • Click \"Save Settings\" to persist configuration
+   • Use the plugin in your game code
+
+[color=#6699CC][b]💻 Code Integration[/b][/color]
+
+[color=#AAAAAA]Basic usage in your scripts:[/color]
+[code]
+extends Control
+
+func _ready():
+    # Connect verification signals
+    GodotItch.connect_verification_completed(_on_success)
+    GodotItch.connect_verification_failed(_on_failure)
+    
+    # Verify a download key
+    GodotItch.verify(\"user_download_key_here\")
+
+func _on_success(user_info: Dictionary):
+    print(\"Welcome \", user_info.display_name)
+    # Grant access to premium content
+    
+func _on_failure(error: String, code: String):
+    print(\"Verification failed: \", error)
+    # Handle failure gracefully
+[/code]
+
+[color=#6699CC][b]🔧 Input Formats Supported[/b][/color]
+
+[color=#CCCCCC]The plugin accepts multiple formats:[/color]
+• Raw download key: [color=#99FF99]abc123def456...[/color]
+• Full itch URL: [color=#99FF99]https://user.itch.io/game/download/123?key=...[/color]
+• Download URL: [color=#99FF99]https://itch.io/game-download/?key=...[/color]
+
+[color=#6699CC][b]⚙️ Configuration Options[/b][/color]
+
+[color=#FFCC99]API Key:[/color] Your personal itch.io API key for authentication
+[color=#FFCC99]Game ID:[/color] Numeric identifier for your specific game
+[color=#FFCC99]Debug Logging:[/color] Enable detailed console output for troubleshooting
+
+[color=#6699CC][b]🛡️ Security Notes[/b][/color]
+
+• API keys are stored in project settings, never transmitted
+• Only your game can access the stored credentials
+• Verification happens securely through itch.io's API
+
+[color=#6699CC][b]📋 Troubleshooting[/b][/color]
+
+[color=#FF9999]Common issues and solutions:[/color]
+• [color=#CCCCCC]Plugin not found:[/color] Enable in Project > Plugins, restart Godot
+• [color=#CCCCCC]API errors:[/color] Check API key and game ID are correct
+• [color=#CCCCCC]Invalid key format:[/color] Keys must be 20-64 characters, alphanumeric
+• [color=#CCCCCC]Network issues:[/color] Enable debug logging for detailed errors
+
+[color=#99CCFF]For more help, check the README.md file in the plugin directory.[/color]"
+fit_content = true
+scroll_active = false
+
+[node name="RightPanel" type="PanelContainer" parent="MainMargin/HBoxRoot"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightMargin" type="MarginContainer" parent="MainMargin/HBoxRoot/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="MainMargin/HBoxRoot/RightPanel/RightMargin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleContainer" type="VBoxContainer" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/TitleContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 20
+text = "⚙️ Itch.io Settings"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/TitleContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Configure your itch.io credentials and verification settings"
+horizontal_alignment = 1
+
+[node name="HSeparator1" type="HSeparator" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
+layout_mode = 2
+
+[node name="CredentialsSection" type="VBoxContainer" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CredentialsLabel" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.6, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔐 Authentication"
+
+[node name="CredentialsGrid" type="GridContainer" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="LabelAPI" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
+layout_mode = 2
+text = "API Key:"
+vertical_alignment = 1
+
+[node name="APIKey" type="LineEdit" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter your itch.io API key"
+
+[node name="LabelGameID" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
+layout_mode = 2
+text = "Game ID:"
+vertical_alignment = 1
+
+[node name="GameID" type="LineEdit" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Your game's numeric ID"
+
+[node name="HSeparator2" type="HSeparator" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
+layout_mode = 2
+
+[node name="OptionsSection" type="VBoxContainer" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="OptionsLabel" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/OptionsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.6, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "⚙️ Advanced Options"
+
+[node name="OptionsGrid" type="GridContainer" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/OptionsSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="LabelDebug" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/OptionsSection/OptionsGrid"]
+layout_mode = 2
+text = "Debug Logging:"
+vertical_alignment = 1
+
+[node name="DebugLogging" type="CheckBox" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/OptionsSection/OptionsGrid"]
+layout_mode = 2
+text = "Enable detailed console output"
+
+[node name="HSeparator3" type="HSeparator" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
+layout_mode = 2
+
+[node name="ButtonsSection" type="VBoxContainer" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ButtonsLabel" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/ButtonsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.6, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "💾 Actions"
+
+[node name="Buttons" type="HBoxContainer" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/ButtonsSection"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SaveButton" type="Button" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/ButtonsSection/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "💾 Save Settings"
+
+[node name="Spacer" type="Control" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
