@@ -17,6 +17,6 @@ config/icon="res://icon.svg"
 
 [godot_itch]
 
-auto_autoload=true
+auto_autoload=false
 api_key=""
 game_id=""
