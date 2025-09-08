@@ -11,6 +11,10 @@
 extends HTTPRequest
 class_name ItchVerificationClient
 
+# Preload dependencies
+const ItchVerificationResult = preload("res://addons/godot_itch/verification/verification_result.gd")
+const ItchDownloadKey = preload("res://addons/godot_itch/core/download_key.gd")
+
 
 ## Emitted when download key verification completes successfully
 ## @param result: ItchVerificationResult containing verification details

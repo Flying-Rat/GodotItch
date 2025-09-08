@@ -33,6 +33,8 @@ enabled=PackedStringArray("res://addons/godot_itch/plugin.cfg")
 [godot_itch]
 
 debug_logging=false
+api_key=""
+game_id=""
 
 [rendering]
 

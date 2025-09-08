@@ -10,6 +10,9 @@
 ##
 class_name ItchInputProcessor
 
+# Preload dependencies
+const ItchDownloadKey = preload("res://addons/godot_itch/core/download_key.gd")
+
 
 ## Process and validate download input from user
 ##

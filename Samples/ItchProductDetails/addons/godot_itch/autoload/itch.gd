@@ -17,6 +17,9 @@
 ##
 extends Node
 
+# Preload dependencies
+const ItchVerificationResult = preload("res://addons/godot_itch/verification/verification_result.gd")
+
 ## Emitted when verification process starts
 signal verification_started()
 
