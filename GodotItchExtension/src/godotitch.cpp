@@ -5,7 +5,6 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/classes/script.hpp>
 
 using namespace godot;
 
@@ -256,46 +255,36 @@ void Itch::verify_user(const String& username) {
 }
 
 void Itch::_perform_request(const String &url, const PackedStringArray &headers) {
-	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	if (!tree) {
-		UtilityFunctions::print("Itch: Could not get SceneTree");
+	if (!http_request) {
+		UtilityFunctions::print("Itch: _perform_request called but http_request is null");
 		return;
 	}
-	Node *scene_root = tree->get_current_scene();
-	if (!scene_root) {
-		UtilityFunctions::print("Itch: Could not get current scene root");
+	if (!http_request->is_inside_tree()) {
+		UtilityFunctions::print("Itch: _perform_request - HTTPRequest not yet inside tree, deferring again");
+		call_deferred("_perform_request", url, headers);
 		return;
 	}
-	Node *helper = scene_root->get_node_or_null("HttpRequestHelper");
-	if (!helper) {
-		helper = memnew(Node);
-		helper->set_name("HttpRequestHelper");
-		// Load GDScript as Resource and cast to Script
-		Ref<Resource> res = ResourceLoader::load("res://demo/HttpRequestHelper.gd");
-		Ref<Script> script;
-		if (res.is_valid()) {
-			Script *script_ptr = Object::cast_to<Script>(res.ptr());
-			script = Ref<Script>(script_ptr);
-		}
-		if (script.is_valid()) {
-			helper->set_script(script);
-			scene_root->add_child(helper);
-		} else {
-			UtilityFunctions::print("Itch: Could not load HttpRequestHelper.gd as Script");
-			return;
-		}
-	}
-	// Connect signal if not already
-	if (!helper->is_connected("request_completed", Callable(this, "_on_gdscript_request_completed"))) {
-		helper->connect("request_completed", Callable(this, "_on_gdscript_request_completed"));
-	}
-	UtilityFunctions::print("Itch: Delegating HTTP request to GDScript helper");
-	helper->call("perform_request", url, headers);
-}
 
-void Itch::_on_gdscript_request_completed(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body) {
-	UtilityFunctions::print("Itch: Received request_completed from GDScript helper");
-	_on_request_completed(result, response_code, headers, body);
+	UtilityFunctions::print(String("Itch: _perform_request issuing request to: ") + url);
+	// Print pointer address for diagnostics
+	UtilityFunctions::print(String("Itch: http_request ptr: ") + String::num_int64((int64_t)http_request));
+	// Invoke via Variant call to route through Godot's method binding layer
+	Variant ret = http_request->call("request", url, headers);
+	// Log return value if any
+	if (ret.get_type() != Variant::NIL) {
+		UtilityFunctions::print(String("Itch: HTTPRequest::request returned variant type: ") + String::num_int64((int64_t)ret.get_type()));
+		// also print numeric value if convertible
+		int64_t num = 0;
+		if (ret.get_type() == Variant::INT) {
+			num = (int64_t)ret;
+			UtilityFunctions::print(String("Itch: HTTPRequest::request returned numeric: ") + String::num_int64(num));
+		}
+	} else {
+		UtilityFunctions::print("Itch: HTTPRequest::request returned nil");
+	}
+
+	// Schedule a deferred post-request check to see if node is still valid
+	call_deferred("post_request_check");
 }
 
 void Itch::post_request_check() {
