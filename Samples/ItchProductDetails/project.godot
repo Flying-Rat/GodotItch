@@ -11,10 +11,10 @@ config_version=5
 [application]
 
 config/name="GodotItch"
-config/version="0.1.0"
+config/version="1.0.0"
 run/main_scene="res://examples/purchase_verification_example.tscn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
 
 [autoload]
 
