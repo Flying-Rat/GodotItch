@@ -55,7 +55,7 @@ namespace godot {
         void get_my_games();
         void get_game_purchases(const String& game_id = "");
         void get_game_uploads(const String& game_id = "");
-        void verify_user(const String& username);
+        void get_game_download_keys(const String& game_id = "", const String& download_key = "");
 
         // Utility methods
         void set_api_key(const String& api_key);
