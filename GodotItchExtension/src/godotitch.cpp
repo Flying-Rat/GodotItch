@@ -338,15 +338,18 @@ void Itch::_on_request_completed(int result, int response_code, const PackedStri
 		return;
 	}
 	
-	JSON json;
-	Error parse_result = json.parse(body_string);
-	
-	if (parse_result != OK) {
+	Variant parsed = JSON::parse_string(body_string);
+	if (parsed.get_type() == Variant::NIL) {
 		emit_signal("api_error", pending_request_type, "Failed to parse JSON response", response_code);
 		return;
 	}
-	
-	Dictionary response_data = json.get_data();
+	Dictionary response_data;
+	if (parsed.get_type() == Variant::DICTIONARY) {
+		response_data = (Dictionary)parsed;
+	} else {
+		// Wrap non-dictionary JSON into a result container for consistency
+		response_data["result"] = parsed;
+	}
 	
 	// Add request metadata to response
 	response_data["_request_type"] = pending_request_type;
