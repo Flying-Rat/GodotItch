@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8x5k37bjnd0"]
+
+[ext_resource type="Script" path="res://tests/test_itch_direct.gd" id="1_8x7nc"]
+
+[node name="TestItchDirect" type="Node"]
+script = ExtResource("1_8x7nc")
