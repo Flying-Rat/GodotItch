@@ -12,19 +12,57 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Button" type="Button" parent="Panel"]
+[node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -4.0
-offset_top = -4.0
-offset_right = 4.0
-offset_bottom = 4.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "TEST"
+theme_override_constants/separation = 15
 
-[connection signal="pressed" from="Panel/Button" to="." method="_on_button_pressed"]
+[node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="BtnRunTest" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Run Test"
+
+[node name="BtnGetMe" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Get Me"
+
+[node name="BtnMyGames" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "My Games"
+
+[node name="Username" type="LineEdit" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "username"
+
+[node name="BtnVerify" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Verify User"
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/VBox/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Output" type="RichTextLabel" parent="Panel/VBox/MarginContainer/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnRunTest" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnGetMe" to="." method="_on_get_me_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnMyGames" to="." method="_on_my_games_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnVerify" to="." method="_on_verify_user_pressed"]

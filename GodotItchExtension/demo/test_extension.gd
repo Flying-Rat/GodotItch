@@ -1,5 +1,8 @@
 extends Node
 
+@onready var output: RichTextLabel = $Panel/VBox/MarginContainer/Scroll/Output
+@onready var username: LineEdit = $Panel/VBox/Buttons/Username
+
 # Simple test to verify the Itch extension loads properly
 
 var error_occurred : bool = false
@@ -56,8 +59,8 @@ func _ready():
 
 
 func _on_api_response(endpoint: String, data: Dictionary):
-	print("API Response for ", endpoint, ":")
-	print("  Data: ", data)
+	var text = "[b]API Response:[/b] %s\n%s\n" % [endpoint, JSON.stringify(data, "  ")]
+	output.append_text(text)
 
 	match endpoint:
 		"get_me":
@@ -91,9 +94,8 @@ func _on_api_response(endpoint: String, data: Dictionary):
 				print("  Found ", uploads.size(), " uploads")
 
 func _on_api_error(endpoint: String, error_message: String, response_code: int):
-	print("API Error for ", endpoint, ":")
-	print("  Error: ", error_message)
-	print("  Response Code: ", response_code)
+	var text = "[color=red][b]API Error:[/b] %s (%d) - %s[/color]\n" % [endpoint, response_code, error_message]
+	output.append_text(text)
 
 	if response_code == 401:
 		print("  This usually means your API key is invalid or missing")
@@ -106,20 +108,24 @@ func _on_api_error(endpoint: String, error_message: String, response_code: int):
 
 
 func _on_button_pressed() -> void:
-	print("Testing test_request_http()...")
-	Itch.test_request_http()
-	#await get_tree().create_timer(5.0).timeout
+	output.append_text("[b]Testing sequence...[/b]\n")
+	Itch.get_my_games()
+	await get_tree().create_timer(3.0).timeout
+	Itch.verify_user("leafo")
+	await get_tree().create_timer(3.0).timeout
+	output.append_text("[b]Done.[/b]\n")
 
-	#print("Testing get_my_games()...")
-	#Itch.get_my_games()
-	#await get_tree().create_timer(5.0).timeout
-#
-	#print("Testing verify_user()...")
-	#Itch.verify_user("leafo")
-	#await get_tree().create_timer(5.0).timeout
-#
-	#if error_occurred:
-		#print("✗ Errors occurred during API calls")
-	#else:
-		#print("=== All tests passed! ===")
-		#print("Extension is working correctly.")
+func _on_get_me_pressed() -> void:
+	output.append_text("[b]Request:[/b] get_me\n")
+	Itch.get_me()
+
+func _on_my_games_pressed() -> void:
+	output.append_text("[b]Request:[/b] get_my_games\n")
+	Itch.get_my_games()
+
+func _on_verify_user_pressed() -> void:
+	var uname = username.text.strip_edges()
+	if uname.is_empty():
+		uname = "leafo"
+	output.append_text("[b]Request:[/b] verify_user %s\n" % uname)
+	Itch.verify_user(uname)
