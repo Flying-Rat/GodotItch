@@ -25,6 +25,8 @@ Required project settings:
 - `godot_itch/api_key` — Your itch.io API key
 - `godot_itch/game_id` — Your game ID on itch.io
 
+Important: You must set both `godot_itch/api_key` and `godot_itch/game_id` in Project Settings (Project → Project Settings → Itch) before using the plugin. The plugin will not function without them.
+
 Optional:
 
 - `godot_itch/debug_logging` — Enable debug output (default: `false`)
