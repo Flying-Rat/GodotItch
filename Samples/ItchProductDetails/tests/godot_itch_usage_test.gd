@@ -69,15 +69,12 @@ func _test_plugin_availability() -> void:
 
 func _test_godot_itch_class() -> void:
 	_add_test_result("\n🎯 Testing GodotItch Class", "cyan")
-	
-	# Test static methods exist
-	var has_validate = GodotItch.has_method("validate")
-	var has_verify = GodotItch.has_method("verify")
-	var has_status = GodotItch.has_method("get_verification_status")
-	
-	_test_assert(has_validate, "GodotItch.validate() method exists")
-	_test_assert(has_verify, "GodotItch.verify() method exists")
-	_test_assert(has_status, "GodotItch.get_verification_status() method exists")
+	# Verify validate() returns the expected structure and status method works
+	var validation_result = GodotItch.validate("test_key_12345678901234567890")
+	_test_assert(validation_result.has("valid"), "GodotItch.validate() returns a validation structure")
+
+	var status = GodotItch.get_verification_status()
+	_test_assert(status.has("verified"), "GodotItch.get_verification_status() returns a status structure")
 
 func _test_autoload_access() -> void:
 	_add_test_result("\n⚙️ Testing Autoload Access", "cyan")
