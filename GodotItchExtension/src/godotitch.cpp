@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/script.hpp>
 
 using namespace godot;
 
@@ -15,6 +16,7 @@ void Itch::_bind_methods() {
 	// API methods
 	ClassDB::bind_method(D_METHOD("get_me"), &Itch::get_me);
 	ClassDB::bind_method(D_METHOD("get_my_games"), &Itch::get_my_games);
+	ClassDB::bind_method(D_METHOD("test_request_http"), &Itch::test_request_http);
 	ClassDB::bind_method(D_METHOD("get_game_purchases", "game_id"), &Itch::get_game_purchases, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_game_uploads", "game_id"), &Itch::get_game_uploads, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("verify_user", "username"), &Itch::verify_user);
@@ -31,6 +33,9 @@ void Itch::_bind_methods() {
 	
 	// HTTP callback
 	ClassDB::bind_method(D_METHOD("_on_request_completed", "result", "response_code", "headers", "body"), &Itch::_on_request_completed);
+	// Internal helper to perform HTTP request deferred
+	ClassDB::bind_method(D_METHOD("_perform_request", "url", "headers"), &Itch::_perform_request);
+	ClassDB::bind_method(D_METHOD("post_request_check"), &Itch::post_request_check);
 	
 	// Signals
 	ADD_SIGNAL(MethodInfo("api_response", PropertyInfo(Variant::STRING, "endpoint"), PropertyInfo(Variant::DICTIONARY, "data")));
@@ -96,6 +101,13 @@ void Itch::_setup_http_request() {
 		// HTTPRequest will be added to scene tree via initialize_with_scene()
 		if (http_request) {
 			http_request->connect("request_completed", Callable(this, "_on_request_completed"));
+			UtilityFunctions::print("Itch: HTTPRequest object created");
+			// Configure safer defaults
+			http_request->set_use_threads(false);
+			http_request->set_timeout(10.0);
+			http_request->set_accept_gzip(true);
+			http_request->set_name("ItchHTTPRequest");
+			UtilityFunctions::print(String("Itch: HTTPRequest use_threads=") + (http_request->is_using_threads() ? "true" : "false"));
 		}
 	}
 }
@@ -124,8 +136,28 @@ void Itch::get_me() {
 	
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
+	// Diagnostics: log whether HTTPRequest is inside scene tree
+	if (http_request->is_inside_tree()) {
+		UtilityFunctions::print("Itch: HTTPRequest is inside scene tree, issuing request");
+	} else {
+		UtilityFunctions::print("Itch: HTTPRequest NOT inside scene tree, deferring request");
+	}
 	
-	http_request->request(url, headers);
+	// Use call_deferred so the request is executed after the node is in the scene tree.
+	// Schedule an internal deferred method which will call HTTPRequest::request
+	call_deferred("_perform_request", url, headers);
+	UtilityFunctions::print("Itch: Deferred internal request scheduled");
+}
+
+void Itch::test_request_http() {
+	if (!http_request) {
+		UtilityFunctions::print("Itch: test_request_http - http_request not initialized");
+		return;
+	}
+	String url = "http://example.com/";
+	PackedStringArray headers;
+	headers.push_back("User-Agent: GodotItch/1.0");
+	call_deferred("_perform_request", url, headers);
 }
 
 void Itch::get_my_games() {
@@ -143,7 +175,9 @@ void Itch::get_my_games() {
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
 	
-	http_request->request(url, headers);
+	// Schedule deferred internal helper to perform the request
+	call_deferred("_perform_request", url, headers);
+	UtilityFunctions::print("Itch: Deferred internal request scheduled");
 }
 
 void Itch::get_game_purchases(const String& game_id) {
@@ -168,7 +202,9 @@ void Itch::get_game_purchases(const String& game_id) {
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
 	
-	http_request->request(url, headers);
+	// Schedule deferred internal helper to perform the request
+	call_deferred("_perform_request", url, headers);
+	UtilityFunctions::print("Itch: Deferred internal request scheduled");
 }
 
 void Itch::get_game_uploads(const String& game_id) {
@@ -193,7 +229,9 @@ void Itch::get_game_uploads(const String& game_id) {
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
 	
-	http_request->request(url, headers);
+	// Schedule deferred internal helper to perform the request
+	call_deferred("_perform_request", url, headers);
+	UtilityFunctions::print("Itch: Deferred internal request scheduled");
 }
 
 void Itch::verify_user(const String& username) {
@@ -212,7 +250,61 @@ void Itch::verify_user(const String& username) {
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
 	
-	http_request->request(url, headers);
+	// Schedule deferred internal helper to perform the request
+	call_deferred("_perform_request", url, headers);
+	UtilityFunctions::print("Itch: Deferred internal request scheduled");
+}
+
+void Itch::_perform_request(const String &url, const PackedStringArray &headers) {
+	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+	if (!tree) {
+		UtilityFunctions::print("Itch: Could not get SceneTree");
+		return;
+	}
+	Node *scene_root = tree->get_current_scene();
+	if (!scene_root) {
+		UtilityFunctions::print("Itch: Could not get current scene root");
+		return;
+	}
+	Node *helper = scene_root->get_node_or_null("HttpRequestHelper");
+	if (!helper) {
+		helper = memnew(Node);
+		helper->set_name("HttpRequestHelper");
+		// Load GDScript as Resource and cast to Script
+		Ref<Resource> res = ResourceLoader::load("res://demo/HttpRequestHelper.gd");
+		Ref<Script> script;
+		if (res.is_valid()) {
+			Script *script_ptr = Object::cast_to<Script>(res.ptr());
+			script = Ref<Script>(script_ptr);
+		}
+		if (script.is_valid()) {
+			helper->set_script(script);
+			scene_root->add_child(helper);
+		} else {
+			UtilityFunctions::print("Itch: Could not load HttpRequestHelper.gd as Script");
+			return;
+		}
+	}
+	// Connect signal if not already
+	if (!helper->is_connected("request_completed", Callable(this, "_on_gdscript_request_completed"))) {
+		helper->connect("request_completed", Callable(this, "_on_gdscript_request_completed"));
+	}
+	UtilityFunctions::print("Itch: Delegating HTTP request to GDScript helper");
+	helper->call("perform_request", url, headers);
+}
+
+void Itch::_on_gdscript_request_completed(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body) {
+	UtilityFunctions::print("Itch: Received request_completed from GDScript helper");
+	_on_request_completed(result, response_code, headers, body);
+}
+
+void Itch::post_request_check() {
+	if (!http_request) {
+		UtilityFunctions::print("Itch: post_request_check - http_request is null");
+		return;
+	}
+	UtilityFunctions::print(String("Itch: post_request_check - http_request ptr: ") + String::num_int64((int64_t)http_request));
+	UtilityFunctions::print(String("Itch: post_request_check - is_inside_tree: ") + (http_request->is_inside_tree() ? "true" : "false"));
 }
 
 // Utility Methods
@@ -242,7 +334,9 @@ void Itch::initialize_with_scene(Node* scene_node) {
 	if (!http_request && scene_node) {
 		_setup_http_request();
 		if (http_request) {
+			UtilityFunctions::print("Itch: Adding HTTPRequest to scene_node");
 			scene_node->add_child(http_request);
+			UtilityFunctions::print(String("Itch: HTTPRequest is_inside_tree after add_child: ") + String(http_request->is_inside_tree() ? "true" : "false"));
 		}
 	}
 }

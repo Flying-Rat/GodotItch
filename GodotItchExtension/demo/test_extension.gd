@@ -54,24 +54,6 @@ func _ready():
 		print("  Extension may not be properly loaded")
 		return
 
-	print("Testing get_me()...")
-	Itch.get_me()
-	#await get_tree().create_timer(5.0).timeout
-
-	#print("Testing get_my_games()...")
-	#Itch.get_my_games()
-	#await get_tree().create_timer(5.0).timeout
-#
-	#print("Testing verify_user()...")
-	#Itch.verify_user("leafo")
-	#await get_tree().create_timer(5.0).timeout
-#
-	#if error_occurred:
-		#print("✗ Errors occurred during API calls")
-	#else:
-		#print("=== All tests passed! ===")
-		#print("Extension is working correctly.")
-
 
 func _on_api_response(endpoint: String, data: Dictionary):
 	print("API Response for ", endpoint, ":")
@@ -121,3 +103,23 @@ func _on_api_error(endpoint: String, error_message: String, response_code: int):
 		print("  This usually means you don't have permission to access this resource")
 
 	error_occurred = true
+
+
+func _on_button_pressed() -> void:
+	print("Testing test_request_http()...")
+	Itch.test_request_http()
+	#await get_tree().create_timer(5.0).timeout
+
+	#print("Testing get_my_games()...")
+	#Itch.get_my_games()
+	#await get_tree().create_timer(5.0).timeout
+#
+	#print("Testing verify_user()...")
+	#Itch.verify_user("leafo")
+	#await get_tree().create_timer(5.0).timeout
+#
+	#if error_occurred:
+		#print("✗ Errors occurred during API calls")
+	#else:
+		#print("=== All tests passed! ===")
+		#print("Extension is working correctly.")
