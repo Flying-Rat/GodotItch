@@ -7,12 +7,9 @@ A Godot plugin for itch.io purchase verification. Validates download keys agains
 - ✅ Download key validation and verification
 - ✅ Support for multiple input formats (URLs, raw keys)
 - ✅ Async API with signals for non-blocking verification
-- ✅ Clean, simple API interface
-- ✅ Automatic project settings integration
-- ✅ Comprehensive error handling and validation
 - ✅ Debug logging support
-- ✅ Enhanced settings panel with built-in documentation
-- ✅ Comprehensive test suite (36 tests, 100% coverage)
+- ✅ In-editor settings panel with guidance and settings
+
 
 ## Quick Start
 
