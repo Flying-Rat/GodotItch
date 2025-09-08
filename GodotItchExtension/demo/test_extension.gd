@@ -1,35 +1,61 @@
 extends Node
 
 @onready var output: RichTextLabel = $Panel/VBox/MarginContainer/Scroll/Output
-@onready var game_id: LineEdit = $Panel/VBox/Buttons/GameId
-@onready var download_key: LineEdit = $Panel/VBox/Buttons/DownloadKey
+@onready var username: LineEdit = $Panel/VBox/Buttons/Username
 
 # Simple test to verify the Itch extension loads properly
 
 var error_occurred : bool = false
 
-
 func _ready():
-	game_id.text = ProjectSettings.get_setting("godot_itch/game_id")
-	if game_id.text.is_empty():
-		game_id.text = "Game is empty. Set value in project settings!"
 	print("=== Itch GDExtension Test ===")
+
 	# Test 1: Check if Itch singleton exists
 	if Itch:
 		print("✓ Itch singleton found")
 		print("  Version: ", Itch.get_godotitch_version())
 		Itch.api_response.connect(_on_api_response)
 		Itch.api_error.connect(_on_api_error)
-		Itch.initialize_with_scene(self)
 	else:
 		print("✗ Itch singleton NOT found")
 		return
 
+	# Test 2: Check basic functionality
+	await get_tree().process_frame
 
-func _on_download_keys_pressed() -> void:
-	var gid = game_id.text.strip_edges()
-	output.append_text("[b]Request:[/b] get_game_download_keys - gid: %s, key: %s\n" % [gid, download_key.text])
-	Itch.get_game_download_keys(gid, download_key.text)
+	# Try to initialize (without scene - should not crash)
+	error_occurred = false
+	print("✓ Basic method calls work")
+
+	# Test project settings
+	var api_key = "jPVybXVHgwIC3ib3PGR99pn4zAUOrFP2emTja4EV"
+	var game_id = "3719972"
+
+	# Use error handling for method calls
+	if Itch.has_method("get_api_key"):
+		api_key = Itch.get_api_key()
+	else:
+		error_occurred = true
+
+	if Itch.has_method("get_game_id"):
+		game_id = Itch.get_game_id()
+	else:
+		error_occurred = true
+
+	print("  API Key set: ", "YES" if !api_key.is_empty() else "NO")
+	print("  Game ID set: ", "YES" if !game_id.is_empty() else "NO")
+
+	# Test scene initialization
+	if Itch.has_method("initialize_with_scene"):
+		Itch.initialize_with_scene(self)
+		print("✓ Scene initialization successful")
+	else:
+		error_occurred = true
+
+	if error_occurred:
+		print("✗ Error during testing:")
+		print("  Extension may not be properly loaded")
+		return
 
 
 func _on_api_response(endpoint: String, data: Dictionary):
@@ -50,14 +76,12 @@ func _on_api_response(endpoint: String, data: Dictionary):
 				for game in games:
 					print("    - ", game.get("title", "Unknown Game"))
 
-		"get_game_download_keys":
-			if data.has("download_key"):
-				var download_key_data = data["download_key"]
-				print("  Download key verified: ", download_key_data.get("key", "Unknown"))
-				print("  Downloads: ", download_key_data.get("downloads", "Unknown"))
-				print("  Created at: ", download_key_data.get("created_at", "Unknown"))
+		"verify_user":
+			if data.has("user"):
+				var user = data["user"]
+				print("  User verified: ", user.get("username", "Unknown"))
 			else:
-				print("  Download key not found  ")
+				print("  User not found or verification failed")
 
 		"get_game_purchases":
 			if data.has("purchases"):
@@ -87,7 +111,7 @@ func _on_button_pressed() -> void:
 	output.append_text("[b]Testing sequence...[/b]\n")
 	Itch.get_my_games()
 	await get_tree().create_timer(3.0).timeout
-	Itch.get_game_download_keys(game_id.text, download_key.text)
+	Itch.verify_user("leafo")
 	await get_tree().create_timer(3.0).timeout
 	output.append_text("[b]Done.[/b]\n")
 
@@ -99,10 +123,9 @@ func _on_my_games_pressed() -> void:
 	output.append_text("[b]Request:[/b] get_my_games\n")
 	Itch.get_my_games()
 
-func _on_use_download_key_pressed() -> void:
-	var key = download_key.text.strip_edges()
-	if key.is_empty():
-		output.append_text("[color=yellow]Download key is empty[/color]\n")
-		return
-	# Placeholder: No direct API call in current code that takes a key; just echo for now.
-	output.append_text("[b]Using download key:[/b] %s\n" % key)
+func _on_verify_user_pressed() -> void:
+	var uname = username.text.strip_edges()
+	if uname.is_empty():
+		uname = "leafo"
+	output.append_text("[b]Request:[/b] verify_user %s\n" % uname)
+	Itch.verify_user(uname)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://bl8e240na1dtk"]
+[gd_scene load_steps=2 format=3 uid="uid://bqmkd6cxc8qke"]
 
 [ext_resource type="Script" uid="uid://dvipbbcrky6q8" path="res://test_extension.gd" id="1_test123"]
 
@@ -36,19 +36,14 @@ text = "Get Me"
 layout_mode = 2
 text = "My Games"
 
-[node name="GameId" type="LineEdit" parent="Panel/VBox/Buttons"]
+[node name="Username" type="LineEdit" parent="Panel/VBox/Buttons"]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "game_id"
+placeholder_text = "username"
 
-[node name="DownloadKey" type="LineEdit" parent="Panel/VBox/Buttons"]
+[node name="BtnVerify" type="Button" parent="Panel/VBox/Buttons"]
 layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "download_key"
-
-[node name="BtnDownloadKeys" type="Button" parent="Panel/VBox/Buttons"]
-layout_mode = 2
-text = "Download Keys"
+text = "Verify User"
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel/VBox"]
 layout_mode = 2
@@ -70,4 +65,4 @@ fit_content = true
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnRunTest" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnGetMe" to="." method="_on_get_me_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnMyGames" to="." method="_on_my_games_pressed"]
-[connection signal="pressed" from="Panel/VBox/Buttons/BtnDownloadKeys" to="." method="_on_download_keys_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnVerify" to="." method="_on_verify_user_pressed"]
