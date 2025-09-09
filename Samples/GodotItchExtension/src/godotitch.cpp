@@ -18,7 +18,7 @@ void Itch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("test_request_http"), &Itch::test_request_http);
 	ClassDB::bind_method(D_METHOD("get_game_purchases", "game_id"), &Itch::get_game_purchases, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_game_uploads", "game_id"), &Itch::get_game_uploads, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("verify_user", "username"), &Itch::verify_user);
+	ClassDB::bind_method(D_METHOD("get_download_key", "download_key", "game_id"), &Itch::get_download_key, DEFVAL(""), DEFVAL(""));
 	
 	// Utility methods
 	ClassDB::bind_method(D_METHOD("set_api_key", "api_key"), &Itch::set_api_key);
@@ -233,19 +233,31 @@ void Itch::get_game_uploads(const String& game_id) {
 	UtilityFunctions::print("Itch: Deferred internal request scheduled");
 }
 
-void Itch::verify_user(const String& username) {
+void Itch::get_download_key(const String& download_key, const String& game_id) {
 	if (!http_request) {
 		UtilityFunctions::push_error("HTTPRequest not initialized");
 		return;
 	}
-	
-	String url = _build_api_url("/user/" + username);
+
+	if (download_key.is_empty()) {
+		UtilityFunctions::push_error("Download key must be provided");
+		return;
+	}
+
+	String target_game_id = game_id.is_empty() ? get_game_id_from_settings() : game_id;
+	if (target_game_id.is_empty()) {
+		UtilityFunctions::push_error("Game ID must be provided or set in project settings");
+		return;
+	}
+
+	String url = _build_api_url("/game/" + target_game_id + "/download_keys?download_key=" + download_key);
 	if (url.is_empty()) return;
 	
-	pending_request_type = "verify_user";
+	pending_request_type = "get_download_key";
 	pending_request_data.clear();
-	pending_request_data["username"] = username;
-	
+	pending_request_data["download_key"] = download_key;
+	pending_request_data["game_id"] = game_id;
+
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
 	
