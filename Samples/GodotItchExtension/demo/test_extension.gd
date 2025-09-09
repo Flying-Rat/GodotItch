@@ -1,11 +1,15 @@
 extends Node
 
 @onready var output: RichTextLabel = $Panel/VBox/MarginContainer/Scroll/Output
-@onready var username: LineEdit = $Panel/VBox/Buttons/Username
+@onready var download_key_line_edit: LineEdit = $Panel/VBox/Buttons/DownloadKey
 
 # Simple test to verify the Itch extension loads properly
 
 var error_occurred : bool = false
+var download_key : String = ""
+var game_id : String
+var api_key : String
+
 
 func _ready():
 	print("=== Itch GDExtension Test ===")
@@ -26,10 +30,6 @@ func _ready():
 	# Try to initialize (without scene - should not crash)
 	error_occurred = false
 	print("✓ Basic method calls work")
-
-	# Test project settings
-	var api_key = "jPVybXVHgwIC3ib3PGR99pn4zAUOrFP2emTja4EV"
-	var game_id = "3719972"
 
 	# Use error handling for method calls
 	if Itch.has_method("get_api_key"):
@@ -76,12 +76,12 @@ func _on_api_response(endpoint: String, data: Dictionary):
 				for game in games:
 					print("    - ", game.get("title", "Unknown Game"))
 
-		"verify_user":
-			if data.has("user"):
-				var user = data["user"]
-				print("  User verified: ", user.get("username", "Unknown"))
+		"get_download_key":
+			if data.has("download_key"):
+				var download_key_data = data["download_key"]
+				print("  Download key: ", download_key_data.get("key", "Unknown"))
 			else:
-				print("  User not found or verification failed")
+				print("  Download key not found or verification failed")
 
 		"get_game_purchases":
 			if data.has("purchases"):
@@ -111,7 +111,7 @@ func _on_button_pressed() -> void:
 	output.append_text("[b]Testing sequence...[/b]\n")
 	Itch.get_my_games()
 	await get_tree().create_timer(3.0).timeout
-	Itch.verify_user("leafo")
+	Itch.get_download_key(download_key, game_id)
 	await get_tree().create_timer(3.0).timeout
 	output.append_text("[b]Done.[/b]\n")
 
@@ -123,9 +123,12 @@ func _on_my_games_pressed() -> void:
 	output.append_text("[b]Request:[/b] get_my_games\n")
 	Itch.get_my_games()
 
-func _on_verify_user_pressed() -> void:
-	var uname = username.text.strip_edges()
-	if uname.is_empty():
-		uname = "leafo"
-	output.append_text("[b]Request:[/b] verify_user %s\n" % uname)
-	Itch.verify_user(uname)
+
+func _on_btn_download_key_pressed() -> void:
+	var download_key_text = download_key_line_edit.text.strip_edges()
+	if download_key_text.is_empty():
+		output.append_text("[c]Download key is empty![c]")
+		return
+	download_key = download_key_text;
+	output.append_text("[b]Request:[/b] get_download_key %s\n" % download_key)
+	Itch.get_download_key(download_key, game_id)

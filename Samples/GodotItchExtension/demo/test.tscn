@@ -23,6 +23,7 @@ theme_override_constants/separation = 15
 
 [node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 5
 
 [node name="BtnRunTest" type="Button" parent="Panel/VBox/Buttons"]
 layout_mode = 2
@@ -36,14 +37,14 @@ text = "Get Me"
 layout_mode = 2
 text = "My Games"
 
-[node name="Username" type="LineEdit" parent="Panel/VBox/Buttons"]
+[node name="DownloadKey" type="LineEdit" parent="Panel/VBox/Buttons"]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "username"
+placeholder_text = "download key"
 
-[node name="BtnVerify" type="Button" parent="Panel/VBox/Buttons"]
+[node name="BtnDownloadKey" type="Button" parent="Panel/VBox/Buttons"]
 layout_mode = 2
-text = "Verify User"
+text = "Download Key"
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel/VBox"]
 layout_mode = 2
@@ -65,4 +66,4 @@ fit_content = true
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnRunTest" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnGetMe" to="." method="_on_get_me_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnMyGames" to="." method="_on_my_games_pressed"]
-[connection signal="pressed" from="Panel/VBox/Buttons/BtnVerify" to="." method="_on_verify_user_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnDownloadKey" to="." method="_on_btn_download_key_pressed"]
