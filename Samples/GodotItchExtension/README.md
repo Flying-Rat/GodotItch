@@ -32,8 +32,7 @@ This folder contains the Godot GDExtension for integrating with the itch.io API,
 
 ## Development
 - Edit C++ source in `src/`.
-- Rebuild using the setup script or manually with scons.
-- For debugging, see `.vscode/` for example launch configurations.
+- Rebuild using the setup script or manually with scons (for example `scons platform=windows`).
 
 ## License
 See [LICENSE](../LICENSE) in the root of the repository.
