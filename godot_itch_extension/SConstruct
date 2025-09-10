@@ -40,4 +40,24 @@ else:
         source=sources,
     )
 
-Default(library)
+# Install/copy build artifacts (DLLs/libs) to the addon gdextension folder
+install_dir = os.path.join("addons", "godot_itch", "gdextension")
+# Always install the produced library
+install_targets = env.Install(install_dir, library)
+
+# Additionally, copy common runtime/link artifacts if they exist
+extra_artifacts = []
+# Shared libs from demo/bin (e.g., .dll, .so, .dylib)
+extra_artifacts += Glob("demo/bin/*{}".format(env.get("SHLIBSUFFIX", "")))
+# Windows import/static libs
+if env.get("platform") == "windows":
+    extra_artifacts += Glob("demo/bin/*.lib")
+# If godot-cpp produced runtime/link files, copy them too (optional)
+extra_artifacts += Glob("godot-cpp/bin/*{}".format(env.get("SHLIBSUFFIX", "")))
+if env.get("platform") == "windows":
+    extra_artifacts += Glob("godot-cpp/bin/*.lib")
+
+if extra_artifacts:
+    install_targets += env.Install(install_dir, extra_artifacts)
+
+Default([library, install_targets])
