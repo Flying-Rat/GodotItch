@@ -109,9 +109,9 @@ func _on_api_error(endpoint: String, error_message: String, response_code: int):
 
 func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
 	if verified:
-		output.append_text("[color=green]Download key is VALID![/color]")
+		output.append_text("[color=green]Download key is VALID![/color]\n")
 	else:		
-		output.append_text("[color=red]Download key is INVALID![/color]")
+		output.append_text("[color=red]Download key is INVALID![/color]\n")
 
 func _on_button_pressed() -> void:
 	output.append_text("[b]Testing sequence...[/b]\n")

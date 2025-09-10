@@ -40,7 +40,7 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("post_request_check"), &Itch::post_request_check);
 
 	// New local hook for api_response
-	// ClassDB::bind_method(D_METHOD("_on_api_response", "endpoint", "data"), &Itch::_on_api_response);
+	ClassDB::bind_method(D_METHOD("_on_api_response", "endpoint", "data"), &Itch::_on_api_response);
 
 	// Signals
 	ADD_SIGNAL(MethodInfo("api_response", PropertyInfo(Variant::STRING, "endpoint"), PropertyInfo(Variant::DICTIONARY, "data")));
@@ -499,7 +499,7 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 	if (!is_verify_type) {
 		return;
 	}
-	
+
 	bool verified = false;
 	// For itch.io download key endpoint, success usually includes a "download_key" object
 	if (data.has("download_key")) {
