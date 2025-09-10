@@ -41,7 +41,7 @@ else:
     )
 
 # Install/copy build artifacts (DLLs/libs) to the addon gdextension folder
-install_dir = os.path.join("addons", "godot_itch", "gdextension")
+install_dir = os.path.join("../", "addons", "godot_itch", "bin")
 # Always install the produced library
 install_targets = env.Install(install_dir, library)
 
