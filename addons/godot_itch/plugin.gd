@@ -18,14 +18,14 @@ func _enter_tree() -> void:
 	_create_itch_project_settings_panel()
 	add_tool_menu_item("Itch Settings", Callable(self, "_on_itch_settings_menu"))
 
-	if not ProjectSettings.has_setting("autoload/Itch"):
-		add_autoload_singleton("Itch", "res://addons/godot_itch/autoload/itch.gd")
-		_autoload_added = true
+	#if not ProjectSettings.has_setting("autoload/Itch"):
+		#add_autoload_singleton("Itch", "res://addons/godot_itch/autoload/itch.gd")
+		#_autoload_added = true
 
 func _exit_tree() -> void:
-	if _autoload_added and ProjectSettings.has_setting("autoload/Itch"):
-		remove_autoload_singleton("Itch")
-		_autoload_added = false
+	#if _autoload_added and ProjectSettings.has_setting("autoload/Itch"):
+		#remove_autoload_singleton("Itch")
+		#_autoload_added = false
 
 	remove_tool_menu_item("Itch Settings")
 	_remove_itch_project_settings_panel()

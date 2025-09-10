@@ -14,10 +14,7 @@ func _ready() -> void:
 	
 	# Connect to plugin signals
 	if Itch:
-		Itch.verification_completed.connect(_on_verification_completed)
-		Itch.verification_failed.connect(_on_verification_failed)
-		Itch.verification_started.connect(_on_verification_started)
-		
+		Itch.verify_purchase_result.connect(_on_verify_purchase_result)		
 
 func _on_verify_pressed() -> void:
 	var api_key = api_key_input.text.strip_edges()
@@ -44,22 +41,18 @@ func _on_verify_pressed() -> void:
 	verify_button.disabled = true
 	
 	if Itch:
-		Itch.verify(download_key)
+		Itch.verify_purchase(download_key)
 	else:
 		result_label.text = "Error: GodotItch plugin not available"
 		verify_button.disabled = false
 
-func _on_verification_completed(user_info: Dictionary) -> void:
-	print("Verification succeeded for user: " + str(user_info))
-	result_label.text = "Success! User: " + user_info.get("display_name", "Unknown")
-	verify_button.disabled = false
 
-func _on_verification_failed(error_message: String, error_code: String) -> void:
-	print("Verification failed: " + error_message + " (code: " + error_code + ")")
-	result_label.text = "Failed: " + error_message
+
+func _on_verify_purchase_result(verified: bool, data: Dictionary) -> void:
+	if verified:
+		print("Verification succeeded for user: " + str(data))
+	else:		
+		print("Verification failed with data: " + str(data))
+
+	result_label.text = "Verified: " + str(verified)
 	verify_button.disabled = false
-	
-func _on_verification_started() -> void:
-	print("Verification started...")
-	result_label.text = "Verifying..."
-	verify_button.disabled = true

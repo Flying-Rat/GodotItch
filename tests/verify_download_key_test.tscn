@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://verifytestscene"]
+[gd_scene load_steps=2 format=3 uid="uid://c26qonmsgcxgg"]
 
 [ext_resource type="Script" uid="uid://bhfla8cl8kbag" path="res://tests/verify_download_key_test.gd" id="1"]
 

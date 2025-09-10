@@ -5,6 +5,7 @@ extends Node
 # Exits with code 1 on timeout.
 
 @export var download_input: String = "https://hubacekjakub.itch.io/godot-quick-start/download/T_bHe2heYWkHBA6i9doZhsn78oqDjGReBfAxyCR8"
+@export var download_input_key: String = "T_bHe2heYWkHBA6i9doZhsn78oqDjGReBfAxyCR8"
 
 var itch: Node
 var timeout_timer: Timer
@@ -22,25 +23,23 @@ func _ready():
 
 	print("[SIMPLE TEST] starting")
 
+	# TODO(jakub.hubacek): find a way around this
+	Itch.initialize_with_scene(self)
 	# Connect signal handlers (use top-level methods, not local lambdas)
-	Itch.verification_started.connect(_on_verification_started)
-	Itch.verification_completed.connect(_on_verification_completed)
-	Itch.verification_failed.connect(_on_verification_failed)
+	Itch.verify_purchase_result.connect(_on_verify_purchase)
 
-	print("[SIMPLE TEST] verifying:", download_input)
-	Itch.verify(download_input)
+	print("[SIMPLE TEST] verifying:", download_input_key)
+	# TODO(jakub.huabcek): allow option to paste whole url with key
+	Itch.verify_purchase(download_input_key)
 
 	# Quit after 20s if nothing happens
-	get_tree().create_timer(20.0).timeout.connect(self._on_timeout)
+	get_tree().create_timer(40.0).timeout.connect(self._on_timeout)
 
-func _on_verification_completed(user_info: Dictionary) -> void:
-	print("[SIMPLE TEST] User is verified:", user_info)
-
-func _on_verification_failed(error_message: String, error_code: String) -> void:
-	print("[SIMPLE TEST] User is not verified:", error_message, error_code)
-
-func _on_verification_started() -> void:
-	print("[SIMPLE TEST] started")
+func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
+	if verified:
+		print("[SIMPLE TEST] User is verified:")
+	else:		
+		print("[SIMPLE TEST] User is not verified:")
 
 func _on_timeout() -> void:
 	print("[SIMPLE TEST] timeout")
