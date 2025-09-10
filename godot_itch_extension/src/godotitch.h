@@ -57,6 +57,9 @@ namespace godot {
         void get_game_uploads(const String& game_id = "");
         void get_download_key(const String& download_key, const String& game_id = "");
 
+        // Itch.io API wrappers
+        void verify_purchase(const String& download_key);
+
         // Utility methods
         void set_api_key(const String& api_key);
         void set_game_id(const String& game_id);
@@ -68,6 +71,8 @@ namespace godot {
 
         // HTTP callback
         void _on_request_completed(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
+        // Hook for own api_response signal
+        void _on_api_response(const String& endpoint, const Dictionary& data);
         // Test helper: perform a plain HTTP request to example.com
         void test_request_http();
         // Internal deferred request helper
