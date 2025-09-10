@@ -1,7 +1,7 @@
-# GodotItch Plugin - Purchase Verification Example
+# Itch Plugin - Purchase Verification Example
 # 
 # This example demonstrates how to implement purchase verification
-# in a game using the GodotItch plugin.
+# in a game using the Itch plugin.
 extends Control
 
 @onready var key_input: LineEdit = $VBox/KeyInput
@@ -26,34 +26,34 @@ func _ready() -> void:
 		game_id_input.text = game_id
 
 func _connect_to_plugin() -> void:
-	# Connect using the GodotItch class - cleaner and more robust
-	GodotItch.connect_verification_started(_on_verification_started)
-	GodotItch.connect_verification_completed(_on_verification_completed)
-	GodotItch.connect_verification_failed(_on_verification_failed)
+	# Connect using the Itch class - cleaner and more robust
+	Itch.connect_verification_started(_on_verification_started)
+	Itch.connect_verification_completed(_on_verification_completed)
+	Itch.connect_verification_failed(_on_verification_failed)
 	
 	# Check current verification status
-	var status = GodotItch.get_verification_status()
+	var status = Itch.get_verification_status()
 	if status.verified:
 		result_area.text = "[color=green]User already verified![/color]\n"
 		result_area.text += "User: %s\n" % status.user_info.get("display_name", "Unknown")
 		result_area.text += "Verified at: %s\n" % status.user_info.get("verified_at", "Unknown")
 		status_label.text = "Verified"
 	else:
-		var plugin_info = GodotItch.get_plugin_info()
+	var plugin_info = Itch.get_plugin_info()
 		if not plugin_info.plugin_enabled:
 			status_label.text = "Plugin not available"
-			result_area.text = "[color=red]GodotItch plugin not found.[/color]\nPlease ensure the plugin is enabled and restart Godot."
+			result_area.text = "[color=red]Itch plugin not found.[/color]\nPlease ensure the plugin is enabled and restart Godot."
 
 func _on_verify_pressed() -> void:
 	var download_key := key_input.text.strip_edges()
 	var api_key := api_key_input.text.strip_edges()
 	var game_id := game_id_input.text.strip_edges()
 	
-	# Check plugin availability using GodotItch class
-	var plugin_info = GodotItch.get_plugin_info()
+	# Check plugin availability using Itch class
+	var plugin_info = Itch.get_plugin_info()
 	if not plugin_info.plugin_enabled:
 		status_label.text = "Error: Plugin not available"
-		result_area.text = "[color=red]Error:[/color]\nGodotItch plugin is not available"
+	result_area.text = "[color=red]Error:[/color]\nItch plugin is not available"
 		return
 	
 	# Update project settings if they've been changed
@@ -69,8 +69,8 @@ func _on_verify_pressed() -> void:
 	result_area.text = ""
 	status_label.text = "Validating input..."
 	
-	# Validate download key input using GodotItch class
-	var validation_result = GodotItch.validate(download_key)
+	# Validate download key input using Itch class
+	var validation_result = Itch.validate(download_key)
 	
 	# Show validation results
 	result_area.text = "[color=blue]Input Validation:[/color]\n"
@@ -100,7 +100,7 @@ func _on_verify_pressed() -> void:
 	
 	result_area.text += "\n[color=yellow]Starting verification with itch.io...[/color]\n"
 	verify_button.disabled = true
-	GodotItch.verify(download_key)
+	Itch.verify(download_key)
 
 func _on_verification_started() -> void:
 	status_label.text = "Verifying with itch.io API..."

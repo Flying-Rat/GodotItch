@@ -1,22 +1,22 @@
-## GodotItch - Simple Plugin Interface
+## Itch - Simple Plugin Interface
 ##
-## This provides a clean, simple way to access GodotItch functionality
+## This provides a clean, simple way to access Itch functionality
 ## without requiring users to manage autoloads or complex setup.
 ##
 ## Usage:
 ##   # Connect to signals
-##   GodotItch.connect_verification_completed(_on_verified)
-##   GodotItch.connect_verification_failed(_on_failed)
+##   Itch.connect_verification_completed(_on_verified)
+##   Itch.connect_verification_failed(_on_failed)
 ##   
 ##   # Verify a download key  
-##   GodotItch.verify("user_download_key_or_url")
+##   Itch.verify("user_download_key_or_url")
 ##
 ## Requirements:
-##   - Enable GodotItch plugin in Project Settings
+##   - Enable Itch plugin in Project Settings
 ##   - Set godot_itch/api_key in project settings
 ##   - Set godot_itch/game_id in project settings
 ##
-class_name GodotItch
+class_name Itch
 
 
 ## Access the internal Itch autoload singleton
@@ -37,7 +37,7 @@ static func verify(download_input: String) -> void:
 	if itch and itch.has_method("verify"):
 		itch.verify(download_input)
 	else:
-		push_error("[GodotItch] Plugin not properly initialized. Make sure the GodotItch plugin is enabled.")
+		push_error("[Itch] Plugin not properly initialized. Make sure the Itch plugin is enabled.")
 
 
 ## Validate download input without performing network verification
@@ -49,7 +49,7 @@ static func validate(download_input: String) -> Dictionary:
 	if itch and itch.has_method("validate"):
 		return itch.validate(download_input)
 	else:
-		push_error("[GodotItch] Plugin not properly initialized. Make sure the GodotItch plugin is enabled.")
+		push_error("[Itch] Plugin not properly initialized. Make sure the Itch plugin is enabled.")
 		return {"valid": false, "error": "Plugin not initialized", "key": "", "info": {}}
 
 
@@ -91,7 +91,7 @@ static func connect_verification_started(callable: Callable) -> void:
 		if not itch.verification_started.is_connected(callable):
 			itch.verification_started.connect(callable)
 	else:
-		push_warning("[GodotItch] Cannot connect to verification_started signal - plugin not available")
+		push_warning("[Itch] Cannot connect to verification_started signal - plugin not available")
 
 
 ## Connect to verification completed signal
@@ -103,7 +103,7 @@ static func connect_verification_completed(callable: Callable) -> void:
 		if not itch.verification_completed.is_connected(callable):
 			itch.verification_completed.connect(callable)
 	else:
-		push_warning("[GodotItch] Cannot connect to verification_completed signal - plugin not available")
+		push_warning("[Itch] Cannot connect to verification_completed signal - plugin not available")
 
 
 ## Connect to verification failed signal
@@ -115,7 +115,7 @@ static func connect_verification_failed(callable: Callable) -> void:
 		if not itch.verification_failed.is_connected(callable):
 			itch.verification_failed.connect(callable)
 	else:
-		push_warning("[GodotItch] Cannot connect to verification_failed signal - plugin not available")
+		push_warning("[Itch] Cannot connect to verification_failed signal - plugin not available")
 
 
 ## Disconnect from verification started signal

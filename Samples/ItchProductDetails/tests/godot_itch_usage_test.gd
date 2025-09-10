@@ -1,4 +1,4 @@
-# Interactive GodotItch Plugin Test UI
+# Interactive Itch Plugin Test UI
 # Provides a visual interface for testing plugin functionality
 extends Control
 
@@ -12,7 +12,7 @@ var passed_count: int = 0
 
 func _ready() -> void:
 	_setup_ui()
-	_add_test_result("🧪 Interactive GodotItch Plugin Test", "cyan")
+	_add_test_result("🧪 Interactive Itch Plugin Test", "cyan")
 	_add_test_result("Ready to test plugin functionality", "white")
 
 func _setup_ui() -> void:
@@ -44,7 +44,7 @@ func _run_all_tests() -> void:
 	# Test 1: Plugin availability
 	_test_plugin_availability()
 	
-	# Test 2: GodotItch class functionality
+	# Test 2: Itch class functionality
 	_test_godot_itch_class()
 	
 	# Test 3: Autoload access
@@ -62,19 +62,19 @@ func _run_all_tests() -> void:
 func _test_plugin_availability() -> void:
 	_add_test_result("\n🔍 Testing Plugin Availability", "cyan")
 	
-	var plugin_info = GodotItch.get_plugin_info()
+	var plugin_info = Itch.get_plugin_info()
 	_test_assert(plugin_info.has("plugin_enabled"), "Plugin info structure valid")
 	_test_assert(plugin_info.plugin_enabled, "Plugin is enabled")
 	_test_assert(plugin_info.autoload_available, "Autoload is available")
 
 func _test_godot_itch_class() -> void:
-	_add_test_result("\n🎯 Testing GodotItch Class", "cyan")
+	_add_test_result("\n🎯 Testing Itch Class", "cyan")
 	# Verify validate() returns the expected structure and status method works
-	var validation_result = GodotItch.validate("test_key_12345678901234567890")
-	_test_assert(validation_result.has("valid"), "GodotItch.validate() returns a validation structure")
+	var validation_result = Itch.validate("test_key_12345678901234567890")
+	_test_assert(validation_result.has("valid"), "Itch.validate() returns a validation structure")
 
-	var status = GodotItch.get_verification_status()
-	_test_assert(status.has("verified"), "GodotItch.get_verification_status() returns a status structure")
+	var status = Itch.get_verification_status()
+	_test_assert(status.has("verified"), "Itch.get_verification_status() returns a status structure")
 
 func _test_autoload_access() -> void:
 	_add_test_result("\n⚙️ Testing Autoload Access", "cyan")
@@ -92,11 +92,11 @@ func _test_signal_connections() -> void:
 	
 	var test_callable = func(): pass
 	
-	# Test GodotItch signal connections (simplified without try/catch)
-	GodotItch.connect_verification_started(test_callable)
-	_test_assert(true, "GodotItch signal connection successful")
-	GodotItch.disconnect_verification_started(test_callable)
-	_test_assert(true, "GodotItch signal disconnection successful")
+	# Test Itch signal connections (simplified without try/catch)
+	Itch.connect_verification_started(test_callable)
+	_test_assert(true, "Itch signal connection successful")
+	Itch.disconnect_verification_started(test_callable)
+	_test_assert(true, "Itch signal disconnection successful")
 	
 	# Test direct autoload connections
 	var itch = get_node_or_null("/root/Itch")
@@ -110,16 +110,16 @@ func _test_input_validation() -> void:
 	_add_test_result("\n✅ Testing Input Validation", "cyan")
 	
 	# Test valid key
-	var valid_result = GodotItch.validate("test_key_12345678901234567890")
+	var valid_result = Itch.validate("test_key_12345678901234567890")
 	_test_assert(valid_result.has("valid"), "Validation returns proper structure")
 	_test_assert(valid_result.valid, "Valid key is accepted")
 	
 	# Test invalid key
-	var invalid_result = GodotItch.validate("invalid")
+	var invalid_result = Itch.validate("invalid")
 	_test_assert(not invalid_result.valid, "Invalid key is rejected")
 	
 	# Test URL extraction
-	var url_result = GodotItch.validate("https://user.itch.io/game/download/123?key=test_key_12345678901234567890")
+	var url_result = Itch.validate("https://user.itch.io/game/download/123?key=test_key_12345678901234567890")
 	_test_assert(url_result.valid, "URL key extraction works")
 
 func _test_manual_verification() -> void:
@@ -136,12 +136,12 @@ func _test_manual_verification() -> void:
 	_add_test_result("Input: %s" % input_text, "white")
 	
 	# Connect to verification signals
-	GodotItch.connect_verification_completed(_on_verification_success)
-	GodotItch.connect_verification_failed(_on_verification_failed)
+	Itch.connect_verification_completed(_on_verification_success)
+	Itch.connect_verification_failed(_on_verification_failed)
 	
 	# Start verification
 	_add_test_result("Starting verification...", "yellow")
-	GodotItch.verify(input_text)
+	Itch.verify(input_text)
 
 func _on_verification_success(user_info: Dictionary) -> void:
 	_add_test_result("✅ Verification successful!", "green")
@@ -153,8 +153,8 @@ func _on_verification_failed(error_message: String, error_code: String) -> void:
 	_cleanup_verification_signals()
 
 func _cleanup_verification_signals() -> void:
-	GodotItch.disconnect_verification_completed(_on_verification_success)
-	GodotItch.disconnect_verification_failed(_on_verification_failed)
+	Itch.disconnect_verification_completed(_on_verification_success)
+	Itch.disconnect_verification_failed(_on_verification_failed)
 
 func _show_test_summary() -> void:
 	_add_test_result("\n--- Test Summary ---", "yellow")

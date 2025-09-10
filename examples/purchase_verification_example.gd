@@ -1,4 +1,4 @@
-# GodotItch Plugin - Purchase Verification Example
+# Itch Plugin - Purchase Verification Example
 # 
 # This example demonstrates how to implement purchase verification
 # in a game using the GodotItch plugin.

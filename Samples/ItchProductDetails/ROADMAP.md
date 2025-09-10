@@ -1,4 +1,4 @@
-# GodotItch Plugin - Roadmap
+# Itch Plugin - Roadmap
 
 ## Current Status (September 2025)
 ✅ **Phase 1 Complete**: Core Purchase Verification
@@ -52,12 +52,12 @@
 
 ### Current Architecture
 ```
-GodotItch (API) → Itch (Autoload) → VerificationClient → itch.io API
+Itch (API) → Itch (Autoload) → VerificationClient → itch.io API
 ```
 
 ### Future Architecture (Phase 4)
 ```
-GodotItch Enterprise Platform
+Itch Enterprise Platform
 ├── Multi-Platform Verification Hub
 ├── Advanced Analytics & BI
 ├── Enterprise Security Suite
@@ -118,14 +118,14 @@ GodotItch Enterprise Platform
 ### Implementation Examples:
 ```gdscript
 # Adaptive verification flow
-GodotItch.start_loq_verification(download_key, {
+Itch.start_loq_verification(download_key, {
     "risk_level": "medium",
     "challenge_types": ["email", "purchase_date", "game_knowledge"],
     "max_attempts": 3
 })
 
 # Smart questioning system
-GodotItch.configure_loq_questions({
+Itch.configure_loq_questions({
     "game_specific": ["What level did you reach?", "Favorite character?"],
     "purchase_history": ["When did you buy this?", "What payment method?"],
     "behavioral": ["How did you hear about this game?"]
@@ -151,7 +151,7 @@ GodotItch.configure_loq_questions({
 ```gdscript
 # Editor plugin integration
 func test_connection_in_editor():
-    var config = GodotItchConfig.new()
+   var config = ItchConfig.new()
     var result = await GodotItch.test_credentials(config.get_api_key(), config.get_game_id())
     
     if result.success:

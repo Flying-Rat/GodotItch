@@ -1,4 +1,4 @@
-# GodotItch Plugin - Developer Guide
+# Itch Plugin - Developer Guide
 
 Quick implementation guide for itch.io purchase verification.
 
@@ -21,11 +21,11 @@ Set in **Project Settings**:
 extends Control
 
 func _ready():
-    GodotItch.connect_verification_completed(_on_verified)
-    GodotItch.connect_verification_failed(_on_failed)
+    Itch.connect_verification_completed(_on_verified)
+    Itch.connect_verification_failed(_on_failed)
 
 func verify_purchase(key: String):
-    GodotItch.verify(key)
+    Itch.verify(key)
 
 func _on_verified(user_info: Dictionary):
     print("User verified: ", user_info.display_name)
@@ -47,8 +47,8 @@ extends Control
 
 func _ready():
     verify_button.pressed.connect(_on_verify_pressed)
-    GodotItch.connect_verification_completed(_on_verified)
-    GodotItch.connect_verification_failed(_on_failed)
+    Itch.connect_verification_completed(_on_verified)
+    Itch.connect_verification_failed(_on_failed)
 
 func _on_verify_pressed():
     var key = key_input.text.strip_edges()
@@ -58,7 +58,7 @@ func _on_verify_pressed():
     
     verify_button.disabled = true
     status_label.text = "Verifying..."
-    GodotItch.verify(key)
+    Itch.verify(key)
 
 func _on_verified(user_info: Dictionary):
     verify_button.disabled = false
@@ -75,7 +75,7 @@ func _on_failed(error: String, code: String):
 ```gdscript
 # Validate before verification
 func validate_input(input: String) -> bool:
-    var validation = GodotItch.validate(input)
+    var validation = Itch.validate(input)
     if not validation.valid:
         show_error(validation.error_message)
         return false

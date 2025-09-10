@@ -1,13 +1,13 @@
 ## GodotItch plugin configuration helper
 ##
-## This class provides easy access to GodotItch plugin settings
+## This class provides easy access to Itch plugin settings
 ## configured in the project settings.
 ##
 ## Usage:
-##   var api_key = GodotItchConfig.get_api_key()
-##   var game_id = GodotItchConfig.get_game_id()
+##   var api_key = ItchConfig.get_api_key()
+##   var game_id = ItchConfig.get_game_id()
 ##
-class_name GodotItchConfig
+class_name ItchConfig
 
 
 # Project settings keys

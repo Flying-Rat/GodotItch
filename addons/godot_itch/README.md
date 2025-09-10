@@ -1,4 +1,4 @@
-# GodotItch Plugin
+# Itch Plugin
 
 A Godot plugin for itch.io purchase verification. Verify that players have legitimately purchased your game by validating their download keys against the itch.io API.
 
@@ -34,9 +34,9 @@ Optional:
 ## Quick usage
 
 ```gdscript
-GodotItch.connect_verification_completed(_on_verified)
-GodotItch.connect_verification_failed(_on_failed)
-GodotItch.verify("user_download_key_or_url")
+Itch.connect_verification_completed(_on_verified)
+Itch.connect_verification_failed(_on_failed)
+Itch.verify("user_download_key_or_url")
 
 func _on_verified(user_info: Dictionary):
     print("Verified:", user_info)
@@ -69,7 +69,7 @@ This outputs detailed verification steps to the console.
 ## Contributing
 
 - Code organized into `autoload/`, `core/`, and `verification/`
-- Update `GodotItch._get_itch_singleton()` if autoload registration changes
+-- Update `Itch._get_itch_singleton()` if autoload registration changes
 - See main project for contribution guidelines
 
 ## License
@@ -78,4 +78,4 @@ This plugin is provided as-is for itch.io game developers. See the main project 
 
 ---
 
-**Updated based on tests**: Using `GodotItch` class is recommended; `call_deferred()` is unnecessary for connecting/calling from `_ready()`.
+**Updated based on tests**: Using `Itch` class is recommended; `call_deferred()` is unnecessary for connecting/calling from `_ready()`.

@@ -30,7 +30,7 @@ func _exit_tree() -> void:
 	remove_tool_menu_item("Itch Settings")
 	_remove_itch_project_settings_panel()
 
-## Adds GodotItch project settings to the project settings dialog
+## Adds Itch project settings to the project settings dialog
 func _add_project_settings() -> void:
 	# API Key setting
 	if not ProjectSettings.has_setting(SETTING_API_KEY):

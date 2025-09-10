@@ -1,6 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://dy1thlk2ddhxl"]
+[gd_scene load_steps=1 format=3 uid="uid://dy1thlk2ddhxl"]
 
-[ext_resource type="Script" path="res://tests/final_validation.gd" id="1_l8md7"]
+; Placeholder scene. The actual test script was moved to res://tests/old/final_validation.gd
 
-[node name="FinalValidation" type="Node"]
-script = ExtResource("1_l8md7")

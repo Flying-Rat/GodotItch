@@ -17,9 +17,9 @@ corner_radius_bottom_left = 8
 [node name="Itch" type="Control"]
 layout_mode = 3
 anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = SubResource("theme_1")
+    Itch.connect_verification_completed(_on_success)
+    Itch.connect_verification_failed(_on_failure)
+    Itch.verify("user_download_key_here")
 
 [node name="MainMargin" type="MarginContainer" parent="."]
 layout_mode = 1

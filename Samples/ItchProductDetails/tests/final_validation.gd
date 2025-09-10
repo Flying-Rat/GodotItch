@@ -35,7 +35,7 @@ func test_plugin_initialization() -> void:
 	print("\n--- Plugin Initialization Tests ---")
 	
 	# Test 1: Plugin availability
-	var plugin_info = GodotItch.get_plugin_info()
+	var plugin_info = Itch.get_plugin_info()
 	test_assert(plugin_info.has("plugin_enabled"), "Plugin info structure")
 	test_assert(plugin_info.plugin_enabled, "Plugin is enabled")
 	test_assert(plugin_info.autoload_available, "Autoload is available")
@@ -51,7 +51,7 @@ func test_plugin_initialization() -> void:
 func test_recommended_api_usage() -> void:
 	print("\n--- Recommended API Usage Tests ---")
 	
-	# Test 3: GodotItch class methods - test by calling them, not checking has_method
+	# Test 3: Itch class methods - test by calling them, not checking has_method
 	var verify_works = false
 	var validate_works = false
 	var status_works = false
@@ -60,21 +60,21 @@ func test_recommended_api_usage() -> void:
 	
 	# Test each method by calling it
 	var test_key = "test_key_12345678901234567890"
-	var validation_result = GodotItch.validate(test_key)
+	var validation_result = Itch.validate(test_key)
 	validate_works = validation_result.has("valid")
-	test_assert(validate_works, "GodotItch.validate() works")
+	test_assert(validate_works, "Itch.validate() works")
 	
-	var status = GodotItch.get_verification_status()
+	var status = Itch.get_verification_status()
 	status_works = status.has("verified")
-	test_assert(status_works, "GodotItch.get_verification_status() works")
+	test_assert(status_works, "Itch.get_verification_status() works")
 	
-	GodotItch.clear_verification()
+	Itch.clear_verification()
 	clear_works = true  # If it doesn't crash, it works
-	test_assert(clear_works, "GodotItch.clear_verification() works")
+	test_assert(clear_works, "Itch.clear_verification() works")
 	
-	var is_required = GodotItch.is_verification_required()
+	var is_required = Itch.is_verification_required()
 	required_works = typeof(is_required) == TYPE_BOOL
-	test_assert(required_works, "GodotItch.is_verification_required() works")
+	test_assert(required_works, "Itch.is_verification_required() works")
 	
 	# Test 4: Status method functionality (already tested above)
 	test_assert(status.has("verified"), "Status contains 'verified' field")
@@ -85,7 +85,7 @@ func test_error_handling() -> void:
 	print("\n--- Error Handling Tests ---")
 	
 	# Test 5: Input validation
-	var empty_validation = GodotItch.validate("")
+	var empty_validation = Itch.validate("")
 	test_assert(empty_validation.has("valid"), "Empty input validation structure")
 	test_assert(not empty_validation.valid, "Empty input properly rejected")
 	test_assert(empty_validation.has("error"), "Empty input provides error message")
@@ -93,12 +93,12 @@ func test_error_handling() -> void:
 	# Test 6: Invalid key formats
 	var invalid_keys = ["abc", "123", "too_short"]
 	for invalid_key in invalid_keys:
-		var result = GodotItch.validate(invalid_key)
+	var result = Itch.validate(invalid_key)
 		test_assert(not result.valid, "Invalid key '%s' rejected" % invalid_key)
 	
 	# Test 7: Valid key format
 	var valid_key = "test_key_12345678901234567890"
-	var valid_result = GodotItch.validate(valid_key)
+	var valid_result = Itch.validate(valid_key)
 	test_assert(valid_result.valid, "Valid key format accepted")
 	test_assert(valid_result.key == valid_key, "Valid key preserved correctly")
 
@@ -107,20 +107,20 @@ func test_signal_system() -> void:
 	
 	var test_callable = func(): pass
 	
-	# Test 8: GodotItch signal connections (recommended approach)
+	# Test 8: Itch signal connections (recommended approach)
 	var connection_success = true
 	# Direct connection without try/catch since Godot doesn't have exceptions
-	GodotItch.connect_verification_started(test_callable)
-	GodotItch.connect_verification_completed(test_callable)
-	GodotItch.connect_verification_failed(test_callable)
-	test_assert(connection_success, "GodotItch signal connections work")
+	Itch.connect_verification_started(test_callable)
+	Itch.connect_verification_completed(test_callable)
+	Itch.connect_verification_failed(test_callable)
+	test_assert(connection_success, "Itch signal connections work")
 	
 	# Test 9: Signal disconnections
 	var disconnection_success = true
-	GodotItch.disconnect_verification_started(test_callable)
-	GodotItch.disconnect_verification_completed(test_callable)
-	GodotItch.disconnect_verification_failed(test_callable)
-	test_assert(disconnection_success, "GodotItch signal disconnections work")
+	Itch.disconnect_verification_started(test_callable)
+	Itch.disconnect_verification_completed(test_callable)
+	Itch.disconnect_verification_failed(test_callable)
+	test_assert(disconnection_success, "Itch signal disconnections work")
 	
 	# Test 10: Direct autoload signals (alternative approach)
 	var itch = get_node_or_null("/root/Itch")
@@ -152,21 +152,21 @@ func test_edge_cases() -> void:
 	]
 	
 	for test_url in test_urls:
-		var url_result = GodotItch.validate(test_url)
+	var url_result = Itch.validate(test_url)
 		test_assert(url_result.valid, "URL key extraction works: %s" % test_url.substr(0, 50))
 		test_assert(url_result.key == "test_key_12345678901234567890", "Correct key extracted from URL")
 	
 	# Test 15: Multiple rapid calls
 	var rapid_call_success = true
 	for i in 10:
-		var status = GodotItch.get_verification_status()
+	var status = Itch.get_verification_status()
 		if not status.has("verified"):
 			rapid_call_success = false
 			break
 	test_assert(rapid_call_success, "Multiple rapid calls handled correctly")
 	
 	# Test 16: Invalid input handling (skip null test since it causes parse error)
-	var empty_result = GodotItch.validate("")
+	var empty_result = Itch.validate("")
 	test_assert(not empty_result.valid, "Empty string input handled gracefully")
 
 func show_final_results() -> void:
@@ -177,7 +177,7 @@ func show_final_results() -> void:
 	
 	if passed_tests == total_tests:
 		print("🎉 ALL TESTS PASSED - Plugin is production ready!")
-		print("✅ Recommended usage: Use GodotItch class methods")
+	print("✅ Recommended usage: Use Itch class methods")
 		print("✅ Signal connections work without call_deferred")
 		print("✅ Error handling is robust")
 		print("✅ All edge cases handled properly")
@@ -192,7 +192,7 @@ func show_final_results() -> void:
 		print("Multiple critical failures require investigation")
 	
 	print("\n--- Key Findings ---")
-	print("• GodotItch class provides the cleanest API")
+	print("• Itch class provides the cleanest API")
 	print("• Direct autoload access works but is less convenient")
 	print("• call_deferred() is NOT necessary for signal connections")
 	print("• Input validation is comprehensive and robust")

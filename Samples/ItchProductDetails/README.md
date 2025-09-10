@@ -1,4 +1,4 @@
-# GodotItch Plugin
+# Itch Plugin
 
 A Godot plugin for itch.io purchase verification. Validates download keys against the itch.io API to ensure legitimate purchases.
 
@@ -32,9 +32,9 @@ Set in **Project Settings**:
 extends Control
 
 func _ready():
-    GodotItch.connect_verification_completed(_on_verified)
-    GodotItch.connect_verification_failed(_on_failed)
-    GodotItch.verify("user_download_key_here")
+    Itch.connect_verification_completed(_on_verified)
+    Itch.connect_verification_failed(_on_failed)
+    Itch.verify("user_download_key_here")
 
 func _on_verified(user_info: Dictionary):
     print("Verified user: ", user_info.display_name)
@@ -46,9 +46,9 @@ func _on_failed(error: String, code: String):
 ## API Reference
 
 ### Methods
-- `GodotItch.verify(download_key: String)` - Verify purchase
-- `GodotItch.validate(input: String) -> Dictionary` - Validate input format
-- `GodotItch.get_verification_status() -> Dictionary` - Get current status
+- `Itch.verify(download_key: String)` - Verify purchase
+- `Itch.validate(input: String) -> Dictionary` - Validate input format
+- `Itch.get_verification_status() -> Dictionary` - Get current status
 
 ### Signals
 - `verification_completed(user_info: Dictionary)` - Success
