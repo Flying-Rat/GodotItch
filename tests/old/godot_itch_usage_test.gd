@@ -1,4 +1,3 @@
-```gdscript
 # Interactive Itch Plugin Test UI
 # Provides a visual interface for testing plugin functionality
 extends Control
@@ -170,5 +169,3 @@ func _show_test_summary() -> void:
         _add_test_result("⚠️ Most tests passed, but some issues detected.", "yellow")
     else:
         _add_test_result("❌ Multiple test failures detected. Check plugin configuration.", "red")
-
-```

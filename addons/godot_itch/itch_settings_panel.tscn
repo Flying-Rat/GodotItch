@@ -106,11 +106,11 @@ extends Control
 
 func _ready():
     # Connect verification signals
-    GodotItch.connect_verification_completed(_on_success)
-    GodotItch.connect_verification_failed(_on_failure)
+    Itch.connect_verification_completed(_on_success)
+    Itch.connect_verification_failed(_on_failure)
     
     # Verify a download key
-    GodotItch.verify(\"user_download_key_here\")
+    Itch.verify(\"user_download_key_here\")
 
 func _on_success(user_info: Dictionary):
     print(\"Welcome \", user_info.display_name)

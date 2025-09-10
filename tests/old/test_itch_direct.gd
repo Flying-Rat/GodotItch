@@ -1,4 +1,3 @@
-```gdscript
 # Direct Itch Plugin API Test
 # Tests direct autoload access and basic functionality
 extends Node
@@ -110,5 +109,3 @@ func globals() -> Dictionary:
     var result = {}
     # In Godot 4, we can't easily enumerate all globals, so we'll check specific ones
     return result
-
-```

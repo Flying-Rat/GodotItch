@@ -1,4 +1,3 @@
-```gdscript
 # Final Validation Test - Comprehensive Plugin Verification
 # Tests the complete plugin functionality and recommended usage patterns
 extends Node
@@ -94,7 +93,7 @@ func test_error_handling() -> void:
     # Test 6: Invalid key formats
     var invalid_keys = ["abc", "123", "too_short"]
     for invalid_key in invalid_keys:
-    var result = Itch.validate(invalid_key)
+        var result = Itch.validate(invalid_key)
         test_assert(not result.valid, "Invalid key '%s' rejected" % invalid_key)
     
     # Test 7: Valid key format
@@ -134,12 +133,12 @@ func test_configuration_access() -> void:
     print("\n--- Configuration Access Tests ---")
     
     # Test 11: Verification requirement check
-    var is_required = GodotItch.is_verification_required()
+    var is_required = Itch.is_verification_required()
     test_assert(typeof(is_required) == TYPE_BOOL, "Verification requirement returns boolean")
     
     # Test 12: Clear verification functionality
-    GodotItch.clear_verification()
-    var cleared_status = GodotItch.get_verification_status()
+    Itch.clear_verification()
+    var cleared_status = Itch.get_verification_status()
     test_assert(not cleared_status.verified, "Clear verification works")
 
 func test_edge_cases() -> void:
@@ -153,14 +152,14 @@ func test_edge_cases() -> void:
     ]
     
     for test_url in test_urls:
-    var url_result = Itch.validate(test_url)
+        var url_result = Itch.validate(test_url)
         test_assert(url_result.valid, "URL key extraction works: %s" % test_url.substr(0, 50))
         test_assert(url_result.key == "test_key_12345678901234567890", "Correct key extracted from URL")
-    
+        
     # Test 15: Multiple rapid calls
     var rapid_call_success = true
     for i in 10:
-    var status = Itch.get_verification_status()
+        var status = Itch.get_verification_status()
         if not status.has("verified"):
             rapid_call_success = false
             break
@@ -178,7 +177,7 @@ func show_final_results() -> void:
     
     if passed_tests == total_tests:
         print("🎉 ALL TESTS PASSED - Plugin is production ready!")
-    print("✅ Recommended usage: Use Itch class methods")
+        print("✅ Recommended usage: Use Itch class methods")
         print("✅ Signal connections work without call_deferred")
         print("✅ Error handling is robust")
         print("✅ All edge cases handled properly")
@@ -198,5 +197,3 @@ func show_final_results() -> void:
     print("• call_deferred() is NOT necessary for signal connections")
     print("• Input validation is comprehensive and robust")
     print("• Error handling covers edge cases properly")
-
-```

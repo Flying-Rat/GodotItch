@@ -1,4 +1,3 @@
-```gdscript
 # Comprehensive Access Method and Basic Functionality Test
 # Tests different ways to access the plugin and validates core functionality
 extends Node
@@ -163,5 +162,3 @@ func test_input_validation():
 
 func _dummy_signal_handler():
     pass
-
-```
