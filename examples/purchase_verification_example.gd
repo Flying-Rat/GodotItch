@@ -27,9 +27,10 @@ func _ready() -> void:
 
 func _connect_to_plugin() -> void:
 	# Connect using the Itch class - cleaner and more robust
-	Itch.connect_verification_started(_on_verification_started)
-	Itch.connect_verification_completed(_on_verification_completed)
-	Itch.connect_verification_failed(_on_verification_failed)
+	# Connect to autoload signals directly
+	Itch.verification_started.connect(_on_verification_started)
+	Itch.verification_completed.connect(_on_verification_completed)
+	Itch.verification_failed.connect(_on_verification_failed)
 	
 	# Check current verification status
 	var status = Itch.get_verification_status()
@@ -38,23 +39,11 @@ func _connect_to_plugin() -> void:
 		result_area.text += "User: %s\n" % status.user_info.get("display_name", "Unknown")
 		result_area.text += "Verified at: %s\n" % status.user_info.get("verified_at", "Unknown")
 		status_label.text = "Verified"
-	else:
-		var plugin_info = Itch.get_plugin_info()
-		if not plugin_info.plugin_enabled:
-			status_label.text = "Plugin not available"
-			result_area.text = "[color=red]Itch plugin not found.[/color]\nPlease ensure the plugin is enabled and restart Godot."
 
 func _on_verify_pressed() -> void:
 	var download_key := key_input.text.strip_edges()
 	var api_key := api_key_input.text.strip_edges()
 	var game_id := game_id_input.text.strip_edges()
-	
-	# Check plugin availability using Itch class
-	var plugin_info = Itch.get_plugin_info()
-	if not plugin_info.plugin_enabled:
-		status_label.text = "Error: Plugin not available"
-		result_area.text = "[color=red]Error:[/color]\nItch plugin is not available"
-		return
 	
 	# Update project settings if they've been changed
 	if not api_key.is_empty() and api_key != ProjectSettings.get_setting("godot_itch/api_key", ""):
