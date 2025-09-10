@@ -2,3 +2,7 @@
 	path = Samples/GodotItchExtension/godot-cpp
 	url = https://github.com/godotengine/godot-cpp
 	branch = 4.4
+[submodule "godot_itch_extension/godot-cpp"]
+	path = godot_itch_extension/godot-cpp
+	url = https://github.com/godotengine/godot-cpp
+	branch = 4.4
