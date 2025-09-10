@@ -2,6 +2,14 @@
 
 A Godot plugin for itch.io purchase verification. Verify that players have legitimately purchased your game by validating their download keys against the itch.io API.
 
+## 🎮 Simple Demo
+
+Try the basic demo to test the plugin:
+- **Direct Access**: Load `res://addons/godot_itch/godot_itch_showcase.tscn`
+- **Features**: Simple 3-field form with basic verification testing
+
+The demo provides a minimal example showing the essential plugin functionality.
+
 ## Table of Contents
 
 - [Features](#features)
