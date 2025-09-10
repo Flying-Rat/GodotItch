@@ -29,8 +29,8 @@ Set in **Project Settings**:
 extends Control
 
 func _ready():
-    Itch.connect_verification_completed(_on_verified)
-    Itch.connect_verification_failed(_on_failed)
+    Itch.verification_completed.connect(_on_verified)
+    Itch.verification_failed.connect(_on_failed)
     Itch.verify("user_download_key_here")
 
 func _on_verified(user_info: Dictionary):

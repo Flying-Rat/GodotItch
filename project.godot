@@ -32,10 +32,6 @@ enabled=PackedStringArray("res://addons/godot_itch/plugin.cfg")
 
 [godot_itch]
 
-debug_logging=false
-api_key="DbgOofrqTrQbxDg77muxN2ooX0yvozDtwWKXuoQe"
-game_id="3719972"
-
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

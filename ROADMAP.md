@@ -195,3 +195,13 @@ func test_connection_in_editor():
 ---
 **Last Updated**: September 8, 2025  
 This roadmap evolves based on community feedback and market opportunities.
+
+## Developer API (current autoload)
+
+The plugin exposes a single autoload singleton registered at `res://addons/godot_itch/autoload/itch.gd` named `Itch`.
+
+Quick API summary:
+- Signals: `verification_started()`, `verification_completed(user_info: Dictionary)`, `verification_failed(error_message: String, error_code: String)`
+- Methods: `verify(download_input: String)`, `validate(download_input: String) -> Dictionary`, `get_verification_status() -> Dictionary`, `clear_verification()`, `is_verification_required() -> bool`
+
+Use `Itch.verification_completed.connect(callback)` and `Itch.verification_failed.connect(callback)` when wiring signals.

@@ -21,8 +21,8 @@ Set in **Project Settings**:
 extends Control
 
 func _ready():
-    Itch.connect_verification_completed(_on_verified)
-    Itch.connect_verification_failed(_on_failed)
+    Itch.verification_completed.connect(_on_verified)
+    Itch.verification_failed.connect(_on_failed)
 
 func verify_purchase(key: String):
     Itch.verify(key)
@@ -47,8 +47,8 @@ extends Control
 
 func _ready():
     verify_button.pressed.connect(_on_verify_pressed)
-    Itch.connect_verification_completed(_on_verified)
-    Itch.connect_verification_failed(_on_failed)
+    Itch.verification_completed.connect(_on_verified)
+    Itch.verification_failed.connect(_on_failed)
 
 func _on_verify_pressed():
     var key = key_input.text.strip_edges()
@@ -77,7 +77,7 @@ func _on_failed(error: String, code: String):
 func validate_input(input: String) -> bool:
     var validation = Itch.validate(input)
     if not validation.valid:
-        show_error(validation.error_message)
+        show_error(validation.error)
         return false
     return true
 ```
