@@ -193,7 +193,7 @@ func test_connection_in_editor():
 - Blockchain integration and quantum-ready security
 
 ---
-**Last Updated**: September 8, 2025  
+**Last Updated**: September 10, 2025  
 This roadmap evolves based on community feedback and market opportunities.
 
 ## Developer API (current autoload)

@@ -112,7 +112,7 @@ Set `godot_itch/debug_logging = true` for detailed logging.
 ## Testing
 Run included tests:
 ```bash
-godot --headless tests/final_validation.tscn
+godot --headless tests/verify_download_key_test.tscn
 ```
 
 ---

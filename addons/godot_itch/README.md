@@ -45,6 +45,12 @@ func _on_failed(err, code):
     print("Verification failed:", err)
 ```
 
+## Testing
+Run the included test suite:
+```bash
+godot --headless tests/verify_download_key_test.tscn
+```
+
 ## License
 
 MIT — see the repository `LICENSE` file for details.

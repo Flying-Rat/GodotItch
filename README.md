@@ -67,7 +67,7 @@ Set `godot_itch/debug_logging = true` for detailed output.
 ## Testing
 Run the included test suite:
 ```bash
-godot --headless tests/final_validation.tscn
+godot --headless tests/verify_download_key_test.tscn
 ```
 
 ## License
