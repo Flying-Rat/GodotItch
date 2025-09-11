@@ -30,3 +30,6 @@ godot_itch_extension/demo/bin/
 *.obj
 *.exp
 *.lib
+
+# Godot-cpp generated files
+godot_itch_extension/src/gen
