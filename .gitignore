@@ -28,3 +28,5 @@ libgodotitch.windows.template_debug.x86_64.lib
 
 #ignore demo build outputs
 godot_itch_extension/demo/bin/
+
+*.secrets

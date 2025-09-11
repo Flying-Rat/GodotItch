@@ -13,9 +13,19 @@ var timeout_timer: Timer
 func _ready():
 	print("[TEST] Starting verify_download_key_test")
 
-	# Set test-specific settings
-	ProjectSettings.set_setting("godot_itch/api_key", "DbgOofrqTrQbxDg77muxN2ooX0yvozDtwWKXuoQe")
-	ProjectSettings.set_setting("godot_itch/game_id", "3719972")
+	# Load secrets from file
+	var file = FileAccess.open("res://tests/verify_download_key_test.secrets", FileAccess.READ)
+	if file:
+		var json = JSON.new()
+		var error = json.parse(file.get_as_text())
+		if error == OK:
+			var data = json.get_data()
+			ProjectSettings.set_setting("godot_itch/api_key", data["api_key"])
+			ProjectSettings.set_setting("godot_itch/game_id", data["game_id"])
+		else:
+			print("Error parsing secrets JSON")
+	else:
+		print("Error opening secrets file")
 
 	# Enable plugin debug logging for more verbose output during the test
 	if ProjectSettings.has_setting("godot_itch/debug_logging"):
@@ -35,7 +45,7 @@ func _ready():
 	# Quit after 20s if nothing happens
 	get_tree().create_timer(40.0).timeout.connect(self._on_timeout)
 
-func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
+func _on_verify_purchase(verified: bool, _data: Dictionary) -> void:
 	if verified:
 		print("[SIMPLE TEST] User is verified:")
 	else:		
