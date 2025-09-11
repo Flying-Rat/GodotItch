@@ -1,0 +1,43 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Windows",
+			"type": "shell",
+			"command": "scons platform=windows",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+		,
+		{
+			"label": "Build Linux",
+			"type": "shell",
+			"command": "scons platform=linux",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+		,
+		{
+			"label": "Build macOS",
+			"type": "shell",
+			"command": "scons platform=osx",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+		,
+		{
+			"label": "Build All",
+			"type": "shell",
+			"dependsOn": ["Build Windows", "Build Linux", "Build macOS"],
+			"dependsOrder": "sequence",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}
