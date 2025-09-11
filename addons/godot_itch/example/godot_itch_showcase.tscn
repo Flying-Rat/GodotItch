@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://bmg5r3kswwxny"]
+[gd_scene load_steps=2 format=3 uid="uid://bmg5r3kswwxnz"]
 
 [ext_resource type="Script" uid="uid://bmg5r3kswwxny" path="res://addons/godot_itch/godot_itch_showcase.gd" id="1_showcase_script"]
 

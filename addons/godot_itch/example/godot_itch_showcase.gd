@@ -12,6 +12,9 @@ extends Control
 func _ready() -> void:
 	verify_button.pressed.connect(_on_verify_pressed)
 	
+	# Initialize the Itch plugin with this scene as context
+	Itch.initialize_with_scene(self)
+
 	# Connect to plugin signals
 	if Itch:
 		Itch.verify_purchase_result.connect(_on_verify_purchase_result)		
@@ -45,8 +48,6 @@ func _on_verify_pressed() -> void:
 	else:
 		result_label.text = "Error: GodotItch plugin not available"
 		verify_button.disabled = false
-
-
 
 func _on_verify_purchase_result(verified: bool, data: Dictionary) -> void:
 	if verified:
