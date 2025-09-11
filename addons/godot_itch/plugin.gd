@@ -6,6 +6,7 @@ var _autoload_added := false
 # Project settings keys
 const SETTING_API_KEY := "godot_itch/api_key"
 const SETTING_GAME_ID := "godot_itch/game_id"
+const SETTING_DEBUG_LOGGING := "godot_itch/advanced/debug_logging"
 
 # UI elements for the Itch panel
 var itch_panel
@@ -39,6 +40,7 @@ func _add_project_settings() -> void:
 			"name": SETTING_API_KEY,
 			"type": TYPE_STRING,
 			"hint": PROPERTY_HINT_PLACEHOLDER_TEXT,
+			"usage": PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_EDITOR_BASIC_SETTING ,
 			"hint_string": "Your itch.io API key from account settings"
 		}
 		ProjectSettings.add_property_info(api_key_info)
@@ -50,17 +52,19 @@ func _add_project_settings() -> void:
 			"name": SETTING_GAME_ID,
 			"type": TYPE_STRING,
 			"hint": PROPERTY_HINT_PLACEHOLDER_TEXT,
+			"usage": PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_EDITOR_BASIC_SETTING,
 			"hint_string": "Your game's numeric ID from itch.io"
 		}
 		ProjectSettings.add_property_info(game_id_info)
 	
 	# Debug logging setting
-	if not ProjectSettings.has_setting("godot_itch/debug_logging"):
-		ProjectSettings.set_setting("godot_itch/debug_logging", false)
+	if not ProjectSettings.has_setting(SETTING_DEBUG_LOGGING):
+		ProjectSettings.set_setting(SETTING_DEBUG_LOGGING, false)
 		var debug_logging_info := {
-			"name": "godot_itch/debug_logging",
+			"name": SETTING_DEBUG_LOGGING,
 			"type": TYPE_BOOL,
 			"hint": PROPERTY_HINT_NONE,
+			"usage": PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_EDITOR_BASIC_SETTING,
 			"hint_string": ""
 		}
 		ProjectSettings.add_property_info(debug_logging_info)
@@ -71,7 +75,7 @@ func _add_project_settings() -> void:
 ## Creates a panel for Itch settings and adds it to the Project Settings container
 func _create_itch_project_settings_panel() -> void:
 	# Load a styled settings scene and use it as the panel
-	var scene = load("res://addons/godot_itch/itch_settings_panel.tscn")
+	var scene = load("res://addons/godot_itch/settings/itch_settings_panel.tscn")
 	if scene:
 		itch_panel = scene.instantiate()
 		# Wire UI elements from the scene using exact paths for better performance
