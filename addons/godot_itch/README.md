@@ -1,4 +1,4 @@
-# Itch Plugin
+# GodotItch Plugin
 
 A Godot plugin for itch.io purchase verification. Verify that players have legitimately purchased your game by validating their download keys against the itch.io API.
 
@@ -10,17 +10,22 @@ Try the basic demo to test the plugin:
 
 The demo provides a minimal example showing the essential plugin functionality.
 
+## Features
+
+- Purchase verification using download keys or URLs
+- Simple API for integration
+- Debug logging support
+- Project settings integration
+
 ## Table of Contents
 
-- [Features](#features)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Quick Start](#quick-start)
-# GodotItch
-
-Itch.io purchase verification plugin for Godot.
-
-## Installation
+- [Testing](#testing)
+- [Debug Mode](#debug-mode)
+- [Error Codes](#error-codes)
+- [License](#license)
 
 1. Copy the `addons/godot_itch` folder into your project's `addons/` directory.
 2. Enable the plugin in Project Settings → Plugins.
@@ -39,18 +44,26 @@ Optional:
 
 - `godot_itch/debug_logging` — Enable debug output (default: `false`)
 
-## Quick usage
+## Quick Start
 
 ```gdscript
-Itch.verification_completed.connect(_on_verified)
-Itch.verification_failed.connect(_on_failed)
-Itch.verify("user_download_key_or_url")
+func _ready() -> void:
+    Itch.initialize_with_scene(self)
+    Itch.verify_purchase_result.connect(_on_verify_purchase_result)
 
-func _on_verified(user_info: Dictionary):
-    print("Verified:", user_info)
+func _on_verify_purchase_result(verified: bool, data: Dictionary) -> void:
+    if verified:
+        print("Verification succeeded:", data)
+    else:
+        print("Verification failed:", data)
 
-func _on_failed(err, code):
-    print("Verification failed:", err)
+# To verify a purchase
+func verify_purchase(download_key: String) -> void:
+    # Set required project settings if not already set
+    ProjectSettings.set_setting("godot_itch/api_key", "your_api_key")
+    ProjectSettings.set_setting("godot_itch/game_id", "your_game_id")
+    
+    Itch.verify_purchase(download_key)
 ```
 
 ## Testing
@@ -58,12 +71,6 @@ Run the included test suite:
 ```bash
 godot --headless tests/verify_download_key_test.tscn
 ```
-
-## License
-
-MIT — see the repository `LICENSE` file for details.
-
-   - Check autoload path: `res://addons/godot_itch/autoload/itch.gd`
 
 ### Debug Mode
 
@@ -80,15 +87,9 @@ This outputs detailed verification steps to the console.
 - **`CONFIG_ERROR`** - Missing API configuration
 - **`API_ERROR`** - Network or itch.io API errors
 
-## Contributing
-
-- Code organized into `autoload/`, `core/`, and `verification/`
--- Update `Itch._get_itch_singleton()` if autoload registration changes
-- See main project for contribution guidelines
-
 ## License
 
-This plugin is provided as-is for itch.io game developers. See the main project license for details.
+MIT — see the repository `LICENSE` file for details.
 
 ---
 

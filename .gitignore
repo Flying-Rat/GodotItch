@@ -19,14 +19,14 @@ project/.vscode/settings.json
 
 builds/
 .sconsign.dblite
-godotitch.windows.template_debug.x86_64.obj
-register_types.windows.template_debug.x86_64.obj
-libgodot-cpp.windows.template_debug.x86_64.lib
-libgodotitch.windows.template_debug.dev.x86_64.lib
-libgodotitch.windows.template_debug.x86_64.exp
-libgodotitch.windows.template_debug.x86_64.lib
 
 #ignore demo build outputs
 godot_itch_extension/demo/bin/
 
+# Ignore secrets files
 *.secrets
+
+# Build artifacts
+*.obj
+*.exp
+*.lib
