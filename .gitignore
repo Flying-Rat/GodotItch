@@ -25,3 +25,6 @@ libgodot-cpp.windows.template_debug.x86_64.lib
 libgodotitch.windows.template_debug.dev.x86_64.lib
 libgodotitch.windows.template_debug.x86_64.exp
 libgodotitch.windows.template_debug.x86_64.lib
+
+#ignore demo build outputs
+godot_itch_extension/demo/bin/
