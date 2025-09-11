@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Itch" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	Godot extension for accessing the Itch.io serverside API from GDScript.
+	</brief_description>
+	<description>
+	The Itch class provides methods to interact with the Itch.io serverside API, allowing you to verify purchases, fetch user and game data, and more. All requests are asynchronous and results are delivered via signals.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_api_key" qualifiers="const">
+			<return type="String" />
+			<description>
+			Returns the API key currently set in project settings.
+			</description>
+		</method>
+		<method name="get_download_key">
+			<return type="void" />
+			<param index="0" name="download_key" type="String" default="&quot;&quot;" />
+			<param index="1" name="game_id" type="String" default="&quot;&quot;" />
+			<description>
+			Fetches information about a specific download key for a game. Use this to verify if a player owns the game.
+			</description>
+		</method>
+		<method name="get_game_id" qualifiers="const">
+			<return type="String" />
+			<description>
+			Returns the game ID currently set in project settings.
+			</description>
+		</method>
+		<method name="get_game_purchases">
+			<return type="void" />
+			<param index="0" name="game_id" type="String" default="&quot;&quot;" />
+			<description>
+			Fetches a list of purchases for the specified game.
+			</description>
+		</method>
+		<method name="get_game_uploads">
+			<return type="void" />
+			<param index="0" name="game_id" type="String" default="&quot;&quot;" />
+			<description>
+			Fetches a list of uploads for the specified game.
+			</description>
+		</method>
+		<method name="get_godotitch_version" qualifiers="const">
+			<return type="String" />
+			<description>
+			Returns the version string of the GodotItch extension.
+			</description>
+		</method>
+		<method name="get_me">
+			<return type="void" />
+			<description>
+			Fetches information about the authenticated user.
+			</description>
+		</method>
+		<method name="get_my_games">
+			<return type="void" />
+			<description>
+			Fetches a list of games owned by the authenticated user.
+			</description>
+		</method>
+		<method name="initialize_with_scene">
+			<return type="void" />
+			<param index="0" name="scene_node" type="Node" />
+			<description>
+			Initializes the HTTPRequest node and adds it to the given scene node. Must be called before making API requests.
+			</description>
+		</method>
+		<method name="post_request_check">
+			<return type="void" />
+			<description>
+			Performs a diagnostic check after an HTTP request.
+			</description>
+		</method>
+		<method name="set_api_key">
+			<return type="void" />
+			<param index="0" name="api_key" type="String" />
+			<description>
+			Sets the Itch.io API key in project settings.
+			</description>
+		</method>
+		<method name="set_game_id">
+			<return type="void" />
+			<param index="0" name="game_id" type="String" />
+			<description>
+			Sets the game ID in project settings.
+			</description>
+		</method>
+		<method name="test_request_http">
+			<return type="void" />
+			<description>
+			Performs a test HTTP request to example.com for diagnostics.
+			</description>
+		</method>
+		<method name="verify_purchase">
+			<return type="void" />
+			<param index="0" name="download_key" type="String" />
+			<description>
+			Verifies if the given download key is valid for the current game. Emits verify_purchase_result signal.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="api_error">
+			<param index="0" name="endpoint" type="String" />
+			<param index="1" name="error_message" type="String" />
+			<param index="2" name="response_code" type="int" />
+			<description>
+			Emitted when an API request fails. Contains the endpoint, error message, and HTTP response code.
+			</description>
+		</signal>
+		<signal name="api_response">
+			<param index="0" name="endpoint" type="String" />
+			<param index="1" name="data" type="Dictionary" />
+			<description>
+			Emitted when an API request succeeds. Contains the endpoint and response data.
+			</description>
+		</signal>
+		<signal name="verify_purchase_result">
+			<param index="0" name="is_verified" type="bool" />
+			<param index="1" name="data" type="Dictionary" />
+			<description>
+			Emitted after calling verify_purchase. is_verified is true if the download key is valid.
+			</description>
+		</signal>
+	</signals>
+</class>
