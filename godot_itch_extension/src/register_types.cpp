@@ -6,6 +6,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "godotitch.h"
+#include "itch_data_store.h"
 
 using namespace godot;
 
@@ -14,7 +15,12 @@ static Itch *ItchPtr = nullptr;
 
 void initialize_godotitch_module(ModuleInitializationLevel level) {
     	if(level == MODULE_INITIALIZATION_LEVEL_CORE){
+		ClassDB::register_class<ItchDataStore>();
 		ClassDB::register_class<Itch>();
+		
+		// Initialize the data store singleton
+		ItchDataStore::get_singleton()->initialize();
+		
 		ItchPtr = memnew(Itch);
 		Engine::get_singleton()->register_singleton("Itch", Itch::get_singleton());
 
@@ -39,6 +45,9 @@ void uninitialize_godotitch_module(ModuleInitializationLevel level) {
 	if(level == MODULE_INITIALIZATION_LEVEL_CORE){
 		Engine::get_singleton()->unregister_singleton("Itch");
 		memdelete(ItchPtr);
+		
+		// Shutdown the data store singleton
+		ItchDataStore::get_singleton()->shutdown();
 	}
 }
 

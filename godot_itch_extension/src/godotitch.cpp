@@ -53,6 +53,7 @@ Itch::Itch()
 	ensure_project_settings();
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
+	data_store = ItchDataStore::get_singleton();
 
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
@@ -63,6 +64,10 @@ Itch::~Itch()
 	if (http_request)
 	{
 		http_request->queue_free();
+	}
+	if (data_store)
+	{
+		data_store->shutdown();
 	}
 	if (s_singleton == this)
 		s_singleton = nullptr;
@@ -325,17 +330,17 @@ void Itch::verify_purchase(const String &download_key)
 		return;
 	}
 
-	// get_download_key(download_key);
+	// Check if already verified
+	if (data_store && data_store->is_verified(download_key))
+	{
+		Dictionary data = data_store->get_verification_data(download_key);
+		emit_signal("verify_purchase_result", true, data);
+		return;
+	}
 
 	if (!http_request)
 	{
 		UtilityFunctions::push_error("HTTPRequest not initialized");
-		return;
-	}
-
-	if (download_key.is_empty())
-	{
-		UtilityFunctions::push_error("Download key must be provided");
 		return;
 	}
 
@@ -511,5 +516,12 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 	if (!verified && data.has("result")) {
 		verified = true; // any result treated as success here
 	}
+
+	// Save verification result if verified
+	if (verified && data_store) {
+		String download_key = pending_request_data["download_key"];
+		data_store->set_verified(download_key, verified, data);
+	}
+
 	emit_signal("verify_purchase_result", verified, data);
 }

@@ -14,6 +14,7 @@
 #include <godot_cpp/classes/http_request.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/callable.hpp>
+#include "itch_data_store.h"
 
 namespace godot {
     class Itch : public Object {
@@ -25,6 +26,7 @@ namespace godot {
         HTTPRequest* http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
+        ItchDataStore* data_store = nullptr;
 
         // Project setting keys
         const String SETTINGS_PREFIX = String("godot_itch/");
