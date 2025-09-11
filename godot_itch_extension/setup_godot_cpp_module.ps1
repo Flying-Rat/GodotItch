@@ -1,6 +1,6 @@
 # Helper script to initialize or populate the godot-cpp module (compacted)
 
-$DesiredModuleBranch = 'godot-4.4.1-stable'
+$DesiredModuleBranch = 'godot-4.4-stable'
 
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Write-Error "git is not available in PATH. Cannot initialize submodules."; exit 1
