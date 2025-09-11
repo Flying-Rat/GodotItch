@@ -12,6 +12,16 @@
 		}
 		,
 		{
+			"label": "Build Windows Clean",
+			"type": "shell",
+			"command": "scons -c && scons platform=windows",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+		,
+		{
 			"label": "Build Linux",
 			"type": "shell",
 			"command": "scons platform=linux",
