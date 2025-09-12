@@ -15,6 +15,8 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/callable.hpp>
 #include "itch_data_store.h"
+// Add OS include for opening browser
+#include <godot_cpp/classes/os.hpp>
 
 namespace godot {
     class Itch : public Object {
@@ -32,6 +34,10 @@ namespace godot {
         const String SETTINGS_PREFIX = String("godot_itch/");
         const String SETTING_API_KEY = String(SETTINGS_PREFIX) + String("api_key");
         const String SETTING_GAME_ID = String(SETTINGS_PREFIX) + String("game_id");
+        // OAuth project setting keys
+        const String SETTING_OAUTH_CLIENT_ID = String(SETTINGS_PREFIX) + String("oauth_client_id");
+        const String SETTING_OAUTH_REDIRECT_URI = String(SETTINGS_PREFIX) + String("oauth_redirect_uri");
+        const String SETTING_OAUTH_SCOPE = String(SETTINGS_PREFIX) + String("oauth_scope"); // default: "profile:me"
 
         void ensure_project_settings();
         String get_api_key_from_settings() const;
@@ -67,6 +73,19 @@ namespace godot {
         void set_game_id(const String& game_id);
         String get_api_key() const;
         String get_game_id() const;
+
+        // OAuth helpers
+        void set_oauth_client_id(const String& client_id);
+        void set_oauth_redirect_uri(const String& redirect_uri);
+        void set_oauth_scope(const String& scope);
+        String get_oauth_client_id() const;
+        String get_oauth_redirect_uri() const;
+        String get_oauth_scope() const;
+
+        // Build the authorization URL for itch.io OAuth
+        String build_oauth_authorize_url(const String& client_id = "", const String& redirect_uri = "", const String& state = "") const;
+        // Open the authorization URL in the system browser
+        void start_oauth_authorization(const String& client_id = "", const String& redirect_uri = "", const String& state = "");
 
         // Scene management
         void initialize_with_scene(Node* scene_node);

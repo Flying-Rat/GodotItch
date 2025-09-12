@@ -42,6 +42,16 @@ void Itch::_bind_methods()
 	// New local hook for api_response
 	ClassDB::bind_method(D_METHOD("_on_api_response", "endpoint", "data"), &Itch::_on_api_response);
 
+	// OAuth helpers
+	ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &Itch::set_oauth_client_id);
+	ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &Itch::set_oauth_redirect_uri);
+	ClassDB::bind_method(D_METHOD("set_oauth_scope", "scope"), &Itch::set_oauth_scope);
+	ClassDB::bind_method(D_METHOD("get_oauth_client_id"), &Itch::get_oauth_client_id);
+	ClassDB::bind_method(D_METHOD("get_oauth_redirect_uri"), &Itch::get_oauth_redirect_uri);
+	ClassDB::bind_method(D_METHOD("get_oauth_scope"), &Itch::get_oauth_scope);
+	ClassDB::bind_method(D_METHOD("build_oauth_authorize_url", "client_id", "redirect_uri", "state"), &Itch::build_oauth_authorize_url, DEFVAL(""), DEFVAL(""), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"), &Itch::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
+
 	// Signals
 	ADD_SIGNAL(MethodInfo("api_response", PropertyInfo(Variant::STRING, "endpoint"), PropertyInfo(Variant::DICTIONARY, "data")));
 	ADD_SIGNAL(MethodInfo("api_error", PropertyInfo(Variant::STRING, "endpoint"), PropertyInfo(Variant::STRING, "error_message"), PropertyInfo(Variant::INT, "response_code")));
@@ -97,6 +107,16 @@ void Itch::ensure_project_settings()
 	{
 		ps->set_setting(SETTING_GAME_ID, "");
 	}
+	if (!ps->has_setting(SETTING_OAUTH_CLIENT_ID)) {
+		ps->set_setting(SETTING_OAUTH_CLIENT_ID, "");
+	}
+	if (!ps->has_setting(SETTING_OAUTH_REDIRECT_URI)) {
+		ps->set_setting(SETTING_OAUTH_REDIRECT_URI, "");
+	}
+	if (!ps->has_setting(SETTING_OAUTH_SCOPE)) {
+		// The only supported scope is "profile:me"
+		ps->set_setting(SETTING_OAUTH_SCOPE, "profile:me");
+	}
 }
 
 String Itch::get_api_key_from_settings() const
@@ -119,6 +139,96 @@ String Itch::get_game_id_from_settings() const
 	if (v.get_type() == Variant::STRING)
 		return v;
 	return "";
+}
+
+// OAuth settings setters
+void Itch::set_oauth_client_id(const String &client_id)
+{
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (ps) {
+		ps->set_setting(SETTING_OAUTH_CLIENT_ID, client_id);
+	}
+}
+void Itch::set_oauth_redirect_uri(const String &redirect_uri)
+{
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (ps) {
+		ps->set_setting(SETTING_OAUTH_REDIRECT_URI, redirect_uri);
+	}
+}
+void Itch::set_oauth_scope(const String &scope)
+{
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (ps) {
+		ps->set_setting(SETTING_OAUTH_SCOPE, scope);
+	}
+}
+
+// OAuth settings getters
+String Itch::get_oauth_client_id() const
+{
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (!ps) return "";
+	Variant v = ps->get_setting(SETTING_OAUTH_CLIENT_ID);
+	return v.get_type() == Variant::STRING ? (String)v : "";
+}
+String Itch::get_oauth_redirect_uri() const
+{
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (!ps) return "";
+	Variant v = ps->get_setting(SETTING_OAUTH_REDIRECT_URI);
+	return v.get_type() == Variant::STRING ? (String)v : "";
+}
+String Itch::get_oauth_scope() const
+{
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (!ps) return "profile:me";
+	Variant v = ps->get_setting(SETTING_OAUTH_SCOPE);
+	String s = v.get_type() == Variant::STRING ? (String)v : "profile:me";
+	// The only allowed scope is profile:me. Enforce if misconfigured.
+	if (s != "profile:me") {
+		s = "profile:me";
+	}
+	return s;
+}
+
+// Build OAuth authorization URL
+String Itch::build_oauth_authorize_url(const String &client_id, const String &redirect_uri, const String &state) const
+{
+	String cid = client_id.is_empty() ? get_oauth_client_id() : client_id;
+	String ruri = redirect_uri.is_empty() ? get_oauth_redirect_uri() : redirect_uri;
+	String scope = get_oauth_scope(); // enforced to "profile:me"
+
+	if (cid.is_empty() || ruri.is_empty()) {
+		UtilityFunctions::push_error("OAuth client_id and redirect_uri must be set (either via parameters or project settings).");
+		return "";
+	}
+
+	// Encode parameters
+	String cid_enc = cid.uri_encode();
+	String ruri_enc = ruri.uri_encode();
+	String scope_enc = scope.uri_encode();
+	String url = "https://itch.io/user/oauth?client_id=" + cid_enc + "&scope=" + scope_enc + "&redirect_uri=" + ruri_enc;
+	if (!state.is_empty()) {
+		url += "&state=" + state.uri_encode();
+	}
+	return url;
+}
+
+// Open OAuth authorization URL in system browser
+void Itch::start_oauth_authorization(const String &client_id, const String &redirect_uri, const String &state)
+{
+	String url = build_oauth_authorize_url(client_id, redirect_uri, state);
+	if (url.is_empty()) {
+		return;
+	}
+	OS *os = OS::get_singleton();
+	if (os) {
+		bool ok = os->shell_open(url) == Error::OK;
+		if (!ok) {
+			UtilityFunctions::push_error("Failed to open OAuth authorization URL in browser.");
+		}
+	}
 }
 
 void Itch::_setup_http_request()
