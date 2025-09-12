@@ -1,0 +1,24 @@
+# Example .itch.toml for testing itch app launches
+# Place this file at the top level of the build folder you upload with butler.
+#
+# Two example actions are provided:
+#  - A HTML5 action (points to demo/index.html) which passes a non-secret arg
+#    and requests a session-scoped API key via scope = "profile:me".
+#  - A native Windows action (placeholder) which passes the same arg and
+#    optionally requests a scope for testing native env behavior.
+#
+# Notes:
+#  - args are visible to users and the OS process list. Do NOT put secrets in args.
+#  - scope = "profile:me" will cause the itch app to set an API key (ITCHIO_API_KEY)
+#    for the launched process / HTML5 Itch.env. Treat that value as a secret.
+# https://itch.io/docs/itch/integrating/manifest.html
+
+
+[[actions]]
+name = "play"
+# Replace MyGame.exe with your game's executable filename for the desktop build when testing native builds
+path = "MyGame.exe"
+platform = "windows"
+args = ["--launched-via-itch"]
+# Request a short-lived session API key for identity/auth testing
+scope = "profile:me"
