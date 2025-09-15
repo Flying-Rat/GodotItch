@@ -33,3 +33,4 @@ godot_itch_extension/demo/bin/
 
 # Godot-cpp generated files
 godot_itch_extension/src/gen
+~*.dll

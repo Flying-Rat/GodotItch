@@ -14,7 +14,7 @@
 #include <godot_cpp/classes/http_request.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/callable.hpp>
-#include "itch_data_store.h"
+#include "core/persistent/itch_data_cache.h"
 // Add OS include for opening browser
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
@@ -29,7 +29,7 @@ namespace godot {
         HTTPRequest* http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
-        ItchDataStore* data_store = nullptr;
+        ItchDataCache* data_cache = nullptr;
         // Launch detection
         bool launched_via_itch = false;
         bool has_api_key = false;
