@@ -17,6 +17,6 @@ name = "play"
 # Replace MyGame.exe with your game's executable filename for the desktop build when testing native builds
 path = "MyGame.exe"
 platform = "windows"
-args = ["--launched-via-itch"]
+args = [""]
 # Request a short-lived session API key for identity/auth testing
 scope = "profile:me"

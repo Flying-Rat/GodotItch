@@ -17,18 +17,23 @@
 #include "itch_data_store.h"
 // Add OS include for opening browser
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
 
 namespace godot {
     class Itch : public Object {
         GDCLASS(Itch, Object);
 
     private:
-        String godotitch_version = "0.1.0";
+        String godotitch_version = "1.1.0";
         bool is_initialized = false;
         HTTPRequest* http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
         ItchDataStore* data_store = nullptr;
+        // Launch detection
+        bool launched_via_itch = false;
+        bool has_api_key = false;
+        String launch_api_key = "";
 
         // Project setting keys
         const String SETTINGS_PREFIX = String("godot_itch/");
@@ -42,9 +47,13 @@ namespace godot {
         void ensure_project_settings();
         String get_api_key_from_settings() const;
         String get_game_id_from_settings() const;
+        
         void _setup_http_request();
         String _build_api_url(const String& endpoint) const;
-
+        
+        // Detect whether the process was launched by the itch launcher (native)
+        void detect_launch_source();
+    
     protected:
         static void _bind_methods();
 
@@ -52,6 +61,10 @@ namespace godot {
         static Itch* get_singleton();
         Itch();
         ~Itch();
+
+        // Launch detection getters
+        bool is_launched_via_itch() const;
+        bool has_api_key_present() const;
 
         String get_godotitch_version() const { return godotitch_version; }
 

@@ -28,6 +28,10 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_game_id", "game_id"), &Itch::set_game_id);
 	ClassDB::bind_method(D_METHOD("get_api_key"), &Itch::get_api_key);
 	ClassDB::bind_method(D_METHOD("get_game_id"), &Itch::get_game_id);
+
+	// Launch detection getters
+	ClassDB::bind_method(D_METHOD("is_launched_via_itch"), &Itch::is_launched_via_itch);
+	ClassDB::bind_method(D_METHOD("has_api_key_present"), &Itch::has_api_key_present);
 	ClassDB::bind_method(D_METHOD("get_godotitch_version"), &Itch::get_godotitch_version);
 
 	// Scene management
@@ -67,6 +71,9 @@ Itch::Itch()
 
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
+
+	// Run native launch detection immediately
+	detect_launch_source();
 }
 
 Itch::~Itch()
@@ -93,6 +100,31 @@ bool Itch::itchInitEx(uint32_t app_id, bool embed_callbacks)
 	is_initialized = true;
 	return true;
 }
+
+// Native-only launch detection: check ITCHIO_API_KEY environment variable and cmd args
+void Itch::detect_launch_source()
+{
+	launched_via_itch = false;
+	has_api_key = false;
+
+	UtilityFunctions::print("Running native launch detection...");
+	// Check environment variable set by itch when scope = "profile:me"
+	OS *os = OS::get_singleton();
+	if (os) {
+		UtilityFunctions::print("Detecting launch source via environment variable...");
+		String env_key = os->get_environment("ITCHIO_API_KEY");
+		if (!env_key.is_empty()) {
+			UtilityFunctions::print("Found ITCHIO_API_KEY in environment variables.");
+			launch_api_key = env_key;
+			launched_via_itch = true;
+			has_api_key = true;
+			UtilityFunctions::print("Itch: Launched via itch with API key present.");
+		}	
+	}
+}
+
+bool Itch::is_launched_via_itch() const { return launched_via_itch; }
+bool Itch::has_api_key_present() const { return has_api_key; }
 
 void Itch::ensure_project_settings()
 {
