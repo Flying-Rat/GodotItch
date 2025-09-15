@@ -30,6 +30,9 @@ enabled=PackedStringArray("res://addons/godot_itch/plugin.cfg")
 api_key=""
 game_id=""
 advanced/debug_logging=false
+oauth_client_id=""
+oauth_redirect_uri=""
+oauth_scope="profile:me"
 
 [rendering]
 

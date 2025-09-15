@@ -46,7 +46,12 @@ void Itch::_bind_methods()
 	// New local hook for api_response
 	ClassDB::bind_method(D_METHOD("_on_api_response", "endpoint", "data"), &Itch::_on_api_response);
 
-	// OAuth helpers
+	// OAuth hooks (for integration to call after external flow)
+	ClassDB::bind_method(D_METHOD("oauth_login_success", "user"), &Itch::oauth_login_success);
+	ClassDB::bind_method(D_METHOD("oauth_login_failed", "error"), &Itch::oauth_login_failed);
+	ClassDB::bind_method(D_METHOD("oauth_logged_out"), &Itch::oauth_logged_out);
+
+	// OAuth helpers (delegated to OAuthManager)
 	ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &Itch::set_oauth_client_id);
 	ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &Itch::set_oauth_redirect_uri);
 	ClassDB::bind_method(D_METHOD("set_oauth_scope", "scope"), &Itch::set_oauth_scope);
@@ -60,6 +65,10 @@ void Itch::_bind_methods()
 	ADD_SIGNAL(MethodInfo("api_response", PropertyInfo(Variant::STRING, "endpoint"), PropertyInfo(Variant::DICTIONARY, "data")));
 	ADD_SIGNAL(MethodInfo("api_error", PropertyInfo(Variant::STRING, "endpoint"), PropertyInfo(Variant::STRING, "error_message"), PropertyInfo(Variant::INT, "response_code")));
 	ADD_SIGNAL(MethodInfo("verify_purchase_result", PropertyInfo(Variant::BOOL, "is_verified"), PropertyInfo(Variant::DICTIONARY, "data")));
+	// Auth signals
+	ADD_SIGNAL(MethodInfo("user_logged_in", PropertyInfo(Variant::DICTIONARY, "user")));
+	ADD_SIGNAL(MethodInfo("user_logged_out"));
+	ADD_SIGNAL(MethodInfo("user_login_failed", PropertyInfo(Variant::STRING, "error")));
 }
 
 Itch::Itch()
@@ -68,6 +77,11 @@ Itch::Itch()
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
 	data_cache = ItchDataCache::get_singleton();
+	data_store = ItchDataStore::get_singleton();
+	oauth_manager = memnew(OAuthManager);
+	if (oauth_manager) {
+		oauth_manager->ensure_settings();
+	}
 
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
@@ -85,6 +99,11 @@ Itch::~Itch()
 	if (data_cache)
 	{
 		data_cache->shutdown();
+	}
+	if (oauth_manager)
+	{
+		memdelete(oauth_manager);
+		oauth_manager = nullptr;
 	}
 	if (s_singleton == this)
 		s_singleton = nullptr;
@@ -119,7 +138,7 @@ void Itch::detect_launch_source()
 			launched_via_itch = true;
 			has_api_key = true;
 			UtilityFunctions::print("Itch: Launched via itch with API key present.");
-		}	
+		}
 	}
 }
 
@@ -139,16 +158,7 @@ void Itch::ensure_project_settings()
 	{
 		ps->set_setting(SETTING_GAME_ID, "");
 	}
-	if (!ps->has_setting(SETTING_OAUTH_CLIENT_ID)) {
-		ps->set_setting(SETTING_OAUTH_CLIENT_ID, "");
-	}
-	if (!ps->has_setting(SETTING_OAUTH_REDIRECT_URI)) {
-		ps->set_setting(SETTING_OAUTH_REDIRECT_URI, "");
-	}
-	if (!ps->has_setting(SETTING_OAUTH_SCOPE)) {
-		// The only supported scope is "profile:me"
-		ps->set_setting(SETTING_OAUTH_SCOPE, "profile:me");
-	}
+	// OAuth project settings are ensured by OAuthManager
 }
 
 String Itch::get_api_key_from_settings() const
@@ -173,95 +183,7 @@ String Itch::get_game_id_from_settings() const
 	return "";
 }
 
-// OAuth settings setters
-void Itch::set_oauth_client_id(const String &client_id)
-{
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (ps) {
-		ps->set_setting(SETTING_OAUTH_CLIENT_ID, client_id);
-	}
-}
-void Itch::set_oauth_redirect_uri(const String &redirect_uri)
-{
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (ps) {
-		ps->set_setting(SETTING_OAUTH_REDIRECT_URI, redirect_uri);
-	}
-}
-void Itch::set_oauth_scope(const String &scope)
-{
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (ps) {
-		ps->set_setting(SETTING_OAUTH_SCOPE, scope);
-	}
-}
-
-// OAuth settings getters
-String Itch::get_oauth_client_id() const
-{
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (!ps) return "";
-	Variant v = ps->get_setting(SETTING_OAUTH_CLIENT_ID);
-	return v.get_type() == Variant::STRING ? (String)v : "";
-}
-String Itch::get_oauth_redirect_uri() const
-{
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (!ps) return "";
-	Variant v = ps->get_setting(SETTING_OAUTH_REDIRECT_URI);
-	return v.get_type() == Variant::STRING ? (String)v : "";
-}
-String Itch::get_oauth_scope() const
-{
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (!ps) return "profile:me";
-	Variant v = ps->get_setting(SETTING_OAUTH_SCOPE);
-	String s = v.get_type() == Variant::STRING ? (String)v : "profile:me";
-	// The only allowed scope is profile:me. Enforce if misconfigured.
-	if (s != "profile:me") {
-		s = "profile:me";
-	}
-	return s;
-}
-
-// Build OAuth authorization URL
-String Itch::build_oauth_authorize_url(const String &client_id, const String &redirect_uri, const String &state) const
-{
-	String cid = client_id.is_empty() ? get_oauth_client_id() : client_id;
-	String ruri = redirect_uri.is_empty() ? get_oauth_redirect_uri() : redirect_uri;
-	String scope = get_oauth_scope(); // enforced to "profile:me"
-
-	if (cid.is_empty() || ruri.is_empty()) {
-		UtilityFunctions::push_error("OAuth client_id and redirect_uri must be set (either via parameters or project settings).");
-		return "";
-	}
-
-	// Encode parameters
-	String cid_enc = cid.uri_encode();
-	String ruri_enc = ruri.uri_encode();
-	String scope_enc = scope.uri_encode();
-	String url = "https://itch.io/user/oauth?client_id=" + cid_enc + "&scope=" + scope_enc + "&redirect_uri=" + ruri_enc;
-	if (!state.is_empty()) {
-		url += "&state=" + state.uri_encode();
-	}
-	return url;
-}
-
-// Open OAuth authorization URL in system browser
-void Itch::start_oauth_authorization(const String &client_id, const String &redirect_uri, const String &state)
-{
-	String url = build_oauth_authorize_url(client_id, redirect_uri, state);
-	if (url.is_empty()) {
-		return;
-	}
-	OS *os = OS::get_singleton();
-	if (os) {
-		bool ok = os->shell_open(url) == Error::OK;
-		if (!ok) {
-			UtilityFunctions::push_error("Failed to open OAuth authorization URL in browser.");
-		}
-	}
-}
+// OAuth methods are delegated in the header to OAuthManager
 
 void Itch::_setup_http_request()
 {
@@ -559,6 +481,28 @@ void Itch::post_request_check()
 	UtilityFunctions::print(String("Itch: post_request_check - is_inside_tree: ") + (http_request->is_inside_tree() ? "true" : "false"));
 }
 
+// OAuth hook implementations
+void Itch::oauth_login_success(const Dictionary &user)
+{
+	current_user = user;
+	is_user_logged_in = true;
+	emit_signal("user_logged_in", user);
+}
+
+void Itch::oauth_login_failed(const String &error)
+{
+	is_user_logged_in = false;
+	current_user.clear();
+	emit_signal("user_login_failed", error);
+}
+
+void Itch::oauth_logged_out()
+{
+	is_user_logged_in = false;
+	current_user.clear();
+	emit_signal("user_logged_out");
+}
+
 // Utility Methods
 void Itch::set_api_key(const String &api_key)
 {
@@ -643,24 +587,29 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 {
 	// Derive verification result for download key requests
 	bool is_verify_type = endpoint == String("verify_download_key");
-	if (!is_verify_type) {
+	if (!is_verify_type)
+	{
 		return;
 	}
 
 	bool verified = false;
 	// For itch.io download key endpoint, success usually includes a "download_key" object
-	if (data.has("download_key")) {
+	if (data.has("download_key"))
+	{
 		Variant dk = data["download_key"];
 		// Consider presence of object as verification success
 		verified = dk.get_type() == Variant::DICTIONARY || dk.get_type() == Variant::OBJECT;
 	}
 	// Fallback: If HTTP handled non-dict, check a generic "result"
-	if (!verified && data.has("result")) {
+	if (!verified && data.has("result"))
+	{
 		verified = true; // any result treated as success here
 	}
 
 	// Save verification result if verified
 	if (verified && data_cache) {
+	if (verified && data_store)
+	{
 		String download_key = pending_request_data["download_key"];
 		data_cache->set_verified(download_key, verified, data);
 	}

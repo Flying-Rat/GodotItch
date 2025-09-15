@@ -18,15 +18,19 @@
 // Add OS include for opening browser
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
+// New OAuth manager
+#include "oauth_manager.h"
 
-namespace godot {
-    class Itch : public Object {
+namespace godot
+{
+    class Itch : public Object
+    {
         GDCLASS(Itch, Object);
 
     private:
         String godotitch_version = "1.1.0";
         bool is_initialized = false;
-        HTTPRequest* http_request = nullptr;
+        HTTPRequest *http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
         ItchDataCache* data_cache = nullptr;
@@ -34,31 +38,34 @@ namespace godot {
         bool launched_via_itch = false;
         bool has_api_key = false;
         String launch_api_key = "";
+        ItchDataStore *data_store = nullptr;
+        OAuthManager *oauth_manager = nullptr;
+        // Auth state
+        Dictionary current_user;
+        bool is_user_logged_in = false;
 
         // Project setting keys
         const String SETTINGS_PREFIX = String("godot_itch/");
         const String SETTING_API_KEY = String(SETTINGS_PREFIX) + String("api_key");
         const String SETTING_GAME_ID = String(SETTINGS_PREFIX) + String("game_id");
-        // OAuth project setting keys
-        const String SETTING_OAUTH_CLIENT_ID = String(SETTINGS_PREFIX) + String("oauth_client_id");
-        const String SETTING_OAUTH_REDIRECT_URI = String(SETTINGS_PREFIX) + String("oauth_redirect_uri");
-        const String SETTING_OAUTH_SCOPE = String(SETTINGS_PREFIX) + String("oauth_scope"); // default: "profile:me"
 
         void ensure_project_settings();
         String get_api_key_from_settings() const;
         String get_game_id_from_settings() const;
-        
+
         void _setup_http_request();
         String _build_api_url(const String& endpoint) const;
-        
+
         // Detect whether the process was launched by the itch launcher (native)
         void detect_launch_source();
-    
+
+        String _build_api_url(const String &endpoint) const;
+
     protected:
         static void _bind_methods();
 
     public:
-        static Itch* get_singleton();
+        static Itch *get_singleton();
         Itch();
         ~Itch();
 
@@ -74,45 +81,69 @@ namespace godot {
         // Async API methods (use signals for results)
         void get_me();
         void get_my_games();
-        void get_game_purchases(const String& game_id = "");
-        void get_game_uploads(const String& game_id = "");
-        void get_download_key(const String& download_key, const String& game_id = "");
+        void get_game_purchases(const String &game_id = "");
+        void get_game_uploads(const String &game_id = "");
+        void get_download_key(const String &download_key, const String &game_id = "");
 
         // Itch.io API wrappers
-        void verify_purchase(const String& download_key);
+        void verify_purchase(const String &download_key);
 
         // Utility methods
-        void set_api_key(const String& api_key);
-        void set_game_id(const String& game_id);
+        void set_api_key(const String &api_key);
+        void set_game_id(const String &game_id);
         String get_api_key() const;
         String get_game_id() const;
 
         // OAuth helpers
-        void set_oauth_client_id(const String& client_id);
-        void set_oauth_redirect_uri(const String& redirect_uri);
-        void set_oauth_scope(const String& scope);
-        String get_oauth_client_id() const;
-        String get_oauth_redirect_uri() const;
-        String get_oauth_scope() const;
+        void set_oauth_client_id(const String &client_id)
+        {
+            if (oauth_manager)
+                oauth_manager->set_client_id(client_id);
+        }
+        void set_oauth_redirect_uri(const String &redirect_uri)
+        {
+            if (oauth_manager)
+                oauth_manager->set_redirect_uri(redirect_uri);
+        }
+        void set_oauth_scope(const String &scope)
+        {
+            if (oauth_manager)
+                oauth_manager->set_scope(scope);
+        }
+        String get_oauth_client_id() const { return oauth_manager ? oauth_manager->get_client_id() : String(""); }
+        String get_oauth_redirect_uri() const { return oauth_manager ? oauth_manager->get_redirect_uri() : String(""); }
+        String get_oauth_scope() const { return oauth_manager ? oauth_manager->get_scope() : String("profile:me"); }
 
         // Build the authorization URL for itch.io OAuth
-        String build_oauth_authorize_url(const String& client_id = "", const String& redirect_uri = "", const String& state = "") const;
+        String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const { return oauth_manager ? oauth_manager->build_authorize_url(client_id, redirect_uri, state) : String(""); }
         // Open the authorization URL in the system browser
-        void start_oauth_authorization(const String& client_id = "", const String& redirect_uri = "", const String& state = "");
+        void start_oauth_authorization(const String &client_id = "", const String &redirect_uri = "", const String &state = "")
+        {
+            if (oauth_manager)
+                oauth_manager->start_authorization(client_id, redirect_uri, state);
+        }
 
         // Scene management
-        void initialize_with_scene(Node* scene_node);
+        void initialize_with_scene(Node *scene_node);
 
         // HTTP callback
-        void _on_request_completed(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
+        void _on_request_completed(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body);
         // Hook for own api_response signal
-        void _on_api_response(const String& endpoint, const Dictionary& data);
+        void _on_api_response(const String &endpoint, const Dictionary &data);
         // Test helper: perform a plain HTTP request to example.com
         void test_request_http();
         // Internal deferred request helper
-        void _perform_request(const String& url, const PackedStringArray& headers);
+        void _perform_request(const String &url, const PackedStringArray &headers);
         // Post-request diagnostic check
         void post_request_check();
+
+        // Auth helpers to emit signals
+        void emit_user_logged_in(const Dictionary &user_dict) { emit_signal("user_logged_in", user_dict); }
+
+        // OAuth hooks to be called by integration
+        void oauth_login_success(const Dictionary &user);
+        void oauth_login_failed(const String &error);
+        void oauth_logged_out();
     };
 }
 
