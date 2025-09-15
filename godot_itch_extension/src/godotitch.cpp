@@ -51,7 +51,7 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("oauth_login_failed", "error"), &Itch::oauth_login_failed);
 	ClassDB::bind_method(D_METHOD("oauth_logged_out"), &Itch::oauth_logged_out);
 
-	// OAuth helpers (delegated to OAuthManager)
+	// OAuth helpers (delegated to ItchAuth)
 	ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &Itch::set_oauth_client_id);
 	ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &Itch::set_oauth_redirect_uri);
 	ClassDB::bind_method(D_METHOD("set_oauth_scope", "scope"), &Itch::set_oauth_scope);
@@ -77,9 +77,9 @@ Itch::Itch()
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
 	data_cache = ItchDataCache::get_singleton();
-	oauth_manager = memnew(OAuthManager);
-	if (oauth_manager) {
-		oauth_manager->ensure_settings();
+	auth = ItchAuth::get_singleton();
+	if (auth) {
+		auth->initialize();
 	}
 
 	// Connect our own api_response signal to local handler
@@ -98,11 +98,6 @@ Itch::~Itch()
 	if (data_cache)
 	{
 		data_cache->shutdown();
-	}
-	if (oauth_manager)
-	{
-		memdelete(oauth_manager);
-		oauth_manager = nullptr;
 	}
 	if (s_singleton == this)
 		s_singleton = nullptr;

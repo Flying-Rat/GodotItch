@@ -20,8 +20,8 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 
-// New OAuth manager
-#include "oauth_manager.h"
+// Auth/OAuth subsystem
+#include "submodule_auth/itch_auth.h"
 
 namespace godot
 {
@@ -42,8 +42,8 @@ namespace godot
         bool has_api_key = false;
         String launch_api_key = "";
 
-        // Auth state
-        OAuthManager *oauth_manager = nullptr;
+    // Auth state
+    ItchAuth *auth = nullptr;
         Dictionary current_user;
         bool is_user_logged_in = false;
 
@@ -96,32 +96,20 @@ namespace godot
         String get_game_id() const;
 
         // OAuth helpers
-        void set_oauth_client_id(const String &client_id)
-        {
-            if (oauth_manager)
-                oauth_manager->set_client_id(client_id);
-        }
-        void set_oauth_redirect_uri(const String &redirect_uri)
-        {
-            if (oauth_manager)
-                oauth_manager->set_redirect_uri(redirect_uri);
-        }
-        void set_oauth_scope(const String &scope)
-        {
-            if (oauth_manager)
-                oauth_manager->set_scope(scope);
-        }
-        String get_oauth_client_id() const { return oauth_manager ? oauth_manager->get_client_id() : String(""); }
-        String get_oauth_redirect_uri() const { return oauth_manager ? oauth_manager->get_redirect_uri() : String(""); }
-        String get_oauth_scope() const { return oauth_manager ? oauth_manager->get_scope() : String("profile:me"); }
+        void set_oauth_client_id(const String &client_id) { if (auth) auth->set_oauth_client_id(client_id); }
+        void set_oauth_redirect_uri(const String &redirect_uri) { if (auth) auth->set_oauth_redirect_uri(redirect_uri); }
+        void set_oauth_scope(const String &scope) { if (auth) auth->set_oauth_scope(scope); }
+        String get_oauth_client_id() const { return auth ? auth->get_oauth_client_id() : String(""); }
+        String get_oauth_redirect_uri() const { return auth ? auth->get_oauth_redirect_uri() : String(""); }
+        String get_oauth_scope() const { return auth ? auth->get_oauth_scope() : String("profile:me"); }
 
         // Build the authorization URL for itch.io OAuth
-        String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const { return oauth_manager ? oauth_manager->build_authorize_url(client_id, redirect_uri, state) : String(""); }
+    String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const { return auth ? auth->build_oauth_authorize_url(client_id, redirect_uri, state) : String(""); }
         // Open the authorization URL in the system browser
         void start_oauth_authorization(const String &client_id = "", const String &redirect_uri = "", const String &state = "")
         {
-            if (oauth_manager)
-                oauth_manager->start_authorization(client_id, redirect_uri, state);
+            if (auth)
+                auth->start_oauth_authorization(client_id, redirect_uri, state);
         }
 
         // Scene management
