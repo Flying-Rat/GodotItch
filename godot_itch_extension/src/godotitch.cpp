@@ -73,7 +73,9 @@ void Itch::_bind_methods()
 
 Itch::Itch()
 {
-	ensure_project_settings();
+	// Initialize modular architecture
+	// Core and ItchAuth are already initialized in register_types.cpp
+	
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
 	data_cache = ItchDataCache::get_singleton();
@@ -85,8 +87,8 @@ Itch::Itch()
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
 
-	// Run native launch detection immediately
-	detect_launch_source();
+	// Launch detection is now handled by ItchAuth submodule
+	// No need to call detect_launch_source() here - it's already done in ItchAuth::initialize()
 }
 
 Itch::~Itch()
@@ -114,70 +116,74 @@ bool Itch::itchInitEx(uint32_t app_id, bool embed_callbacks)
 	return true;
 }
 
-// Native-only launch detection: check ITCHIO_API_KEY environment variable and cmd args
+// Delegate launch detection to ItchAuth submodule
 void Itch::detect_launch_source()
 {
-	launched_via_itch = false;
-	has_api_key = false;
-
-	UtilityFunctions::print("Running native launch detection...");
-	// Check environment variable set by itch when scope = "profile:me"
-	OS *os = OS::get_singleton();
-	if (os) {
-		UtilityFunctions::print("Detecting launch source via environment variable...");
-		String env_key = os->get_environment("ITCHIO_API_KEY");
-		if (!env_key.is_empty()) {
-			UtilityFunctions::print("Found ITCHIO_API_KEY in environment variables.");
-			launch_api_key = env_key;
-			launched_via_itch = true;
-			has_api_key = true;
-			UtilityFunctions::print("Itch: Launched via itch with API key present.");
-		}
-	}
+	ItchAuth::get_singleton()->detect_launch_source();
 }
 
-bool Itch::is_launched_via_itch() const { return launched_via_itch; }
-bool Itch::has_api_key_present() const { return has_api_key; }
+// Delegate authentication methods to ItchAuth submodule
+bool Itch::is_launched_via_itch() const { 
+	return ItchAuth::get_singleton()->is_launched_via_itch(); 
+}
 
-void Itch::ensure_project_settings()
+bool Itch::has_api_key_present() const { 
+	return ItchAuth::get_singleton()->has_api_key_present(); 
+}
+
+// These methods are now handled by Core and ItchAuth modules
+// ensure_project_settings() -> Core::ensure_project_settings()
+// get_api_key_from_settings() -> ItchAuth::get_api_key()
+// get_game_id_from_settings() -> Core::get_game_id()
+
+// get_game_id_from_settings() removed - use get_game_id() which delegates to Core
+
+// OAuth settings setters
+// OAuth settings setters - delegate to ItchAuth
+void Itch::set_oauth_client_id(const String &client_id)
 {
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (!ps)
-		return;
-	if (!ps->has_setting(SETTING_API_KEY))
-	{
-		ps->set_setting(SETTING_API_KEY, "");
-	}
-	if (!ps->has_setting(SETTING_GAME_ID))
-	{
-		ps->set_setting(SETTING_GAME_ID, "");
-	}
-	// OAuth project settings are ensured by OAuthManager
+	ItchAuth::get_singleton()->set_oauth_client_id(client_id);
 }
 
-String Itch::get_api_key_from_settings() const
+void Itch::set_oauth_redirect_uri(const String &redirect_uri)
 {
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (!ps)
-		return "";
-	Variant v = ps->get_setting(SETTING_API_KEY);
-	if (v.get_type() == Variant::STRING)
-		return v;
-	return "";
+	ItchAuth::get_singleton()->set_oauth_redirect_uri(redirect_uri);
 }
 
-String Itch::get_game_id_from_settings() const
+void Itch::set_oauth_scope(const String &scope)
 {
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (!ps)
-		return "";
-	Variant v = ps->get_setting(SETTING_GAME_ID);
-	if (v.get_type() == Variant::STRING)
-		return v;
-	return "";
+	ItchAuth::get_singleton()->set_oauth_scope(scope);
 }
 
-// OAuth methods are delegated in the header to OAuthManager
+// OAuth settings getters - delegate to ItchAuth
+String Itch::get_oauth_client_id() const
+{
+	return ItchAuth::get_singleton()->get_oauth_client_id();
+}
+
+String Itch::get_oauth_redirect_uri() const
+{
+	return ItchAuth::get_singleton()->get_oauth_redirect_uri();
+}
+
+String Itch::get_oauth_scope() const
+{
+	return ItchAuth::get_singleton()->get_oauth_scope();
+}
+
+// Build OAuth authorization URL
+String Itch::build_oauth_authorize_url(const String &client_id, const String &redirect_uri, const String &state) const
+{
+	// Delegate to ItchAuth submodule
+	return ItchAuth::get_singleton()->build_oauth_authorize_url(client_id, redirect_uri, state);
+}
+
+// Open OAuth authorization URL in system browser
+void Itch::start_oauth_authorization(const String &client_id, const String &redirect_uri, const String &state)
+{
+	// Delegate to ItchAuth submodule
+	ItchAuth::get_singleton()->start_oauth_authorization(client_id, redirect_uri, state);
+}
 
 void Itch::_setup_http_request()
 {
@@ -201,7 +207,7 @@ void Itch::_setup_http_request()
 
 String Itch::_build_api_url(const String &endpoint) const
 {
-	String api_key = get_api_key_from_settings();
+	String api_key = get_api_key();
 	if (api_key.is_empty())
 	{
 		UtilityFunctions::push_error("Itch.io API key not set in project settings");
@@ -288,7 +294,7 @@ void Itch::get_game_purchases(const String &game_id)
 		return;
 	}
 
-	String target_game_id = game_id.is_empty() ? get_game_id_from_settings() : game_id;
+	String target_game_id = game_id.is_empty() ? get_game_id() : game_id;
 	if (target_game_id.is_empty())
 	{
 		UtilityFunctions::push_error("Game ID not provided and not set in project settings");
@@ -319,7 +325,7 @@ void Itch::get_game_uploads(const String &game_id)
 		return;
 	}
 
-	String target_game_id = game_id.is_empty() ? get_game_id_from_settings() : game_id;
+	String target_game_id = game_id.is_empty() ? get_game_id() : game_id;
 	if (target_game_id.is_empty())
 	{
 		UtilityFunctions::push_error("Game ID not provided and not set in project settings");
@@ -356,7 +362,7 @@ void Itch::get_download_key(const String &download_key, const String &game_id)
 		return;
 	}
 
-	String target_game_id = game_id.is_empty() ? get_game_id_from_settings() : game_id;
+	String target_game_id = game_id.is_empty() ? get_game_id() : game_id;
 	if (target_game_id.is_empty())
 	{
 		UtilityFunctions::push_error("Game ID must be provided or set in project settings");
@@ -402,7 +408,7 @@ void Itch::verify_purchase(const String &download_key)
 		return;
 	}
 
-	String target_game_id = get_game_id_from_settings();
+	String target_game_id = get_game_id();
 	if (target_game_id.is_empty())
 	{
 		UtilityFunctions::push_error("Game ID must be provided or set in project settings");
@@ -475,55 +481,25 @@ void Itch::post_request_check()
 	UtilityFunctions::print(String("Itch: post_request_check - is_inside_tree: ") + (http_request->is_inside_tree() ? "true" : "false"));
 }
 
-// OAuth hook implementations
-void Itch::oauth_login_success(const Dictionary &user)
-{
-	current_user = user;
-	is_user_logged_in = true;
-	emit_signal("user_logged_in", user);
-}
-
-void Itch::oauth_login_failed(const String &error)
-{
-	is_user_logged_in = false;
-	current_user.clear();
-	emit_signal("user_login_failed", error);
-}
-
-void Itch::oauth_logged_out()
-{
-	is_user_logged_in = false;
-	current_user.clear();
-	emit_signal("user_logged_out");
-}
-
-// Utility Methods
+// Utility Methods - delegate to modular architecture
 void Itch::set_api_key(const String &api_key)
 {
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (ps)
-	{
-		ps->set_setting(SETTING_API_KEY, api_key);
-	}
+	ItchAuth::get_singleton()->set_api_key(api_key);
 }
 
 void Itch::set_game_id(const String &game_id)
 {
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (ps)
-	{
-		ps->set_setting(SETTING_GAME_ID, game_id);
-	}
+	Core::get_singleton()->set_game_id(game_id);
 }
 
 String Itch::get_api_key() const
 {
-	return get_api_key_from_settings();
+	return ItchAuth::get_singleton()->get_api_key();
 }
 
 String Itch::get_game_id() const
 {
-	return get_game_id_from_settings();
+	return Core::get_singleton()->get_game_id();
 }
 
 void Itch::initialize_with_scene(Node *scene_node)

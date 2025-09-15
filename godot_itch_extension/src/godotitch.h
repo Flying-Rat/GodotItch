@@ -15,6 +15,8 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/callable.hpp>
 #include "core/persistent/itch_data_cache.h"
+#include "core/core.h"
+#include "submodule_auth/itch_auth.h"
 
 // Add OS include for opening browser
 #include <godot_cpp/classes/os.hpp>
@@ -35,31 +37,10 @@ namespace godot
         HTTPRequest *http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
-        ItchDataCache *data_cache = nullptr;
-
-        // Launch detection
-        bool launched_via_itch = false;
-        bool has_api_key = false;
-        String launch_api_key = "";
-
-        // Auth state
-        ItchAuth *auth = nullptr;
-        Dictionary current_user;
-        bool is_user_logged_in = false;
-
-        // Project setting keys
-        const String SETTINGS_PREFIX = String("godot_itch/");
-        const String SETTING_API_KEY = String(SETTINGS_PREFIX) + String("api_key");
-        const String SETTING_GAME_ID = String(SETTINGS_PREFIX) + String("game_id");
-
-        void ensure_project_settings();
-        String get_api_key_from_settings() const;
-        String get_game_id_from_settings() const;
-
+        ItchDataCache* data_cache = nullptr;
+        
         void _setup_http_request();
-        String _build_api_url(const String &endpoint) const;
-
-        // Detect whether the process was launched by the itch launcher (native)
+        String _build_api_url(const String& endpoint) const;
         void detect_launch_source();
 
     protected:

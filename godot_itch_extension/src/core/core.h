@@ -20,6 +20,7 @@ namespace godot {
         // Project setting keys
         const String SETTINGS_PREFIX = String("godot_itch/");
         const String SETTING_GAME_ID = String(SETTINGS_PREFIX) + String("game_id");
+        const String SETTING_API_KEY = String(SETTINGS_PREFIX) + String("api_key");
         
         void ensure_project_settings();
         String get_game_id_from_settings() const;
