@@ -77,7 +77,6 @@ Itch::Itch()
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
 	data_cache = ItchDataCache::get_singleton();
-	data_store = ItchDataStore::get_singleton();
 	oauth_manager = memnew(OAuthManager);
 	if (oauth_manager) {
 		oauth_manager->ensure_settings();
@@ -607,8 +606,7 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 	}
 
 	// Save verification result if verified
-	if (verified && data_cache) {
-	if (verified && data_store)
+	if (verified && data_cache)
 	{
 		String download_key = pending_request_data["download_key"];
 		data_cache->set_verified(download_key, verified, data);

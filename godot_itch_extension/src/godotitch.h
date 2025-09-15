@@ -15,9 +15,11 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/callable.hpp>
 #include "core/persistent/itch_data_cache.h"
+
 // Add OS include for opening browser
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
+
 // New OAuth manager
 #include "oauth_manager.h"
 
@@ -34,13 +36,14 @@ namespace godot
         String pending_request_type;
         Dictionary pending_request_data;
         ItchDataCache* data_cache = nullptr;
+
         // Launch detection
         bool launched_via_itch = false;
         bool has_api_key = false;
         String launch_api_key = "";
-        ItchDataStore *data_store = nullptr;
-        OAuthManager *oauth_manager = nullptr;
+
         // Auth state
+        OAuthManager *oauth_manager = nullptr;
         Dictionary current_user;
         bool is_user_logged_in = false;
 
@@ -58,8 +61,6 @@ namespace godot
 
         // Detect whether the process was launched by the itch launcher (native)
         void detect_launch_source();
-
-        String _build_api_url(const String &endpoint) const;
 
     protected:
         static void _bind_methods();
