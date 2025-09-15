@@ -29,6 +29,14 @@ func _on_save_token_pressed() -> void:
 	auth.set_oauth_token(token)
 	_log("Saved OAuth token: %s" % _mask(token))
 
+func _on_load_token_pressed() -> void:
+	var token = auth.get_oauth_token()
+	if token.is_empty():
+		_error("OAuth token is empty")
+		return
+	
+	token_edit.text = token
+	_log("Loaded OAuth token: %s" % _mask(token))
 
 func _on_init_pressed() -> void:
 	var ok := auth.initialize()
