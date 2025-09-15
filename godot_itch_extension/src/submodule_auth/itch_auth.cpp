@@ -12,16 +12,16 @@ void ItchAuth::_bind_methods() {
     ClassDB::bind_method(D_METHOD("initialize"), &ItchAuth::initialize);
     ClassDB::bind_method(D_METHOD("shutdown"), &ItchAuth::shutdown);
     ClassDB::bind_method(D_METHOD("is_initialized"), &ItchAuth::is_initialized);
-    
+
     // Launch detection
     ClassDB::bind_method(D_METHOD("is_launched_via_itch"), &ItchAuth::is_launched_via_itch);
     ClassDB::bind_method(D_METHOD("has_api_key_present"), &ItchAuth::has_api_key_present);
     ClassDB::bind_method(D_METHOD("get_launch_api_key"), &ItchAuth::get_launch_api_key);
-    
+
     // API Key management
     ClassDB::bind_method(D_METHOD("set_api_key", "api_key"), &ItchAuth::set_api_key);
     ClassDB::bind_method(D_METHOD("get_api_key"), &ItchAuth::get_api_key);
-    
+
     // OAuth configuration
     ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &ItchAuth::set_oauth_client_id);
     ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &ItchAuth::set_oauth_redirect_uri);
@@ -29,7 +29,7 @@ void ItchAuth::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_oauth_client_id"), &ItchAuth::get_oauth_client_id);
     ClassDB::bind_method(D_METHOD("get_oauth_redirect_uri"), &ItchAuth::get_oauth_redirect_uri);
     ClassDB::bind_method(D_METHOD("get_oauth_scope"), &ItchAuth::get_oauth_scope);
-    
+
     // OAuth flow management
     ClassDB::bind_method(D_METHOD("build_oauth_authorize_url", "client_id", "redirect_uri", "state"), &ItchAuth::build_oauth_authorize_url, DEFVAL(""), DEFVAL(""), DEFVAL(""));
     ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"), &ItchAuth::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
@@ -57,15 +57,15 @@ bool ItchAuth::initialize() {
     if (initialized) {
         return true;
     }
-    
+
     UtilityFunctions::print("ItchAuth: Initializing...");
-    
+
     // Initialize OAuth settings first
     ensure_oauth_settings();
-    
+
     // Detect launch source (moved from Core and Itch classes)
     detect_launch_source();
-    
+
     initialized = true;
     UtilityFunctions::print("ItchAuth: Initialization complete");
     return true;
@@ -75,7 +75,7 @@ void ItchAuth::shutdown() {
     if (!initialized) {
         return;
     }
-    
+
     UtilityFunctions::print("ItchAuth: Shutting down...");
     initialized = false;
     UtilityFunctions::print("ItchAuth: Shutdown complete");
@@ -85,9 +85,9 @@ void ItchAuth::detect_launch_source() {
     launched_via_itch = false;
     has_api_key = false;
     launch_api_key = "";
-    
+
     UtilityFunctions::print("ItchAuth: Running launch detection...");
-    
+
     // Check environment variable set by itch when scope = "profile:me"
     OS* os = OS::get_singleton();
     if (os) {
@@ -108,7 +108,7 @@ void ItchAuth::ensure_oauth_settings() {
     if (!ps) {
         return;
     }
-    
+
     if (!ps->has_setting(SETTING_API_KEY)) {
         ps->set_setting(SETTING_API_KEY, "");
     }
@@ -228,18 +228,25 @@ String ItchAuth::get_oauth_scope() const {
 String ItchAuth::build_oauth_authorize_url(const String& client_id, const String& redirect_uri, const String& state) const {
     String cid = client_id.is_empty() ? get_oauth_client_id() : client_id;
     String ruri = redirect_uri.is_empty() ? get_oauth_redirect_uri() : redirect_uri;
+    if (ruri.is_empty()) {
+        ruri = "urn:ietf:wg:oauth:2.0:oob";
+    }
     String scope = get_oauth_scope(); // enforced to "profile:me"
 
-    if (cid.is_empty() || ruri.is_empty()) {
-        UtilityFunctions::push_error("OAuth client_id and redirect_uri must be set (either via parameters or project settings).");
+    if (cid.is_empty()) {
+        UtilityFunctions::push_error("OAuth client_id must be set (either via parameters or project settings).");
         return "";
     }
 
+
     // Encode parameters
     String cid_enc = cid.uri_encode();
-    String ruri_enc = ruri.uri_encode();
     String scope_enc = scope.uri_encode();
-    String url = "https://itch.io/user/oauth?client_id=" + cid_enc + "&scope=" + scope_enc + "&redirect_uri=" + ruri_enc;
+    String url = "https://itch.io/user/oauth?client_id=" + cid_enc + "&scope=" + scope_enc + "&response_type=token";
+    if (!ruri.is_empty()) {
+        String ruri_enc = ruri.uri_encode();
+        url += "&redirect_uri=" + ruri_enc;
+    }
     if (!state.is_empty()) {
         url += "&state=" + state.uri_encode();
     }

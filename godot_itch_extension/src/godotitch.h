@@ -35,15 +35,15 @@ namespace godot
         HTTPRequest *http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
-        ItchDataCache* data_cache = nullptr;
+        ItchDataCache *data_cache = nullptr;
 
         // Launch detection
         bool launched_via_itch = false;
         bool has_api_key = false;
         String launch_api_key = "";
 
-    // Auth state
-    ItchAuth *auth = nullptr;
+        // Auth state
+        ItchAuth *auth = nullptr;
         Dictionary current_user;
         bool is_user_logged_in = false;
 
@@ -57,7 +57,7 @@ namespace godot
         String get_game_id_from_settings() const;
 
         void _setup_http_request();
-        String _build_api_url(const String& endpoint) const;
+        String _build_api_url(const String &endpoint) const;
 
         // Detect whether the process was launched by the itch launcher (native)
         void detect_launch_source();
@@ -96,15 +96,27 @@ namespace godot
         String get_game_id() const;
 
         // OAuth helpers
-        void set_oauth_client_id(const String &client_id) { if (auth) auth->set_oauth_client_id(client_id); }
-        void set_oauth_redirect_uri(const String &redirect_uri) { if (auth) auth->set_oauth_redirect_uri(redirect_uri); }
-        void set_oauth_scope(const String &scope) { if (auth) auth->set_oauth_scope(scope); }
+        void set_oauth_client_id(const String &client_id)
+        {
+            if (auth)
+                auth->set_oauth_client_id(client_id);
+        }
+        void set_oauth_redirect_uri(const String &redirect_uri)
+        {
+            if (auth)
+                auth->set_oauth_redirect_uri(redirect_uri);
+        }
+        void set_oauth_scope(const String &scope)
+        {
+            if (auth)
+                auth->set_oauth_scope(scope);
+        }
         String get_oauth_client_id() const { return auth ? auth->get_oauth_client_id() : String(""); }
         String get_oauth_redirect_uri() const { return auth ? auth->get_oauth_redirect_uri() : String(""); }
         String get_oauth_scope() const { return auth ? auth->get_oauth_scope() : String("profile:me"); }
 
         // Build the authorization URL for itch.io OAuth
-    String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const { return auth ? auth->build_oauth_authorize_url(client_id, redirect_uri, state) : String(""); }
+        String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const { return auth ? auth->build_oauth_authorize_url(client_id, redirect_uri, state) : String(""); }
         // Open the authorization URL in the system browser
         void start_oauth_authorization(const String &client_id = "", const String &redirect_uri = "", const String &state = "")
         {

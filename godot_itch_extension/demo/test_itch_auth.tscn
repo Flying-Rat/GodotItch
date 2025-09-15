@@ -1,0 +1,121 @@
+[gd_scene load_steps=2 format=3 uid="uid://djxg6yilc6yyb"]
+
+[ext_resource type="Script" uid="uid://capwhiq2xo3ka" path="res://test_itch_auth.gd" id="1_g0s3y"]
+
+[node name="TestItchAuth" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_g0s3y")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Inputs" type="GridContainer" parent="Panel/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="LabelToken" type="Label" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+text = "OAuth Token"
+
+[node name="Token" type="LineEdit" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+placeholder_text = "Paste token from itch.io"
+
+[node name="LabelClient" type="Label" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+text = "Client ID"
+
+[node name="ClientId" type="LineEdit" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "itch OAuth client_id"
+
+[node name="LabelRedirect" type="Label" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+text = "Redirect URI"
+
+[node name="RedirectUri" type="LineEdit" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+placeholder_text = "https://example.com/oauth/callback"
+
+[node name="LabelState" type="Label" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+text = "State (optional)"
+
+[node name="State" type="LineEdit" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+placeholder_text = "opaque state"
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="SaveToken" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Init"
+
+[node name="BtnLaunchInfo" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Launch Info"
+
+[node name="BtnSaveOAuth" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Save OAuth"
+
+[node name="BtnShowOAuth" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Show OAuth"
+
+[node name="BtnBuildUrl" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Build URL"
+
+[node name="BtnOpenBrowser" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Open Browser"
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/VBox/Margin"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Output" type="RichTextLabel" parent="Panel/VBox/Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+bbcode_enabled = true
+text = "asdfasdfasdfasdf"
+fit_content = true
+scroll_following = true
+selection_enabled = true
+
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnLaunchInfo" to="." method="_on_launch_info_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnSaveOAuth" to="." method="_on_save_oauth_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnShowOAuth" to="." method="_on_show_oauth_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnBuildUrl" to="." method="_on_build_url_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnOpenBrowser" to="." method="_on_open_browser_pressed"]
