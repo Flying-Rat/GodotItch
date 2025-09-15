@@ -19,6 +19,9 @@ sources += Glob("src/core/*.cpp")
 sources += Glob("src/core/persistent/*.cpp")
 sources += Glob("src/submodule_auth/*.cpp")
 sources += Glob("src/submodule_entitlements/*.cpp")
+sources += Glob("src/submodule_user/*.cpp")
+sources += Glob("src/submodule_games/*.cpp")
+sources += Glob("src/submodule_assets/*.cpp")
 
 if env["target"] in ["editor", "template_debug"]:
     try:

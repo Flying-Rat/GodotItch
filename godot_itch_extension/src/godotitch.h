@@ -18,6 +18,9 @@
 #include "core/core.h"
 #include "submodule_auth/itch_auth.h"
 #include "submodule_entitlements/entitlements.h"
+#include "submodule_user/user_subsystem.h"
+#include "submodule_games/games_subsystem.h"
+#include "submodule_assets/assets_subsystem.h"
 
 // Add OS include for opening browser
 #include <godot_cpp/classes/os.hpp>
@@ -59,8 +62,13 @@ namespace godot
 
         String get_godotitch_version() const { return godotitch_version; }
 
-        // Module access
+        // Module access - expose all subsystems
         Entitlements* get_entitlements() const;
+        Core* get_core() const;
+        ItchAuth* get_auth() const;
+        User* get_user() const;
+        Games* get_games() const;
+        Assets* get_assets() const;
 
         // Itch.io API methods
         bool itchInitEx(uint32_t app_id = 0, bool embed_callbacks = false);
@@ -116,7 +124,10 @@ namespace godot
         // HTTP callback
         void _on_request_completed(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body);
         // Hook for own api_response signal
-        void _on_api_response(const String &endpoint, const Dictionary &data);
+        void _on_api_response(const String& endpoint, const Dictionary& data);
+        // Entitlements signal handlers
+        void _on_entitlement_verified(bool success, const Dictionary& data);
+        void _on_entitlement_error(const String& error_message);
         // Test helper: perform a plain HTTP request to example.com
         void test_request_http();
         // Internal deferred request helper

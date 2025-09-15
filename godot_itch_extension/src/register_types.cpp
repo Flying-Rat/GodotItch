@@ -10,6 +10,9 @@
 #include "core/persistent/itch_data_cache.h"
 #include "submodule_auth/itch_auth.h"
 #include "submodule_entitlements/entitlements.h"
+#include "submodule_user/user_subsystem.h"
+#include "submodule_games/games_subsystem.h"
+#include "submodule_assets/assets_subsystem.h"
 
 using namespace godot;
 
@@ -29,6 +32,15 @@ void initialize_godotitch_module(ModuleInitializationLevel level) {
         // Register entitlements module
         ClassDB::register_class<Entitlements>();
         
+        // Register user module
+        ClassDB::register_class<User>();
+        
+        // Register games module
+        ClassDB::register_class<Games>();
+        
+        // Register assets module
+        ClassDB::register_class<Assets>();
+        
         // Register main Itch class
         ClassDB::register_class<Itch>();
         
@@ -36,6 +48,9 @@ void initialize_godotitch_module(ModuleInitializationLevel level) {
         Core::get_singleton()->initialize();
         ItchAuth::get_singleton()->initialize();
         Entitlements::get_singleton()->initialize();
+        User::get_singleton()->initialize();
+        Games::get_singleton()->initialize();
+        Assets::get_singleton()->initialize();
         
         // Register the singleton instance
         ItchPtr = memnew(Itch);
@@ -49,6 +64,9 @@ void uninitialize_godotitch_module(ModuleInitializationLevel level) {
         memdelete(ItchPtr);
         
         // Shutdown singletons in reverse order
+        Assets::get_singleton()->shutdown();
+        Games::get_singleton()->shutdown();
+        User::get_singleton()->shutdown();
         Entitlements::get_singleton()->shutdown();
         ItchAuth::get_singleton()->shutdown();
         Core::get_singleton()->shutdown();

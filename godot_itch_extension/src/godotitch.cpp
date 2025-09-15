@@ -34,8 +34,13 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("has_api_key_present"), &Itch::has_api_key_present);
 	ClassDB::bind_method(D_METHOD("get_godotitch_version"), &Itch::get_godotitch_version);
 
-	// Module access
+	// Module access - expose all subsystems
 	ClassDB::bind_method(D_METHOD("get_entitlements"), &Itch::get_entitlements);
+	ClassDB::bind_method(D_METHOD("get_core"), &Itch::get_core);
+	ClassDB::bind_method(D_METHOD("get_auth"), &Itch::get_auth);
+	ClassDB::bind_method(D_METHOD("get_user"), &Itch::get_user);
+	ClassDB::bind_method(D_METHOD("get_games"), &Itch::get_games);
+	ClassDB::bind_method(D_METHOD("get_assets"), &Itch::get_assets);
 
 	// Scene management
 	ClassDB::bind_method(D_METHOD("initialize_with_scene", "scene_node"), &Itch::initialize_with_scene);
@@ -48,6 +53,9 @@ void Itch::_bind_methods()
 
 	// New local hook for api_response
 	ClassDB::bind_method(D_METHOD("_on_api_response", "endpoint", "data"), &Itch::_on_api_response);
+	// Entitlements signal handlers
+	ClassDB::bind_method(D_METHOD("_on_entitlement_verified", "success", "data"), &Itch::_on_entitlement_verified);
+	ClassDB::bind_method(D_METHOD("_on_entitlement_error", "error_message"), &Itch::_on_entitlement_error);
 
 	// OAuth hooks (for integration to call after external flow)
 	ClassDB::bind_method(D_METHOD("oauth_login_success", "user"), &Itch::oauth_login_success);
@@ -89,6 +97,13 @@ Itch::Itch()
 
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
+	
+	// Connect entitlements signals to facade methods
+	Entitlements* entitlements = Entitlements::get_singleton();
+	if (entitlements) {
+		entitlements->connect("entitlement_verified", Callable(this, "_on_entitlement_verified"));
+		entitlements->connect("entitlement_error", Callable(this, "_on_entitlement_error"));
+	}
 
 	// Launch detection is now handled by ItchAuth submodule
 	// No need to call detect_launch_source() here - it's already done in ItchAuth::initialize()
@@ -137,6 +152,26 @@ bool Itch::has_api_key_present() const {
 // Module access methods
 Entitlements* Itch::get_entitlements() const {
 	return Entitlements::get_singleton();
+}
+
+Core* Itch::get_core() const {
+	return Core::get_singleton();
+}
+
+ItchAuth* Itch::get_auth() const {
+	return ItchAuth::get_singleton();
+}
+
+User* Itch::get_user() const {
+	return User::get_singleton();
+}
+
+Games* Itch::get_games() const {
+	return Games::get_singleton();
+}
+
+Assets* Itch::get_assets() const {
+	return Assets::get_singleton();
 }
 
 // These methods are now handled by Core and ItchAuth modules
@@ -396,46 +431,22 @@ void Itch::get_download_key(const String &download_key, const String &game_id)
 
 void Itch::verify_purchase(const String &download_key)
 {
-	if (download_key.is_empty())
+	// Delegate to the Entitlements module
+	Entitlements* entitlements = get_entitlements();
+	if (entitlements) 
 	{
-		UtilityFunctions::push_error("Download key must be provided for verify_purchase");
-		return;
-	}
+		
+		pending_request_type = "verify_download_key";
+		pending_request_data.clear();
+		pending_request_data["download_key"] = download_key;
+		pending_request_data["game_id"] = Core::get_singleton()->get_game_id();
 
-	// Check if already verified
-	if (data_cache && data_cache->is_verified(download_key))
+		entitlements->verify_entitlement(download_key);
+	} else 
 	{
-		Dictionary data = data_cache->get_verification_data(download_key);
-		emit_signal("verify_purchase_result", true, data);
-		return;
+		UtilityFunctions::push_error("Entitlements module not available");
+		emit_signal("verify_purchase_result", false, Dictionary());
 	}
-
-	if (!http_request)
-	{
-		UtilityFunctions::push_error("HTTPRequest not initialized");
-		return;
-	}
-
-	String target_game_id = get_game_id();
-	if (target_game_id.is_empty())
-	{
-		UtilityFunctions::push_error("Game ID must be provided or set in project settings");
-		return;
-	}
-
-	String url = _build_api_url("/game/" + target_game_id + "/download_keys?download_key=" + download_key);
-	if (url.is_empty())
-		return;
-
-	pending_request_type = "verify_download_key";
-	pending_request_data.clear();
-	pending_request_data["download_key"] = download_key;
-	pending_request_data["game_id"] = target_game_id;
-
-	PackedStringArray headers;
-	headers.push_back("User-Agent: GodotItch/1.0");
-	// Schedule deferred internal helper to perform the request
-	call_deferred("_perform_request", url, headers);
 }
 
 void Itch::_perform_request(const String &url, const PackedStringArray &headers)
@@ -592,4 +603,19 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 	}
 
 	emit_signal("verify_purchase_result", verified, data);
+}
+
+// Entitlements signal handlers
+void Itch::_on_entitlement_verified(bool success, const Dictionary& data)
+{
+	// Forward the entitlements signal to the facade's verify_purchase_result signal
+	emit_signal("verify_purchase_result", success, data);
+}
+
+void Itch::_on_entitlement_error(const String& error_message)
+{
+	// Forward the entitlements error as a verify_purchase_result failure
+	Dictionary error_data;
+	error_data["error"] = error_message;
+	emit_signal("verify_purchase_result", false, error_data);
 }
