@@ -181,52 +181,7 @@ Assets* Itch::get_assets() const {
 
 // get_game_id_from_settings() removed - use get_game_id() which delegates to Core
 
-// OAuth settings setters
-// OAuth settings setters - delegate to ItchAuth
-void Itch::set_oauth_client_id(const String &client_id)
-{
-	ItchAuth::get_singleton()->set_oauth_client_id(client_id);
-}
-
-void Itch::set_oauth_redirect_uri(const String &redirect_uri)
-{
-	ItchAuth::get_singleton()->set_oauth_redirect_uri(redirect_uri);
-}
-
-void Itch::set_oauth_scope(const String &scope)
-{
-	ItchAuth::get_singleton()->set_oauth_scope(scope);
-}
-
-// OAuth settings getters - delegate to ItchAuth
-String Itch::get_oauth_client_id() const
-{
-	return ItchAuth::get_singleton()->get_oauth_client_id();
-}
-
-String Itch::get_oauth_redirect_uri() const
-{
-	return ItchAuth::get_singleton()->get_oauth_redirect_uri();
-}
-
-String Itch::get_oauth_scope() const
-{
-	return ItchAuth::get_singleton()->get_oauth_scope();
-}
-
-// Build OAuth authorization URL
-String Itch::build_oauth_authorize_url(const String &client_id, const String &redirect_uri, const String &state) const
-{
-	// Delegate to ItchAuth submodule
-	return ItchAuth::get_singleton()->build_oauth_authorize_url(client_id, redirect_uri, state);
-}
-
-// Open OAuth authorization URL in system browser
-void Itch::start_oauth_authorization(const String &client_id, const String &redirect_uri, const String &state)
-{
-	// Delegate to ItchAuth submodule
-	ItchAuth::get_singleton()->start_oauth_authorization(client_id, redirect_uri, state);
-}
+// OAuth methods are implemented inline in godotitch.h
 
 void Itch::_setup_http_request()
 {
@@ -618,4 +573,73 @@ void Itch::_on_entitlement_error(const String& error_message)
 	Dictionary error_data;
 	error_data["error"] = error_message;
 	emit_signal("verify_purchase_result", false, error_data);
+}
+
+
+// OAuth settings setters
+// OAuth settings setters - delegate to ItchAuth
+void Itch::set_oauth_client_id(const String &client_id)
+{
+	ItchAuth::get_singleton()->set_oauth_client_id(client_id);
+}
+
+void Itch::set_oauth_redirect_uri(const String &redirect_uri)
+{
+	ItchAuth::get_singleton()->set_oauth_redirect_uri(redirect_uri);
+}
+
+void Itch::set_oauth_scope(const String &scope)
+{
+	ItchAuth::get_singleton()->set_oauth_scope(scope);
+}
+
+// OAuth settings getters - delegate to ItchAuth
+String Itch::get_oauth_client_id() const
+{
+	return ItchAuth::get_singleton()->get_oauth_client_id();
+}
+
+String Itch::get_oauth_redirect_uri() const
+{
+	return ItchAuth::get_singleton()->get_oauth_redirect_uri();
+}
+
+String Itch::get_oauth_scope() const
+{
+	return ItchAuth::get_singleton()->get_oauth_scope();
+}
+
+// Build OAuth authorization URL
+String Itch::build_oauth_authorize_url(const String &client_id, const String &redirect_uri, const String &state) const
+{
+	// Delegate to ItchAuth submodule
+	return ItchAuth::get_singleton()->build_oauth_authorize_url(client_id, redirect_uri, state);
+}
+
+// Open OAuth authorization URL in system browser
+void Itch::start_oauth_authorization(const String &client_id, const String &redirect_uri, const String &state)
+{
+	// Delegate to ItchAuth submodule
+	ItchAuth::get_singleton()->start_oauth_authorization(client_id, redirect_uri, state);
+}
+
+void Itch::oauth_login_success(const Dictionary &user)
+{
+	current_user = user;
+	is_user_logged_in = true;
+	emit_signal("user_logged_in", user);
+}
+
+void Itch::oauth_login_failed(const String &error)
+{
+	is_user_logged_in = false;
+	current_user.clear();
+	emit_signal("user_login_failed", error);
+}
+
+void Itch::oauth_logged_out()
+{
+	is_user_logged_in = false;
+	current_user.clear();
+	emit_signal("user_logged_out");
 }
