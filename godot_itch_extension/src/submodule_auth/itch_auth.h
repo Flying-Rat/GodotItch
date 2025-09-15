@@ -52,6 +52,7 @@ namespace godot
         bool is_initialized() const { return initialized; }
 
         // Launch detection (moved from Core)
+        void detect_launch_source(); // Made public for delegation
         bool is_launched_via_itch() const;
         bool has_api_key_present() const;
         String get_launch_api_key() const;

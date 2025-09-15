@@ -34,6 +34,9 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("has_api_key_present"), &Itch::has_api_key_present);
 	ClassDB::bind_method(D_METHOD("get_godotitch_version"), &Itch::get_godotitch_version);
 
+	// Module access
+	ClassDB::bind_method(D_METHOD("get_entitlements"), &Itch::get_entitlements);
+
 	// Scene management
 	ClassDB::bind_method(D_METHOD("initialize_with_scene", "scene_node"), &Itch::initialize_with_scene);
 
@@ -129,6 +132,11 @@ bool Itch::is_launched_via_itch() const {
 
 bool Itch::has_api_key_present() const { 
 	return ItchAuth::get_singleton()->has_api_key_present(); 
+}
+
+// Module access methods
+Entitlements* Itch::get_entitlements() const {
+	return Entitlements::get_singleton();
 }
 
 // These methods are now handled by Core and ItchAuth modules

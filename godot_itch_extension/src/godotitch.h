@@ -17,6 +17,7 @@
 #include "core/persistent/itch_data_cache.h"
 #include "core/core.h"
 #include "submodule_auth/itch_auth.h"
+#include "submodule_entitlements/entitlements.h"
 
 // Add OS include for opening browser
 #include <godot_cpp/classes/os.hpp>
@@ -51,11 +52,15 @@ namespace godot
         Itch();
         ~Itch();
 
-        // Launch detection getters
+        // Launch detection methods
+        void detect_launch_source();
         bool is_launched_via_itch() const;
         bool has_api_key_present() const;
 
         String get_godotitch_version() const { return godotitch_version; }
+
+        // Module access
+        Entitlements* get_entitlements() const;
 
         // Itch.io API methods
         bool itchInitEx(uint32_t app_id = 0, bool embed_callbacks = false);

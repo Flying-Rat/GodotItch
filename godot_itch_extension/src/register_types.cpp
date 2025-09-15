@@ -9,6 +9,7 @@
 #include "core/core.h"
 #include "core/persistent/itch_data_cache.h"
 #include "submodule_auth/itch_auth.h"
+#include "submodule_entitlements/entitlements.h"
 
 using namespace godot;
 
@@ -25,12 +26,16 @@ void initialize_godotitch_module(ModuleInitializationLevel level) {
         // Register auth submodule  
         ClassDB::register_class<ItchAuth>();
         
+        // Register entitlements module
+        ClassDB::register_class<Entitlements>();
+        
         // Register main Itch class
         ClassDB::register_class<Itch>();
         
-        // Initialize singletons
+        // Initialize singletons in dependency order
         Core::get_singleton()->initialize();
         ItchAuth::get_singleton()->initialize();
+        Entitlements::get_singleton()->initialize();
         
         // Register the singleton instance
         ItchPtr = memnew(Itch);
@@ -43,7 +48,8 @@ void uninitialize_godotitch_module(ModuleInitializationLevel level) {
         Engine::get_singleton()->unregister_singleton("Itch");
         memdelete(ItchPtr);
         
-        // Shutdown singletons
+        // Shutdown singletons in reverse order
+        Entitlements::get_singleton()->shutdown();
         ItchAuth::get_singleton()->shutdown();
         Core::get_singleton()->shutdown();
     }
