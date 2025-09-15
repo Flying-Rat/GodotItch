@@ -18,8 +18,6 @@ namespace godot
 
         // Token management
         String oauth_token = "";
-        void set_oauth_token(const String &token);
-        String get_oauth_token() const;
         void save_token_to_cache();
         void load_token_from_cache();
 
@@ -69,6 +67,10 @@ namespace godot
         String get_oauth_client_id() const;
         String get_oauth_redirect_uri() const;
         String get_oauth_scope() const;
+
+        // OAuth token accessors
+        void set_oauth_token(const String &token);
+        String get_oauth_token() const;
 
         // OAuth flow management
         String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const;

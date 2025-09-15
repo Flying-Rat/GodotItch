@@ -18,7 +18,7 @@ func _ready():
 	# Prefill inputs from ProjectSettings
 	client_id_edit.text = ProjectSettings.get_setting("godot_itch/oauth_client_id", "")
 	redirect_uri_edit.text = ProjectSettings.get_setting("godot_itch/oauth_redirect_uri", "")
-	token_edit.text = ""
+	token_edit.text = auth.get_oauth_token()
 
 
 func _on_save_token_pressed() -> void:
@@ -26,6 +26,7 @@ func _on_save_token_pressed() -> void:
 	if token.is_empty():
 		_error("OAuth token is required")
 		return
+	auth.set_oauth_token(token)
 	_log("Saved OAuth token: %s" % _mask(token))
 
 
