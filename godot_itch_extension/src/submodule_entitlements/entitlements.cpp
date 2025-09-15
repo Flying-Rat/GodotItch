@@ -17,7 +17,7 @@ Entitlements* Entitlements::s_singleton = nullptr;
 void Entitlements::_bind_methods()
 {
     // Bind core entitlements methods
-    ClassDB::bind_method(D_METHOD("verify_entitlement", "download_key", "game_id"), &Entitlements::verify_entitlement, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("verify_entitlement", "download_key"), &Entitlements::verify_entitlement);
     ClassDB::bind_method(D_METHOD("is_entitled", "download_key"), &Entitlements::is_entitled);
     ClassDB::bind_method(D_METHOD("get_entitlement_record", "download_key"), &Entitlements::get_entitlement_record);
     
@@ -118,7 +118,7 @@ void Entitlements::_setup_http_request()
     UtilityFunctions::print("Entitlements: HTTPRequest setup complete");
 }
 
-String Entitlements::_build_verification_url(const String& download_key, const String& game_id) const
+String Entitlements::_build_verification_url(const String& download_key) const
 {
     if (!core) {
         UtilityFunctions::push_error("Entitlements: Core not available for URL building");
@@ -131,9 +131,10 @@ String Entitlements::_build_verification_url(const String& download_key, const S
         return "";
     }
     
-    String target_game_id = game_id.is_empty() ? core->get_game_id() : game_id;
+    // Always get game_id from project settings
+    String target_game_id = core->get_game_id();
     if (target_game_id.is_empty()) {
-        UtilityFunctions::push_error("Entitlements: Game ID not available for verification");
+        UtilityFunctions::push_error("Entitlements: Game ID not configured in project settings (godot_itch/game_id)");
         return "";
     }
     
@@ -192,7 +193,7 @@ Dictionary Entitlements::_get_cached_verification(const String& download_key) co
     return Dictionary();
 }
 
-void Entitlements::verify_entitlement(const String& download_key, const String& game_id)
+void Entitlements::verify_entitlement(const String& download_key)
 {
     if (download_key.is_empty()) {
         emit_signal("entitlement_error", "Download key cannot be empty");
@@ -218,7 +219,7 @@ void Entitlements::verify_entitlement(const String& download_key, const String& 
         return;
     }
     
-    String url = _build_verification_url(download_key, game_id);
+    String url = _build_verification_url(download_key);
     if (url.is_empty()) {
         emit_signal("entitlement_error", "Could not build verification URL");
         return;

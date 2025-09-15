@@ -21,6 +21,10 @@ class ItchDataCache;
  * - Local caching of verification results with TTL
  * - Fallback to cached results when API is unavailable
  * - Integration with ItchDataCache for persistent storage
+ * 
+ * Requirements:
+ * - Game ID must be configured in project settings (godot_itch/game_id)
+ * - API key must be available through ItchAuth module
  */
 class Entitlements : public Object {
     GDCLASS(Entitlements, Object);
@@ -42,7 +46,7 @@ private:
     
     // Internal methods
     void _setup_http_request();
-    String _build_verification_url(const String& download_key, const String& game_id) const;
+    String _build_verification_url(const String& download_key) const;
     bool _is_cache_valid(const Dictionary& cached_data) const;
     void _store_verification_result(const String& download_key, const Dictionary& result);
     Dictionary _get_cached_verification(const String& download_key) const;
@@ -65,7 +69,7 @@ public:
     void shutdown();
     
     // Core entitlements API
-    void verify_entitlement(const String& download_key, const String& game_id = "");
+    void verify_entitlement(const String& download_key);
     bool is_entitled(const String& download_key) const;
     Dictionary get_entitlement_record(const String& download_key) const;
     
