@@ -1,4 +1,5 @@
 #include "itch_auth.h"
+#include "core/persistent/itch_data_cache.h"
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -65,6 +66,9 @@ bool ItchAuth::initialize() {
 
     // Detect launch source (moved from Core and Itch classes)
     detect_launch_source();
+
+    // Load any previously cached OAuth token
+    load_token_from_cache();
 
     initialized = true;
     UtilityFunctions::print("ItchAuth: Initialization complete");
@@ -264,5 +268,36 @@ void ItchAuth::start_oauth_authorization(const String& client_id, const String& 
         if (!ok) {
             UtilityFunctions::push_error("Failed to open OAuth authorization URL in browser.");
         }
+    }
+}
+
+// Token management
+void ItchAuth::set_oauth_token(const String &token) {
+    oauth_token = token;
+    save_token_to_cache();
+}
+
+String ItchAuth::get_oauth_token() const {
+    return oauth_token;
+}
+
+void ItchAuth::save_token_to_cache() {
+    ItchDataCache *cache = ItchDataCache::get_singleton();
+    if (!cache) {
+        return;
+    }
+    Dictionary meta;
+    meta["oauth_token"] = oauth_token;
+    cache->set_verified("oauth_token", true, meta);
+}
+
+void ItchAuth::load_token_from_cache() {
+    ItchDataCache *cache = ItchDataCache::get_singleton();
+    if (!cache) {
+        return;
+    }
+    Dictionary data = cache->get_verification_data("oauth_token");
+    if (data.has("oauth_token")) {
+        oauth_token = data["oauth_token"];
     }
 }
