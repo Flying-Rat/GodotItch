@@ -84,8 +84,8 @@ func _on_open_browser_pressed() -> void:
 func _mask(s: String) -> String:
 	if s.is_empty():
 		return s
-	var visible: int = min(4, s.length())
-	return s.left(visible) + "*".repeat(max(0, s.length() - visible))
+	var visible_chars: int = min(4, s.length())
+	return s.left(visible_chars) + "*".repeat(max(0, s.length() - visible_chars))
 
 
 func _log(msg: String) -> void:
@@ -94,3 +94,15 @@ func _log(msg: String) -> void:
 
 func _error(msg: String) -> void:
 	output.append_text("[color=red]" + msg + "[/color]\n")
+
+
+func _on_btn_validate_token_pressed() -> void:
+	var token := token_edit.text.strip_edges()
+	if token.is_empty():
+		_error("OAuth token is required for validation")
+		return
+	# Simulate validation (real validation would call Itch API)
+	if token.length() > 20:
+		_log("Token looks valid (length: %d)" % token.length())
+	else:
+		_error("Token is too short or invalid")

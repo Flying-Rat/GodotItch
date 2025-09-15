@@ -91,6 +91,10 @@ text = "Build URL"
 layout_mode = 2
 text = "Open Browser"
 
+[node name="BtnValidateToken" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Validate Token"
+
 [node name="Margin" type="MarginContainer" parent="Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -119,3 +123,4 @@ selection_enabled = true
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnShowOAuth" to="." method="_on_show_oauth_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnBuildUrl" to="." method="_on_build_url_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnOpenBrowser" to="." method="_on_open_browser_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnValidateToken" to="." method="_on_btn_validate_token_pressed"]
