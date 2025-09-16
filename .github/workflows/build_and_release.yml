@@ -25,13 +25,8 @@ jobs:
       - name: Install SCons
         run: sudo apt-get install -y scons
       - name: Build for Linux x86_64
-        run: |
-          cd godot_itch_extension
-          scons platform=linux arch=x86_64
-      - name: Copy binaries
-        run: |
-          mkdir -p addons/godot_itch/bin/linux
-          cp godot_itch_extension/bin/*x86_64* addons/godot_itch/bin/linux/
+        working-directory: godot_itch_extension
+        run: scons platform=linux arch=x86_64
       - name: Upload Linux x86_64 Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -101,13 +96,8 @@ jobs:
       - name: Install SCons
         run: brew install scons
       - name: Build for Mac
-        run: |
-          cd godot_itch_extension
-          scons platform=macos
-      - name: Copy binaries
-        run: |
-          mkdir -p addons/godot_itch/bin/macos
-          cp godot_itch_extension/bin/*macos* addons/godot_itch/bin/macos/
+        working-directory: godot_itch_extension
+        run: scons platform=macos
       - name: Upload MacOS Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -177,13 +167,9 @@ jobs:
       - name: Install SCons
         run: pip install scons
       - name: Build for Windows x86_64
-        run: |
-          cd godot_itch_extension
-          scons platform=windows arch=x86_64
-      - name: Copy binaries
-        run: |
-          mkdir addons\godot_itch\bin\windows
-          copy godot_itch_extension\bin\*x86_64* addons\godot_itch\bin\windows\
+        shell: pwsh
+        working-directory: godot_itch_extension
+        run: scons platform=windows arch=x86_64
       - name: Upload Windows x86_64 Artifacts
         uses: actions/upload-artifact@v4
         with:
