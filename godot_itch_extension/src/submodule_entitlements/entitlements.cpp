@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 // Local includes
@@ -23,6 +24,9 @@ void Entitlements::_bind_methods()
     ClassDB::bind_method(D_METHOD("verify_entitlement", "download_key"), &Entitlements::verify_entitlement);
     ClassDB::bind_method(D_METHOD("is_entitled", "download_key"), &Entitlements::is_entitled);
     ClassDB::bind_method(D_METHOD("get_entitlement_record", "download_key"), &Entitlements::get_entitlement_record);
+
+    // Initialization methods
+    ClassDB::bind_method(D_METHOD("initialize_with_scene", "scene_node"), &Entitlements::initialize_with_scene);
 
     // Cache management
     ClassDB::bind_method(D_METHOD("has_cached_entitlement", "download_key"), &Entitlements::has_cached_entitlement);
@@ -58,10 +62,28 @@ Entitlements::Entitlements()
 
 Entitlements::~Entitlements()
 {
-    if (http_request)
-    {
-        http_request->queue_free();
+    // Clean up any temporary HTTP request safely
+    if (http_request) {
+        if (is_verifying) {
+            http_request->cancel_request();
+            is_verifying = false;
+        }
+        
+        // Disconnect signals before cleanup to prevent callbacks
+        if (http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
+            http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
+        }
+        
+        // Only queue_free if object is still in tree
+        if (http_request->is_inside_tree()) {
+            http_request->queue_free();
+        }
+        http_request = nullptr;
     }
+    
+    // Clear state
+    pending_download_key = "";
+    instance_initialized = false;
 }
 
 
@@ -82,44 +104,49 @@ void Entitlements::instance_initialize()
         return;
     }
 
-    // Setup HTTP request for verification
-    _setup_http_request();
+    // HTTPRequest will be created later in initialize_with_scene() when we have access to scene tree
 
+    instance_initialized = true;
     UtilityFunctions::print("Entitlements: Initialization complete");
+}
+
+void Entitlements::initialize_with_scene(Node *scene_node)
+{
+    UtilityFunctions::print("Entitlements: initialize_with_scene() called");
+    // We now use temporary HTTPRequest instances, so no persistent setup needed
+    UtilityFunctions::print("Entitlements: Using temporary HTTPRequest approach - no persistent setup required");
 }
 
 void Entitlements::instance_shutdown()
 {
     UtilityFunctions::print("Entitlements: Shutting down...");
 
-    if (http_request)
-    {
-        http_request->queue_free();
+    // Clean up any temporary HTTP request safely
+    if (http_request) {
+        if (is_verifying) {
+            http_request->cancel_request();
+        }
+        
+        // Disconnect signals before cleanup to prevent callbacks
+        if (http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
+            http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
+        }
+        
+        // Only queue_free if object is still in tree
+        if (http_request->is_inside_tree()) {
+            http_request->queue_free();
+        }
         http_request = nullptr;
     }
 
     core = nullptr;
     data_cache = nullptr;
     is_verifying = false;
+    pending_download_key = "";
+    instance_initialized = false;
 }
 
-void Entitlements::_setup_http_request()
-{
-    if (http_request) {
-        return; // Already setup
-    }
-    
-    http_request = memnew(HTTPRequest);
-    if (!http_request) {
-        UtilityFunctions::push_error("Entitlements: Failed to create HTTPRequest");
-        return;
-    }
-    
-    // Connect HTTP response signal
-    http_request->connect("request_completed", Callable(this, "_on_verification_response"));
-    
-    UtilityFunctions::print("Entitlements: HTTPRequest setup complete");
-}
+
 
 String Entitlements::_build_verification_url(const String& download_key) const
 {
@@ -206,11 +233,8 @@ void Entitlements::verify_entitlement(const String& download_key)
         return;
     }
     
-    if (!http_request) {
-        emit_signal("entitlement_error", "HTTP request system not initialized");
-        return;
-    }
-    
+    // Use a simpler approach - delegate to main Itch class HTTP system
+    // This avoids potential conflicts with multiple HTTPRequest instances
     String url = _build_verification_url(download_key);
     if (url.is_empty()) {
         emit_signal("entitlement_error", "Could not build verification URL");
@@ -223,54 +247,153 @@ void Entitlements::verify_entitlement(const String& download_key)
     pending_download_key = download_key;
     is_verifying = true;
     
-    Error result = http_request->request(url, headers);
-    if (result != OK) {
+    UtilityFunctions::print("Entitlements: Making direct HTTP request to:", url);
+    
+    // Create a temporary HTTPRequest for this single operation
+    HTTPRequest* temp_request = memnew(HTTPRequest);
+    if (!temp_request) {
         is_verifying = false;
         pending_download_key = "";
-        emit_signal("entitlement_error", "Failed to start HTTP request: " + String::num_int64(result));
+        emit_signal("entitlement_error", "Failed to create temporary HTTP request");
         return;
     }
     
-    UtilityFunctions::print("Entitlements: Started verification request for key: ", download_key);
+    // Configure the temporary request
+    temp_request->set_use_threads(false);
+    temp_request->set_timeout(10.0);
+    
+    // Add to scene tree first (required for HTTPRequest to work)
+    SceneTree* scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+    Node* scene_root = scene_tree ? scene_tree->get_current_scene() : nullptr;
+    if (scene_root) {
+        scene_root->add_child(temp_request);
+        
+        // Connect signal AFTER adding to scene tree
+        Error connect_result = temp_request->connect("request_completed", Callable(this, "_on_verification_response"));
+        if (connect_result != OK) {
+            UtilityFunctions::push_error("Entitlements: Failed to connect HTTP signal");
+            is_verifying = false;
+            pending_download_key = "";
+            temp_request->queue_free();
+            emit_signal("entitlement_error", "Failed to connect HTTP signal");
+            return;
+        }
+        
+        Error result = temp_request->request(url, headers);
+        UtilityFunctions::print("Entitlements: HTTP request call completed with result:", String::num_int64(result));
+        
+        if (result != OK) {
+            is_verifying = false;
+            pending_download_key = "";
+            // Disconnect before cleanup
+            if (temp_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
+                temp_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
+            }
+            temp_request->queue_free();
+            emit_signal("entitlement_error", "Failed to start HTTP request: " + String::num_int64(result));
+            return;
+        }
+        
+        // Store reference to clean up later
+        http_request = temp_request;
+        UtilityFunctions::print("Entitlements: Started verification request for key: ", download_key);
+    } else {
+        is_verifying = false;
+        pending_download_key = "";
+        temp_request->queue_free();
+        emit_signal("entitlement_error", "Cannot access scene tree for HTTP request");
+        return;
+    }
 }
 
 void Entitlements::_on_verification_response(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body)
 {
+    UtilityFunctions::print("Entitlements: _on_verification_response called - result:", String::num_int64(result), "response_code:", String::num_int64(response_code));
+    
+    // Critical safety check - ensure object is still valid
+    if (!instance_initialized || !http_request) {
+        UtilityFunctions::push_error("Entitlements: Response callback called on invalid instance");
+        return;
+    }
+    
+    UtilityFunctions::print("Entitlements: Safety checks passed, processing response...");
+    
+    // Store http_request reference before clearing member variable
+    HTTPRequest* temp_http_request = http_request;
+    http_request = nullptr;  // Clear member immediately to prevent reuse
+    
     is_verifying = false;
     String current_key = pending_download_key;
     pending_download_key = "";
     
+    // Helper lambda to cleanup and emit error
+    auto cleanup_and_error = [this, temp_http_request](const String& error_msg) {
+        UtilityFunctions::push_error("Entitlements: ", error_msg);
+        if (temp_http_request && temp_http_request->is_inside_tree()) {
+            // Disconnect signal first to prevent further callbacks
+            if (temp_http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
+                temp_http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
+            }
+            temp_http_request->queue_free();
+        }
+    };
+    
     if (result != HTTPRequest::RESULT_SUCCESS) {
-        UtilityFunctions::push_error("Entitlements: HTTP request failed with result: ", String::num_int64(result));
+        cleanup_and_error("HTTP request failed with result: " + String::num_int64(result));
         emit_signal("entitlement_error", "Network request failed");
         return;
     }
     
     if (response_code != 200) {
-        UtilityFunctions::push_error("Entitlements: HTTP response code: ", String::num_int64(response_code));
+        cleanup_and_error("HTTP response code: " + String::num_int64(response_code));
         emit_signal("entitlement_error", "Server returned error code: " + String::num_int64(response_code));
         return;
     }
     
     // Parse JSON response
+    UtilityFunctions::print("Entitlements: Parsing HTTP response...");
     String response_text = body.get_string_from_utf8();
-    JSON json;
-    Error parse_result = json.parse(response_text);
+    UtilityFunctions::print("Entitlements: Response text length:", String::num_int64(response_text.length()));
     
-    if (parse_result != OK) {
-        UtilityFunctions::push_error("Entitlements: Failed to parse JSON response");
+    Variant parsed = JSON::parse_string(response_text);
+    if (parsed.get_type() == Variant::NIL) {
+        cleanup_and_error("Failed to parse JSON response");
         emit_signal("entitlement_error", "Invalid server response format");
         return;
     }
     
-    Dictionary response_data = json.get_data();
+    UtilityFunctions::print("Entitlements: JSON parsed successfully");
+    Dictionary response_data;
+    if (parsed.get_type() == Variant::DICTIONARY) {
+        response_data = (Dictionary)parsed;
+    } else {
+        // Wrap non-dictionary JSON into a result container for consistency
+        response_data["result"] = parsed;
+    }
     
-    // Store in cache
-    _store_verification_result(current_key, response_data);
+    // Store in cache with safety check
+    UtilityFunctions::print("Entitlements: Storing verification result in cache...");
+    if (core && data_cache) {
+        _store_verification_result(current_key, response_data);
+        UtilityFunctions::print("Entitlements: Result stored in cache");
+    } else {
+        UtilityFunctions::push_error("Entitlements: Cannot store result - core or data_cache is null");
+    }
     
     // Emit success signal
+    UtilityFunctions::print("Entitlements: Emitting success signal...");
     emit_signal("entitlement_verified", true, response_data);
     UtilityFunctions::print("Entitlements: Verification complete for key: ", current_key);
+    
+    // Clean up temporary HTTPRequest safely
+    if (temp_http_request && temp_http_request->is_inside_tree()) {
+        UtilityFunctions::print("Entitlements: Cleaning up temporary HTTPRequest");
+        // Disconnect signal first to prevent any additional callbacks
+        if (temp_http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
+            temp_http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
+        }
+        temp_http_request->queue_free();
+    }
 }
 
 bool Entitlements::is_entitled(const String& download_key) const

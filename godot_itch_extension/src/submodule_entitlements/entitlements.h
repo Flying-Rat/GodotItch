@@ -7,6 +7,7 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/callable.hpp>
 #include "../core/core.h"
+#include <godot_cpp/classes/node.hpp>
 
 using namespace godot;
 
@@ -39,6 +40,7 @@ private:
     // Verification state
     String pending_download_key;
     bool is_verifying = false;
+    bool instance_initialized = false;
     
     // Cache configuration
     // TTL removed: cache entries are persistent. Cache-clearing requests from callers
@@ -73,11 +75,16 @@ public:
     // Instance-level init/shutdown (internal)
     void instance_initialize();
     void instance_shutdown();
+    // Scene-aware initialization so HTTPRequest can be added to a scene node
+    void initialize_with_scene(Node *scene_node);
     
     // Core entitlements API
     void verify_entitlement(const String& download_key);
     bool is_entitled(const String& download_key) const;
     Dictionary get_entitlement_record(const String& download_key) const;
+    
+    // Debug utilities
+    void dump_debug_state() const;
     
     // Cache management
     void clear_entitlement_cache();

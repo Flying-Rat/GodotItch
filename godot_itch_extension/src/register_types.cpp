@@ -37,6 +37,10 @@ void initialize_godotitch_module(ModuleInitializationLevel level)
         User::initialize();
         Games::initialize();
 
+        // Now initialize instance dependencies after all singletons exist
+        ItchAuth::get_singleton()->instance_initialize();
+        Entitlements::get_singleton()->instance_initialize();
+
         // Register the singleton instance
         ItchPtr = memnew(Itch);
         Engine::get_singleton()->register_singleton("Itch", ItchPtr);

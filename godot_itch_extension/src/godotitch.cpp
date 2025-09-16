@@ -399,6 +399,7 @@ void Itch::verify_download_key(const String &download_key)
 		pending_request_data["game_id"] = Core::get_singleton()->get_game_id();
 
 		entitlements->verify_entitlement(download_key);
+		
 	} else 
 	{
 		UtilityFunctions::push_error("Entitlements module not available");
@@ -489,6 +490,15 @@ void Itch::initialize_with_scene(Node *scene_node)
 			scene_node->add_child(http_request);
 			UtilityFunctions::print(String("Itch: HTTPRequest is_inside_tree after add_child: ") + String(http_request->is_inside_tree() ? "true" : "false"));
 		}
+	}
+
+	// Also give subsystems a chance to initialize with the scene node so they can
+	// create and attach their own HTTPRequest nodes if needed.
+	Entitlements* ent = Entitlements::get_singleton();
+	if (ent)
+	{
+		UtilityFunctions::print("Itch: Initializing Entitlements with scene node");
+		ent->initialize_with_scene(scene_node);
 	}
 }
 
