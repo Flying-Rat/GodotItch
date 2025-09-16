@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: sudo apt-get install -y scons
       - name: Build for Linux x86_64
@@ -34,6 +36,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: sudo apt-get install -y scons
       - name: Build for Linux arm64
@@ -55,6 +59,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: sudo apt-get install -y scons
       - name: Build for Linux rv64
@@ -76,6 +82,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: brew install scons
       - name: Build for Mac
@@ -97,6 +105,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: brew install scons
       - name: Build for iOS
@@ -118,6 +128,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: choco install scons
       - name: Build for Windows x86_32
@@ -139,6 +151,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: choco install scons
       - name: Build for Windows x86_64
@@ -160,6 +174,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: sudo apt-get install -y scons
       - name: Build for Android x86_64
@@ -181,6 +197,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Install SCons
         run: sudo apt-get install -y scons
       - name: Build for Android arm64
