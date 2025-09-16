@@ -34,13 +34,12 @@ func _on_load_token_pressed() -> void:
 	if token.is_empty():
 		_error("OAuth token is empty")
 		return
-	
+
 	token_edit.text = token
 	_log("Loaded OAuth token: %s" % _mask(token))
 
 func _on_init_pressed() -> void:
-	var ok := auth.initialize()
-	_log("Init: %s | is_initialized: %s" % [str(ok), str(auth.is_initialized())])
+	_log("Auth: is_initialized: %s" % str(auth.is_initialized()))
 
 
 func _on_launch_info_pressed() -> void:
@@ -115,3 +114,12 @@ func _on_btn_validate_token_pressed() -> void:
 		_log("Token looks valid (length: %d)" % token.length())
 	else:
 		_error("Token is too short or invalid")
+
+func _on_use_token_pressed() -> void:
+	var token := auth.get_oauth_token()
+	if token.is_empty():
+		_error("No token saved. Save a token first.")
+		return
+	# Copy to clipboard for convenience and log header example
+	DisplayServer.clipboard_set(token)
+	_log("Token copied to clipboard. Add header: Authorization: Bearer %s" % _mask(token))

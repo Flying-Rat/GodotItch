@@ -42,13 +42,13 @@ void ItchAuth::_bind_methods()
     ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"), &ItchAuth::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
 }
 
-ItchAuth::ItchAuth() 
+ItchAuth::ItchAuth()
 {
     // Constructor implementation
 }
 
-ItchAuth::~ItchAuth() 
-{ 
+ItchAuth::~ItchAuth()
+{
     // Destructor implementation
 }
 

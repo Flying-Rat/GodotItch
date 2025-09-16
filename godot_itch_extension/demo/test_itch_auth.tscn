@@ -67,7 +67,7 @@ placeholder_text = "opaque state"
 [node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
 
-[node name="SaveToken" type="Button" parent="Panel/VBox/Buttons"]
+[node name="BtnInit" type="Button" parent="Panel/VBox/Buttons"]
 layout_mode = 2
 text = "Init"
 
@@ -103,6 +103,10 @@ text = "Save Token"
 layout_mode = 2
 text = "Load Token"
 
+[node name="BtnUseToken" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Use Token"
+
 [node name="Margin" type="MarginContainer" parent="Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -126,6 +130,7 @@ fit_content = true
 scroll_following = true
 selection_enabled = true
 
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnInit" to="." method="_on_init_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnLaunchInfo" to="." method="_on_launch_info_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnSaveOAuth" to="." method="_on_save_oauth_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnShowOAuth" to="." method="_on_show_oauth_pressed"]
@@ -134,3 +139,4 @@ selection_enabled = true
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnValidateToken" to="." method="_on_btn_validate_token_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnSaveToken" to="." method="_on_save_token_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnLoadToken" to="." method="_on_load_token_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnUseToken" to="." method="_on_use_token_pressed"]
