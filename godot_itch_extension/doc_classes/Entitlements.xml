@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Entitlements" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	Verify whether a user is entitled to a game/build.
+	</brief_description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_entitlement_record" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="download_key" type="String" />
+			<description>Returns the cached entitlement data for the provided download key, or an empty Dictionary if none exists.</description>
+		</method>
+		<method name="has_cached_entitlement" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="download_key" type="String" />
+			<description>Returns true if entitlement data for the given download key is cached.</description>
+		</method>
+		<method name="is_entitled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="download_key" type="String" />
+			<description>Returns true if the cached record indicates the key is entitled. Returns false if not cached or not entitled.</description>
+		</method>
+		<method name="verify_entitlement">
+			<return type="void" />
+			<param index="0" name="download_key" type="String" />
+			<description>Verifies the provided download key against the itch.io API. Emits entitlement_verified on success or entitlement_error on failure.</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="entitlement_error">
+			<param index="0" name="error_message" type="String" />
+			<description>Emitted if entitlement verification fails for any reason. Contains a human-readable error message.</description>
+		</signal>
+		<signal name="entitlement_verified">
+			<param index="0" name="success" type="bool" />
+			<param index="1" name="data" type="Dictionary" />
+			<description>Emitted after verification completes. `success` indicates entitlement and `data` includes details such as key and purchase info.</description>
+		</signal>
+	</signals>
+</class>

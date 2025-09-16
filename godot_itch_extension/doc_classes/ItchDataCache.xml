@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ItchDataCache" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	Lightweight cache for purchase verification results and metadata.
+	</brief_description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_all_data">
+			<return type="void" />
+			<description>Clears all cached verification data.</description>
+		</method>
+		<method name="clear_verification">
+			<return type="void" />
+			<param index="0" name="download_key" type="String" />
+			<description>Removes cached verification data for the specified download key, if present.</description>
+		</method>
+		<method name="get_verification_data">
+			<return type="Dictionary" />
+			<param index="0" name="download_key" type="String" />
+			<description>Returns a Dictionary containing the cached verification record for the download key. Returns an empty Dictionary if none exists.</description>
+		</method>
+		<method name="is_verified">
+			<return type="bool" />
+			<param index="0" name="download_key" type="String" />
+			<description>Returns true if the cached record marks the download key as verified.</description>
+		</method>
+		<method name="set_verified">
+			<return type="void" />
+			<param index="0" name="download_key" type="String" />
+			<param index="1" name="verified" type="bool" />
+			<param index="2" name="metadata" type="Dictionary" default="{}" />
+			<description>Sets or updates the cached verification record for a download key, including whether it is verified and any additional metadata.</description>
+		</method>
+	</methods>
+</class>
