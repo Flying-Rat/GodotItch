@@ -25,14 +25,22 @@ jobs:
             ${{ runner.os }}-godotcpp-
       - name: Install SCons
         run: sudo apt-get install -y scons
-      - name: Build for Linux x86_64
+      - name: Build Linux x86_64 Debug
+        working-directory: godot_itch_extension
+        run: scons platform=linux arch=x86_64 target=template_debug
+      - name: Build Linux x86_64 Release
         working-directory: godot_itch_extension
         run: scons platform=linux arch=x86_64 target=template_release
-      - name: Upload Linux x86_64 Artifacts
+      - name: Upload Linux x86_64 Debug Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: godotitch-linux-x86_64
-          path: addons/godot_itch/bin/linux/*x86_64*
+          name: godotitch-linux-x86_64-debug
+          path: addons/godot_itch/bin/linux/*debug*x86_64*
+      - name: Upload Linux x86_64 Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-linux-x86_64-release
+          path: addons/godot_itch/bin/linux/*release*x86_64*
 
 #   build-linux-arm64:
 #     runs-on: ubuntu-latest
@@ -96,14 +104,22 @@ jobs:
             ${{ runner.os }}-godotcpp-
       - name: Install SCons
         run: brew install scons
-      - name: Build for Mac
+      - name: Build Mac Debug
+        working-directory: godot_itch_extension
+        run: scons platform=macos target=template_debug
+      - name: Build Mac Release
         working-directory: godot_itch_extension
         run: scons platform=macos target=template_release
-      - name: Upload MacOS Artifacts
+      - name: Upload Mac Debug Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: godotitch-macos
-          path: addons/godot_itch/bin/macos/*
+          name: godotitch-macos-debug
+          path: addons/godot_itch/bin/macos/*debug*
+      - name: Upload Mac Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-macos-release
+          path: addons/godot_itch/bin/macos/*release*
 
 #   build-ios:
 #     runs-on: macos-latest
@@ -167,15 +183,24 @@ jobs:
             ${{ runner.os }}-godotcpp-
       - name: Install SCons
         run: pip install scons
-      - name: Build for Windows x86_64
+      - name: Build Windows x86_64 Debug
+        shell: pwsh
+        working-directory: godot_itch_extension
+        run: scons platform=windows arch=x86_64 target=template_debug
+      - name: Build Windows x86_64 Release
         shell: pwsh
         working-directory: godot_itch_extension
         run: scons platform=windows arch=x86_64 target=template_release
-      - name: Upload Windows x86_64 Artifacts
+      - name: Upload Windows x86_64 Debug Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: godotitch-windows-x86_64
-          path: addons/godot_itch/bin/windows/*x86_64*
+          name: godotitch-windows-x86_64-debug
+          path: addons/godot_itch/bin/windows/*debug*x86_64*
+      - name: Upload Windows x86_64 Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-windows-x86_64-release
+          path: addons/godot_itch/bin/windows/*release*x86_64*
 
 #   build-android-x86_64:
 #     runs-on: ubuntu-latest
