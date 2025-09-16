@@ -7,26 +7,69 @@ on:
     types: [created]
 
 jobs:
-  build-linux:
+
+  build-linux-x86_64:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Install SCons
         run: sudo apt-get install -y scons
-      - name: Build for Linux
+      - name: Build for Linux x86_64
         run: |
           cd godot_itch_extension
-          scons platform=linux
+          scons platform=linux arch=x86_64
       - name: Copy binaries
         run: |
           mkdir -p addons/godot_itch/bin/linux
-          cp godot_itch_extension/bin/*linux* addons/godot_itch/bin/linux/
-      - name: Upload Linux Artifacts
+          cp godot_itch_extension/bin/*x86_64* addons/godot_itch/bin/linux/
+      - name: Upload Linux x86_64 Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: godotitch-linux
-          path: addons/godot_itch/bin/linux/*
+          name: godotitch-linux-x86_64
+          path: addons/godot_itch/bin/linux/*x86_64*
+
+  build-linux-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: sudo apt-get install -y scons
+      - name: Build for Linux arm64
+        run: |
+          cd godot_itch_extension
+          scons platform=linux arch=arm64
+      - name: Copy binaries
+        run: |
+          mkdir -p addons/godot_itch/bin/linux
+          cp godot_itch_extension/bin/*arm64* addons/godot_itch/bin/linux/
+      - name: Upload Linux arm64 Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-linux-arm64
+          path: addons/godot_itch/bin/linux/*arm64*
+
+  build-linux-rv64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: sudo apt-get install -y scons
+      - name: Build for Linux rv64
+        run: |
+          cd godot_itch_extension
+          scons platform=linux arch=rv64
+      - name: Copy binaries
+        run: |
+          mkdir -p addons/godot_itch/bin/linux
+          cp godot_itch_extension/bin/*rv64* addons/godot_itch/bin/linux/
+      - name: Upload Linux rv64 Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-linux-rv64
+          path: addons/godot_itch/bin/linux/*rv64*
 
   build-macos:
     runs-on: macos-latest
@@ -42,36 +85,121 @@ jobs:
       - name: Copy binaries
         run: |
           mkdir -p addons/godot_itch/bin/macos
-          cp godot_itch_extension/bin/*osx* addons/godot_itch/bin/macos/
+          cp godot_itch_extension/bin/*macos* addons/godot_itch/bin/macos/
       - name: Upload MacOS Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: godotitch-macos
           path: addons/godot_itch/bin/macos/*
 
-  build-windows:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: brew install scons
+      - name: Build for iOS
+        run: |
+          cd godot_itch_extension
+          scons platform=ios
+      - name: Copy binaries
+        run: |
+          mkdir -p addons/godot_itch/bin/ios
+          cp godot_itch_extension/bin/*ios* addons/godot_itch/bin/ios/
+      - name: Upload iOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-ios
+          path: addons/godot_itch/bin/ios/*
+
+  build-windows-x86_32:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Install SCons
         run: choco install scons
-      - name: Build for Windows
+      - name: Build for Windows x86_32
         run: |
           cd godot_itch_extension
-          scons platform=windows
+          scons platform=windows arch=x86_32
       - name: Copy binaries
         run: |
           mkdir addons\godot_itch\bin\windows
-          copy godot_itch_extension\bin\*windows* addons\godot_itch\bin\windows\
-      - name: Upload Windows Artifacts
+          copy godot_itch_extension\bin\*x86_32* addons\godot_itch\bin\windows\
+      - name: Upload Windows x86_32 Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: godotitch-windows
-          path: addons/godot_itch/bin/windows/*
+          name: godotitch-windows-x86_32
+          path: addons/godot_itch/bin/windows/*x86_32*
+
+  build-windows-x86_64:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: choco install scons
+      - name: Build for Windows x86_64
+        run: |
+          cd godot_itch_extension
+          scons platform=windows arch=x86_64
+      - name: Copy binaries
+        run: |
+          mkdir addons\godot_itch\bin\windows
+          copy godot_itch_extension\bin\*x86_64* addons\godot_itch\bin\windows\
+      - name: Upload Windows x86_64 Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-windows-x86_64
+          path: addons/godot_itch/bin/windows/*x86_64*
+
+  build-android-x86_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: sudo apt-get install -y scons
+      - name: Build for Android x86_64
+        run: |
+          cd godot_itch_extension
+          scons platform=android arch=x86_64
+      - name: Copy binaries
+        run: |
+          mkdir -p addons/godot_itch/bin/android
+          cp godot_itch_extension/bin/*x86_64* addons/godot_itch/bin/android/
+      - name: Upload Android x86_64 Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-android-x86_64
+          path: addons/godot_itch/bin/android/*x86_64*
+
+  build-android-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: sudo apt-get install -y scons
+      - name: Build for Android arm64
+        run: |
+          cd godot_itch_extension
+          scons platform=android arch=arm64
+      - name: Copy binaries
+        run: |
+          mkdir -p addons/godot_itch/bin/android
+          cp godot_itch_extension/bin/*arm64* addons/godot_itch/bin/android/
+      - name: Upload Android arm64 Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-android-arm64
+          path: addons/godot_itch/bin/android/*arm64*
 
   release:
-    needs: [build-linux, build-macos, build-windows]
+    needs:
+      [build-linux-x86_64, build-linux-arm64, build-linux-rv64, build-macos, build-ios, build-windows-x86_32, build-windows-x86_64, build-android-x86_64, build-android-arm64]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
