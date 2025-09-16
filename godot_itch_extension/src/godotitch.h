@@ -86,7 +86,7 @@ namespace godot
         void get_download_key(const String &download_key, const String &game_id = "");
 
         // Itch.io API wrappers
-        void verify_purchase(const String &download_key);
+        void verify_download_key(const String &download_key);
 
         // Utility methods
         void set_api_key(const String &api_key);

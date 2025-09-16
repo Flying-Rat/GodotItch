@@ -20,7 +20,7 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("get_game_uploads", "game_id"), &Itch::get_game_uploads, DEFVAL(""));
 
 	// Itch.io API wrappers
-	ClassDB::bind_method(D_METHOD("verify_purchase", "download_key"), &Itch::verify_purchase);
+	ClassDB::bind_method(D_METHOD("verify_download_key", "download_key"), &Itch::verify_download_key);
 
 	// Utility methods
 	ClassDB::bind_method(D_METHOD("set_api_key", "api_key"), &Itch::set_api_key);
@@ -386,7 +386,7 @@ void Itch::get_download_key(const String &download_key, const String &game_id)
 	UtilityFunctions::print("Itch: Deferred internal request scheduled");
 }
 
-void Itch::verify_purchase(const String &download_key)
+void Itch::verify_download_key(const String &download_key)
 {
 	// Delegate to the Entitlements module
 	Entitlements* entitlements = get_entitlements();

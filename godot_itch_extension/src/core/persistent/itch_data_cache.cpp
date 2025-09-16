@@ -20,6 +20,7 @@ void ItchDataCache::_bind_methods()
 }
 
 ItchDataCache* ItchDataCache::get_singleton()
+{
     if (!instance) {
         instance = memnew(ItchDataCache);
     }
