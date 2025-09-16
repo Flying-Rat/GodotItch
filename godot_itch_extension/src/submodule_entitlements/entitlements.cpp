@@ -10,6 +10,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+
 using namespace godot;
 
 // Singleton lifecycle is handled by SubsystemTemplate<Entitlements>
@@ -22,13 +23,8 @@ void Entitlements::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_entitlement_record", "download_key"), &Entitlements::get_entitlement_record);
     
     // Cache management
-    ClassDB::bind_method(D_METHOD("clear_entitlement_cache"), &Entitlements::clear_entitlement_cache);
-    ClassDB::bind_method(D_METHOD("clear_entitlement_cache_for_key", "download_key"), &Entitlements::clear_entitlement_cache_for_key);
     ClassDB::bind_method(D_METHOD("has_cached_entitlement", "download_key"), &Entitlements::has_cached_entitlement);
     
-    // Configuration
-    ClassDB::bind_method(D_METHOD("set_cache_ttl", "seconds"), &Entitlements::set_cache_ttl);
-    ClassDB::bind_method(D_METHOD("get_cache_ttl"), &Entitlements::get_cache_ttl);
     
     // Internal HTTP response handler
     ClassDB::bind_method(D_METHOD("_on_verification_response", "result", "response_code", "headers", "body"), &Entitlements::_on_verification_response);
@@ -67,7 +63,6 @@ Entitlements::~Entitlements()
     }
 }
 
-#include <godot_cpp/variant/utility_functions.hpp>
 
 void Entitlements::instance_initialize()
 {
@@ -153,15 +148,8 @@ String Entitlements::_build_verification_url(const String& download_key) const
 
 bool Entitlements::_is_cache_valid(const Dictionary& cached_data) const
 {
-    if (!cached_data.has("timestamp") || !cached_data.has("ttl")) {
-        return false;
-    }
-    
-    int64_t cached_time = cached_data["timestamp"];
-    int cached_ttl = cached_data["ttl"];
-    int64_t current_time = (int64_t)Time::get_singleton()->get_unix_time_from_system();
-    
-    return (current_time - cached_time) < cached_ttl;
+    // Valid if it has a timestamp. TTL-based expiration removed for simplicity.
+    return cached_data.has("timestamp");
 }
 
 void Entitlements::_store_verification_result(const String& download_key, const Dictionary& result)
@@ -172,7 +160,6 @@ void Entitlements::_store_verification_result(const String& download_key, const 
     
     Dictionary cached_entry;
     cached_entry["timestamp"] = (int64_t)Time::get_singleton()->get_unix_time_from_system();
-    cached_entry["ttl"] = CACHE_TTL_SECONDS;
     cached_entry["result"] = result;
     cached_entry["download_key"] = download_key;
     
@@ -198,8 +185,6 @@ Dictionary Entitlements::_get_cached_verification(const String& download_key) co
         return cached_data.get("result", Dictionary());
     }
     
-    // Cache expired, remove it
-    data_cache->clear_verification(cache_key);
     return Dictionary();
 }
 
@@ -313,27 +298,8 @@ Dictionary Entitlements::get_entitlement_record(const String& download_key) cons
     return _get_cached_verification(download_key);
 }
 
-void Entitlements::clear_entitlement_cache()
-{
-    if (!data_cache) {
-        return;
-    }
-    
-    // This is a simplified approach - in practice might want to iterate through keys
-    // For now, we'll rely on TTL expiration
-    UtilityFunctions::print("Entitlements: Cache clear requested (relying on TTL expiration)");
-}
 
-void Entitlements::clear_entitlement_cache_for_key(const String& download_key)
-{
-    if (!data_cache) {
-        return;
-    }
-    
-    String cache_key = "entitlement_" + download_key;
-    data_cache->clear_verification(cache_key);
-    UtilityFunctions::print("Entitlements: Cleared cache for key: ", download_key);
-}
+
 
 bool Entitlements::has_cached_entitlement(const String& download_key) const
 {
@@ -341,13 +307,4 @@ bool Entitlements::has_cached_entitlement(const String& download_key) const
     return !cached_result.is_empty();
 }
 
-void Entitlements::set_cache_ttl(int seconds)
-{
-    // For now, we use a constant TTL, but this method provides future flexibility
-    UtilityFunctions::print("Entitlements: Cache TTL set request (currently using constant TTL): ", String::num_int64(seconds));
-}
-
-int Entitlements::get_cache_ttl() const
-{
-    return CACHE_TTL_SECONDS;
-}
+// TTL configuration removed — cache entries will remain until cleared explicitly

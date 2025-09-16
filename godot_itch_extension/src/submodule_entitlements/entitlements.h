@@ -41,7 +41,9 @@ private:
     bool is_verifying = false;
     
     // Cache configuration
-    static const int CACHE_TTL_SECONDS = 3600; // 1 hour cache TTL
+    // TTL removed: cache entries are persistent. Cache-clearing requests from callers
+    // are intentionally ignored by this module (we never remove entries from the
+    // underlying ItchDataCache here).
     
     // Internal methods
     void _setup_http_request();
@@ -83,8 +85,7 @@ public:
     bool has_cached_entitlement(const String& download_key) const;
     
     // Configuration
-    void set_cache_ttl(int seconds);
-    int get_cache_ttl() const;
+    // (TTL configuration removed — cache entries are kept until cleared)
     
     // Signals (will be bound in _bind_methods)
     // - entitlement_verified(bool success, Dictionary data)
