@@ -40,7 +40,6 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("get_auth"), &Itch::get_auth);
 	ClassDB::bind_method(D_METHOD("get_user"), &Itch::get_user);
 	ClassDB::bind_method(D_METHOD("get_games"), &Itch::get_games);
-	ClassDB::bind_method(D_METHOD("get_assets"), &Itch::get_assets);
 
 	// Scene management
 	ClassDB::bind_method(D_METHOD("initialize_with_scene", "scene_node"), &Itch::initialize_with_scene);
@@ -168,10 +167,6 @@ User* Itch::get_user() const {
 
 Games* Itch::get_games() const {
 	return Games::get_singleton();
-}
-
-Assets* Itch::get_assets() const {
-	return Assets::get_singleton();
 }
 
 // These methods are now handled by Core and ItchAuth modules

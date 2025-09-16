@@ -20,7 +20,6 @@
 #include "submodule_entitlements/entitlements.h"
 #include "submodule_user/user_subsystem.h"
 #include "submodule_games/games_subsystem.h"
-#include "submodule_assets/assets_subsystem.h"
 
 // Add OS include for opening browser
 #include <godot_cpp/classes/os.hpp>
@@ -77,7 +76,7 @@ namespace godot
         ItchAuth* get_auth() const;
         User* get_user() const;
         Games* get_games() const;
-        Assets* get_assets() const;
+    // Assets subsystem removed
 
         // Itch.io API methods
         bool itchInitEx(uint32_t app_id = 0, bool embed_callbacks = false);

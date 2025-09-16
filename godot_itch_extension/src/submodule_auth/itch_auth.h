@@ -21,19 +21,17 @@ namespace godot
         void save_token_to_cache();
         void load_token_from_cache();
 
-        // Launch detection (moved from Core class)
-        bool launched_via_itch = false;
-        bool has_api_key = false;
-        String launch_api_key = "";
+    // Launch detection (moved from Core class)
+    bool launched_via_itch = false;
+    bool has_api_key = false;
+    String launch_api_key = "";
 
-        // Project setting keys
-        const String SETTINGS_PREFIX = String("godot_itch/");
-        const String SETTING_API_KEY = String(SETTINGS_PREFIX) + String("api_key");
-        const String SETTING_OAUTH_CLIENT_ID = String(SETTINGS_PREFIX) + String("oauth_client_id");
-        const String SETTING_OAUTH_REDIRECT_URI = String(SETTINGS_PREFIX) + String("oauth_redirect_uri");
-        const String SETTING_OAUTH_SCOPE = String(SETTINGS_PREFIX) + String("oauth_scope");
-
-        void detect_launch_source();
+    // Project setting keys
+    const String SETTINGS_PREFIX = String("godot_itch/");
+    const String SETTING_API_KEY = String(SETTINGS_PREFIX) + String("api_key");
+    const String SETTING_OAUTH_CLIENT_ID = String(SETTINGS_PREFIX) + String("oauth_client_id");
+    const String SETTING_OAUTH_REDIRECT_URI = String(SETTINGS_PREFIX) + String("oauth_redirect_uri");
+    const String SETTING_OAUTH_SCOPE = String(SETTINGS_PREFIX) + String("oauth_scope");
         void ensure_oauth_settings();
         String get_api_key_from_settings() const;
 

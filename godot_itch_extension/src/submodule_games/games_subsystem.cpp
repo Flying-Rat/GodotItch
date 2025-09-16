@@ -1,5 +1,6 @@
 #include "games_subsystem.h"
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/memory.hpp>
 
 using namespace godot;
 
@@ -12,13 +13,13 @@ Games* Games::get_singleton() {
 
 void Games::initialize() {
     if (!instance) {
-        instance = new Games();
+        instance = memnew(Games);
     }
 }
 
 void Games::shutdown() {
     if (instance) {
-        delete instance;
+        memdelete(instance);
         instance = nullptr;
     }
 }

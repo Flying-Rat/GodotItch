@@ -1,5 +1,6 @@
 #include "user_subsystem.h"
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/memory.hpp>
 
 using namespace godot;
 
@@ -12,13 +13,13 @@ User* User::get_singleton() {
 
 void User::initialize() {
     if (!instance) {
-        instance = new User();
+        instance = memnew(User);
     }
 }
 
 void User::shutdown() {
     if (instance) {
-        delete instance;
+        memdelete(instance);
         instance = nullptr;
     }
 }

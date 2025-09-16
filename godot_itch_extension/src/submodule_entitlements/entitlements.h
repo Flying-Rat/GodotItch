@@ -33,7 +33,7 @@ private:
     static Entitlements* s_singleton;
     
     // Core dependencies
-    godot::Core* core = nullptr;
+    Core* core = nullptr;
     ItchDataCache* data_cache = nullptr;
     HTTPRequest* http_request = nullptr;
     
