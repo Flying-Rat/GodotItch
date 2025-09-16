@@ -16,6 +16,13 @@
 
 using namespace godot;
 
+// Constants
+namespace {
+    constexpr int HTTP_OK = 200;
+    constexpr double HTTP_TIMEOUT_SECONDS = 10.0;
+    constexpr const char* USER_AGENT = "GodotItch-Entitlements/1.0";
+}
+
 // Singleton lifecycle is handled by SubsystemTemplate<Entitlements>
 
 void Entitlements::_bind_methods()
@@ -62,28 +69,35 @@ Entitlements::Entitlements()
 
 Entitlements::~Entitlements()
 {
-    // Clean up any temporary HTTP request safely
-    if (http_request) {
-        if (is_verifying) {
-            http_request->cancel_request();
-            is_verifying = false;
-        }
-        
-        // Disconnect signals before cleanup to prevent callbacks
-        if (http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
-            http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
-        }
-        
-        // Only queue_free if object is still in tree
-        if (http_request->is_inside_tree()) {
-            http_request->queue_free();
-        }
-        http_request = nullptr;
-    }
+    _cleanup_http_request();
     
     // Clear state
     pending_download_key = "";
     instance_initialized = false;
+}
+
+void Entitlements::_cleanup_http_request()
+{
+    if (!http_request) {
+        return;
+    }
+    
+    if (is_verifying) {
+        http_request->cancel_request();
+        is_verifying = false;
+    }
+    
+    // Disconnect signals before cleanup to prevent callbacks
+    if (http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
+        http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
+    }
+    
+    // Only queue_free if object is still in tree
+    if (http_request->is_inside_tree()) {
+        http_request->queue_free();
+    }
+    
+    http_request = nullptr;
 }
 
 
@@ -121,23 +135,7 @@ void Entitlements::instance_shutdown()
 {
     UtilityFunctions::print("Entitlements: Shutting down...");
 
-    // Clean up any temporary HTTP request safely
-    if (http_request) {
-        if (is_verifying) {
-            http_request->cancel_request();
-        }
-        
-        // Disconnect signals before cleanup to prevent callbacks
-        if (http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
-            http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
-        }
-        
-        // Only queue_free if object is still in tree
-        if (http_request->is_inside_tree()) {
-            http_request->queue_free();
-        }
-        http_request = nullptr;
-    }
+    _cleanup_http_request();
 
     core = nullptr;
     data_cache = nullptr;
@@ -214,8 +212,22 @@ Dictionary Entitlements::_get_cached_verification(const String& download_key) co
 
 void Entitlements::verify_entitlement(const String& download_key)
 {
+    // Input validation
     if (download_key.is_empty()) {
+        UtilityFunctions::push_error("Entitlements: Download key cannot be empty");
         emit_signal("entitlement_error", "Download key cannot be empty");
+        return;
+    }
+    
+    if (download_key.length() < 10) {
+        UtilityFunctions::push_error("Entitlements: Download key appears to be too short: ", download_key);
+        emit_signal("entitlement_error", "Download key appears to be invalid (too short)");
+        return;
+    }
+    
+    if (!instance_initialized) {
+        UtilityFunctions::push_error("Entitlements: Module not properly initialized");
+        emit_signal("entitlement_error", "Entitlements module not initialized");
         return;
     }
     
@@ -242,12 +254,12 @@ void Entitlements::verify_entitlement(const String& download_key)
     }
     
     PackedStringArray headers;
-    headers.push_back("User-Agent: GodotItch-Entitlements/1.0");
+    headers.push_back(String("User-Agent: ") + USER_AGENT);
     
     pending_download_key = download_key;
     is_verifying = true;
     
-    UtilityFunctions::print("Entitlements: Making direct HTTP request to:", url);
+    UtilityFunctions::print("Entitlements: Making direct HTTP request to: ", url);
     
     // Create a temporary HTTPRequest for this single operation
     HTTPRequest* temp_request = memnew(HTTPRequest);
@@ -260,7 +272,7 @@ void Entitlements::verify_entitlement(const String& download_key)
     
     // Configure the temporary request
     temp_request->set_use_threads(false);
-    temp_request->set_timeout(10.0);
+    temp_request->set_timeout(HTTP_TIMEOUT_SECONDS);
     
     // Add to scene tree first (required for HTTPRequest to work)
     SceneTree* scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
@@ -326,26 +338,32 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
     String current_key = pending_download_key;
     pending_download_key = "";
     
-    // Helper lambda to cleanup and emit error
-    auto cleanup_and_error = [this, temp_http_request](const String& error_msg) {
-        UtilityFunctions::push_error("Entitlements: ", error_msg);
+    // Simplified error handling: if the request failed, log and cleanup
+    if (result != HTTPRequest::RESULT_SUCCESS) {
+        String error_description = "HTTP request failed (code " + String::num_int64(result) + ")";
+        UtilityFunctions::push_error("Entitlements: ", error_description);
+        // Clean up temporary request if it's still valid
         if (temp_http_request && temp_http_request->is_inside_tree()) {
-            // Disconnect signal first to prevent further callbacks
             if (temp_http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
                 temp_http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
             }
             temp_http_request->queue_free();
         }
-    };
-    
-    if (result != HTTPRequest::RESULT_SUCCESS) {
-        cleanup_and_error("HTTP request failed with result: " + String::num_int64(result));
-        emit_signal("entitlement_error", "Network request failed");
+        is_verifying = false;
+        pending_download_key = "";
+        emit_signal("entitlement_error", "Network request failed: " + error_description);
         return;
     }
     
-    if (response_code != 200) {
-        cleanup_and_error("HTTP response code: " + String::num_int64(response_code));
+    if (response_code != HTTP_OK) {
+        String error_description = "HTTP response code: " + String::num_int64(response_code);
+        UtilityFunctions::push_error("Entitlements: ", error_description);
+        if (temp_http_request && temp_http_request->is_inside_tree()) {
+            if (temp_http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
+                temp_http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
+            }
+            temp_http_request->queue_free();
+        }
         emit_signal("entitlement_error", "Server returned error code: " + String::num_int64(response_code));
         return;
     }
@@ -357,7 +375,14 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
     
     Variant parsed = JSON::parse_string(response_text);
     if (parsed.get_type() == Variant::NIL) {
-        cleanup_and_error("Failed to parse JSON response");
+        String error_description = "Failed to parse JSON response";
+        UtilityFunctions::push_error("Entitlements: ", error_description);
+        if (temp_http_request && temp_http_request->is_inside_tree()) {
+            if (temp_http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
+                temp_http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
+            }
+            temp_http_request->queue_free();
+        }
         emit_signal("entitlement_error", "Invalid server response format");
         return;
     }
@@ -404,7 +429,14 @@ bool Entitlements::is_entitled(const String& download_key) const
     }
     
     // Check if the response indicates a valid entitlement
-    // This depends on itch.io API response format - may need adjustment
+    // itch.io API returns a "download_key" object when valid
+    if (cached_result.has("download_key")) {
+        Variant dk = cached_result["download_key"];
+        // Valid if we have a dictionary object with key data
+        return dk.get_type() == Variant::DICTIONARY;
+    }
+    
+    // Fallback: check for download_keys array (alternative API format)
     if (cached_result.has("download_keys") && cached_result["download_keys"].get_type() == Variant::ARRAY) {
         Array download_keys = cached_result["download_keys"];
         return download_keys.size() > 0;

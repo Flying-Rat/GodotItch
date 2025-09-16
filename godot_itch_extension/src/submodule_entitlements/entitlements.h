@@ -49,6 +49,7 @@ private:
     
     // Internal methods
     void _setup_http_request();
+    void _cleanup_http_request();
     String _build_verification_url(const String& download_key) const;
     bool _is_cache_valid(const Dictionary& cached_data) const;
     void _store_verification_result(const String& download_key, const Dictionary& result);
