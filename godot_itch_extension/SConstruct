@@ -55,14 +55,14 @@ else:
     )
 
 # Install/copy build artifacts (DLLs/libs) to the addon gdextension folder
-install_dir = os.path.join("../", "addons", "godot_itch", "bin")
-# Always install the produced library
-install_targets = env.Install(install_dir, library)
+platform_bin_dir = os.path.join("../", "addons", "godot_itch", "bin", str(env.get("platform")))
+# Always install the produced library to platform-specific folder
+install_targets = env.Install(platform_bin_dir, library)
 
 # Additionally, copy common runtime/link artifacts if they exist
 extra_artifacts = []
-# Shared libs from demo/bin (e.g., .dll, .so, .dylib)
-extra_artifacts += Glob("demo/bin/*{}".format(env.get("SHLIBSUFFIX", "")))
+# Shared libs from demo/bin/{platform} (e.g., .dll, .so, .dylib)
+extra_artifacts += Glob("demo/bin/{}/libgodotitch*{}".format(env.get("platform"), env.get("SHLIBSUFFIX", "")))
 # Windows import/static libs
 if env.get("platform") == "windows":
     extra_artifacts += Glob("demo/bin/windows/*.lib")
@@ -72,6 +72,6 @@ if env.get("platform") == "windows":
     extra_artifacts += Glob("godot-cpp/bin/*.lib")
 
 if extra_artifacts:
-    install_targets += env.Install(install_dir, extra_artifacts)
+    install_targets += env.Install(platform_bin_dir, extra_artifacts)
 
 Default([library, install_targets])
