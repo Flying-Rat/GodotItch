@@ -1,26 +1,30 @@
 #include "games_subsystem.h"
+
+// System includes
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/memory.hpp>
-#include "../core/subsystem_template.h"
-#include "../core/stub_helpers.h"
 
+// Local includes
+#include "../core/subsystem_template.h"
 using namespace godot;
 
 // Forward singleton methods to SubsystemTemplate<Games>
-Games* Games::get_singleton() 
-{ 
-    return SubsystemTemplate<Games>::get_singleton(); 
-}
-void Games::initialize() 
-{ 
-    SubsystemTemplate<Games>::initialize(); 
-}
-void Games::shutdown() 
-{ 
-    SubsystemTemplate<Games>::shutdown(); 
+Games* Games::get_singleton()
+{
+    return SubsystemTemplate<Games>::get_singleton();
 }
 
-Games::Games() : Object() 
+void Games::initialize()
+{
+    SubsystemTemplate<Games>::initialize();
+}
+
+void Games::shutdown()
+{
+    SubsystemTemplate<Games>::shutdown();
+}
+
+Games::Games() : Object()
 {
 }
 

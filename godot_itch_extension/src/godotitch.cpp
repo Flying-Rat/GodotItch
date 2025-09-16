@@ -18,7 +18,6 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("test_request_http"), &Itch::test_request_http);
 	ClassDB::bind_method(D_METHOD("get_game_purchases", "game_id"), &Itch::get_game_purchases, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_game_uploads", "game_id"), &Itch::get_game_uploads, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_download_key", "download_key", "game_id"), &Itch::get_download_key, DEFVAL(""), DEFVAL(""));
 
 	// Itch.io API wrappers
 	ClassDB::bind_method(D_METHOD("verify_purchase", "download_key"), &Itch::verify_purchase);
@@ -68,13 +67,19 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("get_oauth_client_id"), &Itch::get_oauth_client_id);
 	ClassDB::bind_method(D_METHOD("get_oauth_redirect_uri"), &Itch::get_oauth_redirect_uri);
 	ClassDB::bind_method(D_METHOD("get_oauth_scope"), &Itch::get_oauth_scope);
-	ClassDB::bind_method(D_METHOD("build_oauth_authorize_url", "client_id", "redirect_uri", "state"), &Itch::build_oauth_authorize_url, DEFVAL(""), DEFVAL(""), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"), &Itch::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("build_oauth_authorize_url", "client_id", "redirect_uri", "state"),
+	                     &Itch::build_oauth_authorize_url, DEFVAL(""), DEFVAL(""), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"),
+	                     &Itch::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
 
 	// Signals
-	ADD_SIGNAL(MethodInfo("api_response", PropertyInfo(Variant::STRING, "endpoint"), PropertyInfo(Variant::DICTIONARY, "data")));
-	ADD_SIGNAL(MethodInfo("api_error", PropertyInfo(Variant::STRING, "endpoint"), PropertyInfo(Variant::STRING, "error_message"), PropertyInfo(Variant::INT, "response_code")));
-	ADD_SIGNAL(MethodInfo("verify_purchase_result", PropertyInfo(Variant::BOOL, "is_verified"), PropertyInfo(Variant::DICTIONARY, "data")));
+	ADD_SIGNAL(MethodInfo("api_response", PropertyInfo(Variant::STRING, "endpoint"),
+	                      PropertyInfo(Variant::DICTIONARY, "data")));
+	ADD_SIGNAL(MethodInfo("api_error", PropertyInfo(Variant::STRING, "endpoint"),
+	                      PropertyInfo(Variant::STRING, "error_message"),
+	                      PropertyInfo(Variant::INT, "response_code")));
+	ADD_SIGNAL(MethodInfo("verify_purchase_result", PropertyInfo(Variant::BOOL, "is_verified"),
+	                      PropertyInfo(Variant::DICTIONARY, "data")));
 	// Auth signals
 	ADD_SIGNAL(MethodInfo("user_logged_in", PropertyInfo(Variant::DICTIONARY, "user")));
 	ADD_SIGNAL(MethodInfo("user_logged_out"));

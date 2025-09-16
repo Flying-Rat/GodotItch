@@ -1,10 +1,10 @@
 #ifndef GODOTITCH_H
 #define GODOTITCH_H
 
-// Include INT types header
+// System includes
 #include <inttypes.h>
 
-// Include Godot-CPP headers for GDExtensions
+// Godot-CPP includes
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
@@ -14,19 +14,16 @@
 #include <godot_cpp/classes/http_request.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/callable.hpp>
+#include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
+
+// Local includes
 #include "core/persistent/itch_data_cache.h"
 #include "core/core.h"
 #include "submodule_auth/itch_auth.h"
 #include "submodule_entitlements/entitlements.h"
 #include "submodule_user/user_subsystem.h"
 #include "submodule_games/games_subsystem.h"
-
-// Add OS include for opening browser
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/variant/packed_string_array.hpp>
-
-// Auth/OAuth subsystem
-#include "submodule_auth/itch_auth.h"
 
 namespace godot
 {

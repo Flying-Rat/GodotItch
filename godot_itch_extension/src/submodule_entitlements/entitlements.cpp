@@ -1,15 +1,17 @@
 #include "entitlements.h"
-#include "../core/core.h"
-#include "../core/persistent/itch_data_cache.h"
-#include "../submodule_auth/itch_auth.h"
-#include "../core/subsystem_template.h"
-#include <godot_cpp/classes/time.hpp>
 
+// System includes
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+// Local includes
+#include "../core/core.h"
+#include "../core/persistent/itch_data_cache.h"
+#include "../submodule_auth/itch_auth.h"
+#include "../core/subsystem_template.h"
 
 using namespace godot;
 
@@ -21,11 +23,10 @@ void Entitlements::_bind_methods()
     ClassDB::bind_method(D_METHOD("verify_entitlement", "download_key"), &Entitlements::verify_entitlement);
     ClassDB::bind_method(D_METHOD("is_entitled", "download_key"), &Entitlements::is_entitled);
     ClassDB::bind_method(D_METHOD("get_entitlement_record", "download_key"), &Entitlements::get_entitlement_record);
-    
+
     // Cache management
     ClassDB::bind_method(D_METHOD("has_cached_entitlement", "download_key"), &Entitlements::has_cached_entitlement);
-    
-    
+
     // Internal HTTP response handler
     ClassDB::bind_method(D_METHOD("_on_verification_response", "result", "response_code", "headers", "body"), &Entitlements::_on_verification_response);
     
@@ -114,9 +115,6 @@ void Entitlements::_setup_http_request()
         return;
     }
     
-    // Note: HTTPRequest will be managed by the main Itch class which is in the scene tree
-    // For now, we'll rely on the main Itch class's HTTP request or handle this differently
-    
     // Connect HTTP response signal
     http_request->connect("request_completed", Callable(this, "_on_verification_response"));
     
@@ -148,7 +146,6 @@ String Entitlements::_build_verification_url(const String& download_key) const
 
 bool Entitlements::_is_cache_valid(const Dictionary& cached_data) const
 {
-    // Valid if it has a timestamp. TTL-based expiration removed for simplicity.
     return cached_data.has("timestamp");
 }
 
@@ -306,5 +303,3 @@ bool Entitlements::has_cached_entitlement(const String& download_key) const
     Dictionary cached_result = _get_cached_verification(download_key);
     return !cached_result.is_empty();
 }
-
-// TTL configuration removed — cache entries will remain until cleared explicitly

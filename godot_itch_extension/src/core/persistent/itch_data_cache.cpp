@@ -9,15 +9,17 @@ using namespace godot;
 
 ItchDataCache* ItchDataCache::instance = nullptr;
 
-void ItchDataCache::_bind_methods() {
+void ItchDataCache::_bind_methods()
+{
     ClassDB::bind_method(D_METHOD("is_verified", "download_key"), &ItchDataCache::is_verified);
-    ClassDB::bind_method(D_METHOD("set_verified", "download_key", "verified", "metadata"), &ItchDataCache::set_verified, DEFVAL(Dictionary()));
+    ClassDB::bind_method(D_METHOD("set_verified", "download_key", "verified", "metadata"),
+                         &ItchDataCache::set_verified, DEFVAL(Dictionary()));
     ClassDB::bind_method(D_METHOD("get_verification_data", "download_key"), &ItchDataCache::get_verification_data);
     ClassDB::bind_method(D_METHOD("clear_verification", "download_key"), &ItchDataCache::clear_verification);
     ClassDB::bind_method(D_METHOD("clear_all_data"), &ItchDataCache::clear_all_data);
 }
 
-ItchDataCache* ItchDataCache::get_singleton() {
+ItchDataCache* ItchDataCache::get_singleton()
     if (!instance) {
         instance = memnew(ItchDataCache);
     }

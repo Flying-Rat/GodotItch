@@ -17,50 +17,41 @@ using namespace godot;
 
 static Itch* ItchPtr;
 
-void initialize_godotitch_module(ModuleInitializationLevel level) {
-    if(level == MODULE_INITIALIZATION_LEVEL_CORE){
+void initialize_godotitch_module(ModuleInitializationLevel level)
+{
+    if (level == MODULE_INITIALIZATION_LEVEL_CORE) {
         // Register Core first
         ClassDB::register_class<Core>();
-        
-        // Register data cache
+
+        // Register submodules in dependency order
         ClassDB::register_class<ItchDataCache>();
-        
-        // Register auth submodule  
         ClassDB::register_class<ItchAuth>();
-        
-        // Register entitlements module
         ClassDB::register_class<Entitlements>();
-        
-        // Register user module
         ClassDB::register_class<User>();
-        
-        // Register games module
         ClassDB::register_class<Games>();
-        
-        
-        // Register main Itch class
         ClassDB::register_class<Itch>();
-        
         // Initialize singletons in dependency order
-    Core::get_singleton()->initialize();
-    ItchAuth::initialize();
-    Entitlements::initialize();
-    User::initialize();
-    Games::initialize();
-        
+        Core::get_singleton()->initialize();
+        ItchAuth::initialize();
+        Entitlements::initialize();
+        User::initialize();
+        Games::initialize();
+
         // Register the singleton instance
         ItchPtr = memnew(Itch);
         Engine::get_singleton()->register_singleton("Itch", ItchPtr);
     }
 }
 
-void uninitialize_godotitch_module(ModuleInitializationLevel level) {
-    if(level == MODULE_INITIALIZATION_LEVEL_CORE){
+void uninitialize_godotitch_module(ModuleInitializationLevel level)
+{
+    if (level == MODULE_INITIALIZATION_LEVEL_CORE) 
+    {
         Engine::get_singleton()->unregister_singleton("Itch");
         memdelete(ItchPtr);
-        
-    // Shutdown singletons in reverse order
-    Games::shutdown();
+
+        // Shutdown singletons in reverse order
+        Games::shutdown();
         User::shutdown();
         Entitlements::shutdown();
         ItchAuth::shutdown();

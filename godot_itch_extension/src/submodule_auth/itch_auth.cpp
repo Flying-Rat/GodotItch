@@ -1,9 +1,13 @@
 #include "itch_auth.h"
-#include "core/persistent/itch_data_cache.h"
-#include "../core/subsystem_template.h"
+
+// System includes
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+
+// Local includes
+#include "core/persistent/itch_data_cache.h"
+#include "../core/subsystem_template.h"
 
 using namespace godot;
 
@@ -36,10 +40,6 @@ void ItchAuth::_bind_methods()
     // OAuth token
     ClassDB::bind_method(D_METHOD("set_oauth_token", "token"), &ItchAuth::set_oauth_token);
     ClassDB::bind_method(D_METHOD("get_oauth_token"), &ItchAuth::get_oauth_token);
-
-    // OAuth flow management
-    ClassDB::bind_method(D_METHOD("build_oauth_authorize_url", "client_id", "redirect_uri", "state"), &ItchAuth::build_oauth_authorize_url, DEFVAL(""), DEFVAL(""), DEFVAL(""));
-    ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"), &ItchAuth::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
 }
 
 ItchAuth::ItchAuth()

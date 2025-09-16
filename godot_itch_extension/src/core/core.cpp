@@ -7,12 +7,13 @@ using namespace godot;
 
 static Core* s_core_instance = nullptr;
 
-void Core::_bind_methods() {
+void Core::_bind_methods()
+{
     // Initialization
     ClassDB::bind_method(D_METHOD("initialize"), &Core::initialize);
     ClassDB::bind_method(D_METHOD("shutdown"), &Core::shutdown);
     ClassDB::bind_method(D_METHOD("is_initialized"), &Core::is_initialized);
-    
+
     // Configuration
     ClassDB::bind_method(D_METHOD("set_game_id", "game_id"), &Core::set_game_id);
     ClassDB::bind_method(D_METHOD("get_game_id"), &Core::get_game_id);
