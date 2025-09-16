@@ -15,26 +15,21 @@ using namespace godot;
 class Games : public Object {
     GDCLASS(Games, Object);
 
-private:
-    static Games* instance;
-    
 protected:
     static void _bind_methods();
 
 public:
-    // Singleton access
+    // Lifecycle via SubsystemTemplate<Games>
     static Games* get_singleton();
     static void initialize();
     static void shutdown();
-    
+
     // Constructor/Destructor
     Games();
     ~Games();
-    
-    // Basic game methods (minimal API)
-    Dictionary get_game_info(int game_id);
-    Array search_games(const String& query, const Dictionary& options = Dictionary());
-    bool check_game_ownership(int game_id);
+
+    // TODO(jakub.hubacek): suggest user-friendly game related methods here
+    // e.g. get_game_info, search_games, check_game_ownership, etc.
 };
 
 #endif // GAMES_SUBSYSTEM_H

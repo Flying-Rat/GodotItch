@@ -90,9 +90,6 @@ Itch::Itch()
 	s_singleton = this;
 	data_cache = ItchDataCache::get_singleton();
 	auth = ItchAuth::get_singleton();
-	if (auth) {
-		auth->initialize();
-	}
 
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
@@ -136,28 +133,33 @@ bool Itch::itchInitEx(uint32_t app_id, bool embed_callbacks)
 // Delegate launch detection to ItchAuth submodule
 void Itch::detect_launch_source()
 {
-	ItchAuth::get_singleton()->detect_launch_source();
+	ItchAuth::get_singleton()->do_detect_launch_source();
 }
 
 // Delegate authentication methods to ItchAuth submodule
-bool Itch::is_launched_via_itch() const { 
+bool Itch::is_launched_via_itch() const 
+{ 
 	return ItchAuth::get_singleton()->is_launched_via_itch(); 
 }
 
-bool Itch::has_api_key_present() const { 
+bool Itch::has_api_key_present() const 
+{ 
 	return ItchAuth::get_singleton()->has_api_key_present(); 
 }
 
 // Module access methods
-Entitlements* Itch::get_entitlements() const {
+Entitlements* Itch::get_entitlements() const 
+{
 	return Entitlements::get_singleton();
 }
 
-Core* Itch::get_core() const {
+Core* Itch::get_core() const 
+{
 	return Core::get_singleton();
 }
 
-ItchAuth* Itch::get_auth() const {
+ItchAuth* Itch::get_auth() const 
+{
 	return ItchAuth::get_singleton();
 }
 

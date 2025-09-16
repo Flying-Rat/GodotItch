@@ -15,26 +15,18 @@ using namespace godot;
 class User : public Object {
     GDCLASS(User, Object);
 
-private:
-    static User* instance;
-    
 protected:
     static void _bind_methods();
 
 public:
-    // Singleton access
+    // Lifecycle via SubsystemTemplate<User>
     static User* get_singleton();
     static void initialize();
     static void shutdown();
-    
+
     // Constructor/Destructor
     User();
     ~User();
-    
-    // Basic user methods (minimal API)
-    Dictionary get_current_user_profile();
-    bool is_user_authenticated();
-    Array get_user_games_as_developer();
 };
 
 #endif // USER_SUBSYSTEM_H

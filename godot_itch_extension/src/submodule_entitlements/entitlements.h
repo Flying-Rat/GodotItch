@@ -30,7 +30,6 @@ class Entitlements : public Object {
     GDCLASS(Entitlements, Object);
 
 private:
-    static Entitlements* s_singleton;
     
     // Core dependencies
     Core* core = nullptr;
@@ -65,8 +64,13 @@ public:
     Entitlements();
     ~Entitlements();
     
-    void initialize();
-    void shutdown();
+    // Lifecycle (static wrappers - managed by SubsystemTemplate)
+    static void initialize();
+    static void shutdown();
+
+    // Instance-level init/shutdown (internal)
+    void instance_initialize();
+    void instance_shutdown();
     
     // Core entitlements API
     void verify_entitlement(const String& download_key);

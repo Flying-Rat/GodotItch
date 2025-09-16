@@ -2,6 +2,7 @@
 #include "../core/core.h"
 #include "../core/persistent/itch_data_cache.h"
 #include "../submodule_auth/itch_auth.h"
+#include "../core/subsystem_template.h"
 #include <godot_cpp/classes/time.hpp>
 
 #include <godot_cpp/classes/os.hpp>
@@ -11,8 +12,7 @@
 
 using namespace godot;
 
-// Static singleton instance
-Entitlements* Entitlements::s_singleton = nullptr;
+// Singleton lifecycle is handled by SubsystemTemplate<Entitlements>
 
 void Entitlements::_bind_methods()
 {
@@ -40,13 +40,23 @@ void Entitlements::_bind_methods()
 
 Entitlements* Entitlements::get_singleton()
 {
-    return s_singleton;
+    return SubsystemTemplate<Entitlements>::get_singleton();
 }
 
-Entitlements::Entitlements()
+// Static lifecycle wrappers used by callers (register_types etc.)
+void Entitlements::initialize()
 {
-    s_singleton = this;
-    UtilityFunctions::print("Entitlements: Constructor called");
+    SubsystemTemplate<Entitlements>::initialize();
+}
+
+void Entitlements::shutdown()
+{
+    SubsystemTemplate<Entitlements>::shutdown();
+}
+
+Entitlements::Entitlements() 
+{ 
+    UtilityFunctions::print("Entitlements: Constructor called"); 
 }
 
 Entitlements::~Entitlements()
@@ -55,43 +65,43 @@ Entitlements::~Entitlements()
     {
         http_request->queue_free();
     }
-    if (s_singleton == this)
-        s_singleton = nullptr;
 }
 
-void Entitlements::initialize()
+#include <godot_cpp/variant/utility_functions.hpp>
+
+void Entitlements::instance_initialize()
 {
     UtilityFunctions::print("Entitlements: Initializing...");
-    
+
     // Get Core dependencies
     core = godot::Core::get_singleton();
     if (!core) {
         UtilityFunctions::push_error("Entitlements: Core module not available");
         return;
     }
-    
+
     data_cache = core->get_persistent_cache();
     if (!data_cache) {
         UtilityFunctions::push_error("Entitlements: ItchDataCache not available from Core");
         return;
     }
-    
+
     // Setup HTTP request for verification
     _setup_http_request();
-    
+
     UtilityFunctions::print("Entitlements: Initialization complete");
 }
 
-void Entitlements::shutdown()
+void Entitlements::instance_shutdown()
 {
     UtilityFunctions::print("Entitlements: Shutting down...");
-    
+
     if (http_request)
     {
         http_request->queue_free();
         http_request = nullptr;
     }
-    
+
     core = nullptr;
     data_cache = nullptr;
     is_verifying = false;

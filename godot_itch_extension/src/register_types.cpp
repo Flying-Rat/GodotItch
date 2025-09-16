@@ -42,11 +42,11 @@ void initialize_godotitch_module(ModuleInitializationLevel level) {
         ClassDB::register_class<Itch>();
         
         // Initialize singletons in dependency order
-        Core::get_singleton()->initialize();
-        ItchAuth::get_singleton()->initialize();
-        Entitlements::get_singleton()->initialize();
-        User::get_singleton()->initialize();
-        Games::get_singleton()->initialize();
+    Core::get_singleton()->initialize();
+    ItchAuth::initialize();
+    Entitlements::initialize();
+    User::initialize();
+    Games::initialize();
         
         // Register the singleton instance
         ItchPtr = memnew(Itch);
@@ -60,10 +60,10 @@ void uninitialize_godotitch_module(ModuleInitializationLevel level) {
         memdelete(ItchPtr);
         
     // Shutdown singletons in reverse order
-    Games::get_singleton()->shutdown();
-        User::get_singleton()->shutdown();
-        Entitlements::get_singleton()->shutdown();
-        ItchAuth::get_singleton()->shutdown();
+    Games::shutdown();
+        User::shutdown();
+        Entitlements::shutdown();
+        ItchAuth::shutdown();
         Core::get_singleton()->shutdown();
     }
 }

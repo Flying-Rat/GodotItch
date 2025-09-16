@@ -1,18 +1,19 @@
 #include "itch_auth.h"
 #include "core/persistent/itch_data_cache.h"
+#include "../core/subsystem_template.h"
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
 
-static ItchAuth *s_auth_instance = nullptr;
+// Use SubsystemTemplate to manage singleton lifecycle
 
 void ItchAuth::_bind_methods()
 {
     // Initialization
-    ClassDB::bind_method(D_METHOD("initialize"), &ItchAuth::initialize);
-    ClassDB::bind_method(D_METHOD("shutdown"), &ItchAuth::shutdown);
+    ClassDB::bind_method(D_METHOD("initialize"), &ItchAuth::instance_initialize);
+    ClassDB::bind_method(D_METHOD("shutdown"), &ItchAuth::instance_shutdown);
     ClassDB::bind_method(D_METHOD("is_initialized"), &ItchAuth::is_initialized);
 
     // Launch detection
@@ -41,34 +42,37 @@ void ItchAuth::_bind_methods()
     ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"), &ItchAuth::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
 }
 
-ItchAuth::ItchAuth()
+ItchAuth::ItchAuth() 
 {
-    s_auth_instance = this;
+    // Constructor implementation
 }
 
-ItchAuth::~ItchAuth()
-{
-    if (s_auth_instance == this)
-    {
-        s_auth_instance = nullptr;
-    }
-    shutdown();
+ItchAuth::~ItchAuth() 
+{ 
+    // Destructor implementation
 }
 
 ItchAuth *ItchAuth::get_singleton()
 {
-    if (!s_auth_instance)
-    {
-        s_auth_instance = memnew(ItchAuth);
-    }
-    return s_auth_instance;
+    return SubsystemTemplate<ItchAuth>::get_singleton();
 }
 
-bool ItchAuth::initialize()
+// Static lifecycle wrappers used by callers
+void ItchAuth::initialize()
+{
+    SubsystemTemplate<ItchAuth>::initialize();
+}
+
+void ItchAuth::shutdown()
+{
+    SubsystemTemplate<ItchAuth>::shutdown();
+}
+
+void ItchAuth::instance_initialize()
 {
     if (initialized)
     {
-        return true;
+        return;
     }
 
     UtilityFunctions::print("ItchAuth: Initializing...");
@@ -77,17 +81,17 @@ bool ItchAuth::initialize()
     ensure_oauth_settings();
 
     // Detect launch source (moved from Core and Itch classes)
-    detect_launch_source();
+    // call internal helper
+    do_detect_launch_source();
 
     // Load any previously cached OAuth token
     load_token_from_cache();
 
     initialized = true;
     UtilityFunctions::print("ItchAuth: Initialization complete");
-    return true;
 }
 
-void ItchAuth::shutdown()
+void ItchAuth::instance_shutdown()
 {
     if (!initialized)
     {
@@ -99,7 +103,7 @@ void ItchAuth::shutdown()
     UtilityFunctions::print("ItchAuth: Shutdown complete");
 }
 
-void ItchAuth::detect_launch_source()
+void ItchAuth::do_detect_launch_source()
 {
     launched_via_itch = false;
     has_api_key = false;

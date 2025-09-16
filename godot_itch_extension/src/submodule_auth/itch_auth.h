@@ -13,7 +13,6 @@ namespace godot
         GDCLASS(ItchAuth, Object);
 
     private:
-        static ItchAuth *instance;
         bool initialized = false;
 
         // Token management
@@ -21,40 +20,48 @@ namespace godot
         void save_token_to_cache();
         void load_token_from_cache();
 
-    // Launch detection (moved from Core class)
-    bool launched_via_itch = false;
-    bool has_api_key = false;
-    String launch_api_key = "";
+        // Launch detection (moved from Core class)
+        bool launched_via_itch = false;
+        bool has_api_key = false;
+        String launch_api_key = "";
 
-    // Project setting keys
-    const String SETTINGS_PREFIX = String("godot_itch/");
-    const String SETTING_API_KEY = String(SETTINGS_PREFIX) + String("api_key");
-    const String SETTING_OAUTH_CLIENT_ID = String(SETTINGS_PREFIX) + String("oauth_client_id");
-    const String SETTING_OAUTH_REDIRECT_URI = String(SETTINGS_PREFIX) + String("oauth_redirect_uri");
-    const String SETTING_OAUTH_SCOPE = String(SETTINGS_PREFIX) + String("oauth_scope");
+        // Project setting keys
+        const String SETTINGS_PREFIX = String("godot_itch/");
+        const String SETTING_API_KEY = String(SETTINGS_PREFIX) + String("api_key");
+        const String SETTING_OAUTH_CLIENT_ID = String(SETTINGS_PREFIX) + String("oauth_client_id");
+        const String SETTING_OAUTH_REDIRECT_URI = String(SETTINGS_PREFIX) + String("oauth_redirect_uri");
+        const String SETTING_OAUTH_SCOPE = String(SETTINGS_PREFIX) + String("oauth_scope");
+
         void ensure_oauth_settings();
         String get_api_key_from_settings() const;
 
+    
     protected:
         static void _bind_methods();
-
+    
     public:
         static ItchAuth *get_singleton();
-
+    
         ItchAuth();
         ~ItchAuth();
+        
+        // Lifecycle (static wrappers managed by SubsystemTemplate)
+        static void initialize();
+        static void shutdown();
 
-        // Initialization
-        bool initialize();
-        void shutdown();
+    // Instance-level init/shutdown
+    void instance_initialize();
+    void instance_shutdown();
         bool is_initialized() const { return initialized; }
-
+        
+        
+        void do_detect_launch_source();
         // Launch detection (moved from Core)
-        void detect_launch_source(); // Made public for delegation
+        // Internal launch detection helper (kept private in implementation)
         bool is_launched_via_itch() const;
         bool has_api_key_present() const;
         String get_launch_api_key() const;
-
+    
         // API Key management
         void set_api_key(const String &api_key);
         String get_api_key() const;
