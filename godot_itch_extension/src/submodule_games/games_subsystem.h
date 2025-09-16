@@ -7,23 +7,21 @@
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/string.hpp>
 
+#include "../core/submodule.h"
+
 using namespace godot;
 
 /**
  * Games - Minimal stub for game management
+ * Uses CRTP for singleton pattern - no need for explicit static method declarations!
  */
-class Games : public Object {
-    GDCLASS(Games, Object);
+class Games : public Submodule<Games> {
+    GDCLASS(Games, Submodule<Games>);
 
 protected:
     static void _bind_methods();
 
 public:
-    // Lifecycle via SubsystemTemplate<Games>
-    static Games* get_singleton();
-    static void initialize();
-    static void shutdown();
-
     // Constructor/Destructor
     Games();
     ~Games();

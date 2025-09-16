@@ -12,9 +12,11 @@
 #include "../core/core.h"
 #include "../core/persistent/itch_data_cache.h"
 #include "../submodule_auth/itch_auth.h"
-#include "../core/subsystem_template.h"
 
 using namespace godot;
+
+// Explicit template instantiation for Entitlements CRTP
+template class Submodule<Entitlements>;
 
 // Constants
 namespace {
@@ -22,8 +24,6 @@ namespace {
     constexpr double HTTP_TIMEOUT_SECONDS = 10.0;
     constexpr const char* USER_AGENT = "GodotItch-Entitlements/1.0";
 }
-
-// Singleton lifecycle is handled by SubsystemTemplate<Entitlements>
 
 void Entitlements::_bind_methods()
 {
@@ -46,23 +46,7 @@ void Entitlements::_bind_methods()
     ADD_SIGNAL(MethodInfo("entitlement_error", PropertyInfo(Variant::STRING, "error_message")));
 }
 
-Entitlements* Entitlements::get_singleton()
-{
-    return SubsystemTemplate<Entitlements>::get_singleton();
-}
-
-// Static lifecycle wrappers used by callers (register_types etc.)
-void Entitlements::initialize()
-{
-    SubsystemTemplate<Entitlements>::initialize();
-}
-
-void Entitlements::shutdown()
-{
-    SubsystemTemplate<Entitlements>::shutdown();
-}
-
-Entitlements::Entitlements() 
+Entitlements::Entitlements()
 { 
     UtilityFunctions::print("Entitlements: Constructor called"); 
 }
@@ -101,8 +85,8 @@ void Entitlements::_cleanup_http_request()
 }
 
 
-void Entitlements::instance_initialize()
-{
+// Override virtual initialization from Submodule<Entitlements>
+void Entitlements::initialize_instance() {
     UtilityFunctions::print("Entitlements: Initializing...");
 
     // Get Core dependencies
@@ -131,7 +115,8 @@ void Entitlements::initialize_with_scene(Node *scene_node)
     UtilityFunctions::print("Entitlements: Using temporary HTTPRequest approach - no persistent setup required");
 }
 
-void Entitlements::instance_shutdown()
+// Override virtual shutdown from Submodule<Entitlements>
+void Entitlements::shutdown_instance()
 {
     UtilityFunctions::print("Entitlements: Shutting down...");
 

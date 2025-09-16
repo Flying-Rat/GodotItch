@@ -6,11 +6,17 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
+#include "../core/submodule.h"
+
 namespace godot
 {
-    class ItchAuth : public Object
+    /**
+     * ItchAuth - Handles authentication and launch detection
+     * Uses CRTP for singleton pattern - no need for explicit static method declarations!
+     */
+    class ItchAuth : public Submodule<ItchAuth>
     {
-        GDCLASS(ItchAuth, Object);
+        GDCLASS(ItchAuth, Submodule<ItchAuth>);
 
     private:
         bool initialized = false;
@@ -40,24 +46,19 @@ namespace godot
         static void _bind_methods();
     
     public:
-        static ItchAuth *get_singleton();
-    
         ItchAuth();
         ~ItchAuth();
-        
-        // Lifecycle (static wrappers managed by SubsystemTemplate)
-        static void initialize();
-        static void shutdown();
 
-    // Instance-level init/shutdown
-    void instance_initialize();
-    void instance_shutdown();
+        // Instance state
         bool is_initialized() const { return initialized; }
+
+        // Override virtual lifecycle methods from Submodule<ItchAuth>
+        void initialize_instance() override;
+        void shutdown_instance() override;
         
-        
+    public:
+        // Launch detection API (exposed for main Itch class)
         void do_detect_launch_source();
-        // Launch detection (moved from Core)
-        // Internal launch detection helper (kept private in implementation)
         bool is_launched_via_itch() const;
         bool has_api_key_present() const;
         String get_launch_api_key() const;

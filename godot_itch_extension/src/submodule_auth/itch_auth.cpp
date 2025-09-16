@@ -7,17 +7,15 @@
 
 // Local includes
 #include "core/persistent/itch_data_cache.h"
-#include "../core/subsystem_template.h"
 
 using namespace godot;
 
-// Use SubsystemTemplate to manage singleton lifecycle
+// Explicit template instantiation for ItchAuth CRTP
+template class Submodule<ItchAuth>;
 
 void ItchAuth::_bind_methods()
 {
     // Initialization
-    ClassDB::bind_method(D_METHOD("initialize"), &ItchAuth::instance_initialize);
-    ClassDB::bind_method(D_METHOD("shutdown"), &ItchAuth::instance_shutdown);
     ClassDB::bind_method(D_METHOD("is_initialized"), &ItchAuth::is_initialized);
 
     // Launch detection
@@ -52,24 +50,8 @@ ItchAuth::~ItchAuth()
     // Destructor implementation
 }
 
-ItchAuth *ItchAuth::get_singleton()
-{
-    return SubsystemTemplate<ItchAuth>::get_singleton();
-}
-
-// Static lifecycle wrappers used by callers
-void ItchAuth::initialize()
-{
-    SubsystemTemplate<ItchAuth>::initialize();
-}
-
-void ItchAuth::shutdown()
-{
-    SubsystemTemplate<ItchAuth>::shutdown();
-}
-
-void ItchAuth::instance_initialize()
-{
+// Override virtual initialization from Submodule<ItchAuth>
+void ItchAuth::initialize_instance() {
     if (initialized)
     {
         return;
@@ -91,8 +73,8 @@ void ItchAuth::instance_initialize()
     UtilityFunctions::print("ItchAuth: Initialization complete");
 }
 
-void ItchAuth::instance_shutdown()
-{
+// Override virtual shutdown from Submodule<ItchAuth>
+void ItchAuth::shutdown_instance() {
     if (!initialized)
     {
         return;

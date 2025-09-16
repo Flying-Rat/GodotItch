@@ -5,26 +5,13 @@
 #include <godot_cpp/core/memory.hpp>
 
 // Local includes
-#include "../core/subsystem_template.h"
+#include "../core/submodule.h"
 using namespace godot;
 
-// Forward singleton methods to SubsystemTemplate<Games>
-Games* Games::get_singleton()
-{
-    return SubsystemTemplate<Games>::get_singleton();
-}
+// Explicit template instantiation for Games CRTP
+template class Submodule<Games>;
 
-void Games::initialize()
-{
-    SubsystemTemplate<Games>::initialize();
-}
-
-void Games::shutdown()
-{
-    SubsystemTemplate<Games>::shutdown();
-}
-
-Games::Games() : Object()
+Games::Games()
 {
 }
 

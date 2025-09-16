@@ -6,13 +6,17 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include "persistent/itch_data_cache.h"
+#include "submodule.h"
 
 namespace godot {
-    class Core : public Object {
-        GDCLASS(Core, Object);
+    /**
+     * Core - Central configuration and initialization
+     * Uses CRTP for singleton pattern - no need for explicit static method declarations!
+     */
+    class Core : public Submodule<Core> {
+        GDCLASS(Core, Submodule<Core>);
         
     private:
-        static Core* instance;
         bool initialized = false;
         
         ItchDataCache* persistent_cache = nullptr;
@@ -29,17 +33,18 @@ namespace godot {
         static void _bind_methods();
         
     public:
-        static Core* get_singleton();
-        
         Core();
         ~Core();
         
-        // Initialization
-        bool initialize();
-        void shutdown();
+        // Instance state 
         bool is_initialized() const { return initialized; }
+
+        // Override virtual lifecycle methods from Submodule<Core>
+        void initialize_instance() override;
+        void shutdown_instance() override;
         
-        // Configuration
+    public:
+        // Configuration (exposed for main Itch class)
         void set_game_id(const String& game_id);
         String get_game_id() const;
         

@@ -5,13 +5,12 @@
 
 using namespace godot;
 
-static Core* s_core_instance = nullptr;
+// Explicit template instantiation for Core CRTP
+template class Submodule<Core>;
 
 void Core::_bind_methods()
 {
     // Initialization
-    ClassDB::bind_method(D_METHOD("initialize"), &Core::initialize);
-    ClassDB::bind_method(D_METHOD("shutdown"), &Core::shutdown);
     ClassDB::bind_method(D_METHOD("is_initialized"), &Core::is_initialized);
 
     // Configuration
@@ -20,27 +19,17 @@ void Core::_bind_methods()
 }
 
 Core::Core() {
-    s_core_instance = this;
     persistent_cache = nullptr;
 }
 
 Core::~Core() {
-    if (s_core_instance == this) {
-        s_core_instance = nullptr;
-    }
-    shutdown();
+    // Destructor - cleanup handled by shutdown_impl()
 }
 
-Core* Core::get_singleton() {
-    if (!s_core_instance) {
-        s_core_instance = memnew(Core);
-    }
-    return s_core_instance;
-}
-
-bool Core::initialize() {
+// Override virtual initialization from Submodule<Core>
+void Core::initialize_instance() {
     if (initialized) {
-        return true;
+        return;
     }
     
     UtilityFunctions::print("Core: Initializing...");
@@ -56,10 +45,10 @@ bool Core::initialize() {
     
     initialized = true;
     UtilityFunctions::print("Core: Initialization complete");
-    return true;
 }
 
-void Core::shutdown() {
+// Override virtual shutdown from Submodule<Core>  
+void Core::shutdown_instance() {
     if (!initialized) {
         return;
     }

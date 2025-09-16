@@ -7,6 +7,7 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/callable.hpp>
 #include "../core/core.h"
+#include "../core/submodule.h"
 #include <godot_cpp/classes/node.hpp>
 
 using namespace godot;
@@ -16,6 +17,7 @@ class ItchDataCache;
 
 /**
  * Entitlements - Handles purchase verification and entitlement caching
+ * Uses CRTP for singleton pattern - no need for explicit static method declarations!
  * 
  * This module provides:
  * - Purchase/entitlement verification against itch.io API
@@ -27,8 +29,8 @@ class ItchDataCache;
  * - Game ID must be configured in project settings (godot_itch/game_id)
  * - API key must be available through ItchAuth module
  */
-class Entitlements : public Object {
-    GDCLASS(Entitlements, Object);
+class Entitlements : public Submodule<Entitlements> {
+    GDCLASS(Entitlements, Submodule<Entitlements>);
 
 private:
     
@@ -62,22 +64,18 @@ protected:
     static void _bind_methods();
 
 public:
-    // Singleton access
-    static Entitlements* get_singleton();
-    
     // Lifecycle
     Entitlements();
     ~Entitlements();
-    
-    // Lifecycle (static wrappers - managed by SubsystemTemplate)
-    static void initialize();
-    static void shutdown();
 
-    // Instance-level init/shutdown (internal)
-    void instance_initialize();
-    void instance_shutdown();
     // Scene-aware initialization so HTTPRequest can be added to a scene node
     void initialize_with_scene(Node *scene_node);
+
+        // Override virtual lifecycle methods from Submodule<Entitlements>
+    void initialize_instance() override;
+    void shutdown_instance() override;
+    
+public:
     
     // Core entitlements API
     void verify_entitlement(const String& download_key);

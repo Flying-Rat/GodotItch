@@ -30,16 +30,22 @@ void initialize_godotitch_module(ModuleInitializationLevel level)
         ClassDB::register_class<User>();
         ClassDB::register_class<Games>();
         ClassDB::register_class<Itch>();
-        // Initialize singletons in dependency order
-        Core::get_singleton()->initialize();
+        // Phase 1: Create singletons in dependency order
+        Core::create_singleton();
+        ItchAuth::create_singleton();
+        Entitlements::create_singleton();
+        User::create_singleton();
+        Games::create_singleton();
+
+        // Phase 2: Initialize singletons (calls virtual initialize_impl() on each)
+        Core::initialize();
         ItchAuth::initialize();
         Entitlements::initialize();
         User::initialize();
         Games::initialize();
 
-        // Now initialize instance dependencies after all singletons exist
-        ItchAuth::get_singleton()->instance_initialize();
-        Entitlements::get_singleton()->instance_initialize();
+        // Additional scene-based initialization for some modules
+        Entitlements::get_singleton()->initialize_with_scene(nullptr);
 
         // Register the singleton instance
         ItchPtr = memnew(Itch);
@@ -54,12 +60,12 @@ void uninitialize_godotitch_module(ModuleInitializationLevel level)
         Engine::get_singleton()->unregister_singleton("Itch");
         memdelete(ItchPtr);
 
-        // Shutdown singletons in reverse order
+        // Shutdown singletons in reverse order (calls shutdown_impl() then deletes)
         Games::shutdown();
         User::shutdown();
         Entitlements::shutdown();
         ItchAuth::shutdown();
-        Core::get_singleton()->shutdown();
+        Core::shutdown();
     }
 }
 
