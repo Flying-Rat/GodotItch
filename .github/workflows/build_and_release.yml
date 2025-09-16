@@ -154,7 +154,7 @@ jobs:
       - name: Init submodules
         run: git submodule update --init --recursive
       - name: Install SCons
-        run: choco install scons
+        run: pip install scons
       - name: Build for Windows x86_64
         run: |
           cd godot_itch_extension
