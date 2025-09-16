@@ -18,8 +18,8 @@ config/icon="res://icon.svg"
 [godot_itch]
 
 auto_autoload=false
-api_key=""
-game_id=""
-oauth_client_id=""
-oauth_redirect_uri=""
+api_key="jPVybXVHgwIC3ib3PGR99pn4zAUOrFP2emTja4EV"
+game_id="3719972"
+oauth_client_id="b08e822ea50bd6a64ee76401765813fd"
 oauth_scope="profile:me"
+oauth_redirect_uri="urn:ietf:wg:oauth:2.0:oob"

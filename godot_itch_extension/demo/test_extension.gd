@@ -1,4 +1,4 @@
-extends Node
+extends Control
 
 @onready var output: RichTextLabel = $Panel/VBox/MarginContainer/Scroll/Output
 @onready var download_key_line_edit: LineEdit = $Panel/VBox/Buttons/DownloadKey
@@ -113,7 +113,7 @@ func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
 	else:		
 		output.append_text("[color=red]Download key is INVALID![/color]\n")
 
-func _on_button_pressed() -> void:
+func _on_run_tests_button_pressed() -> void:
 	output.append_text("[b]Testing sequence...[/b]\n")
 	Itch.get_my_games()
 	await get_tree().create_timer(3.0).timeout

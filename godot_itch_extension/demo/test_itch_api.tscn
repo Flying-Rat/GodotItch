@@ -2,10 +2,17 @@
 
 [ext_resource type="Script" uid="uid://dvipbbcrky6q8" path="res://test_extension.gd" id="1_test123"]
 
-[node name="Test" type="Node"]
+[node name="TestItchApi" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_test123")
 
 [node name="Panel" type="Panel" parent="."]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -25,9 +32,9 @@ theme_override_constants/separation = 15
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="BtnRunTest" type="Button" parent="Panel/VBox/Buttons"]
+[node name="BtnRunTests" type="Button" parent="Panel/VBox/Buttons"]
 layout_mode = 2
-text = "Run Test"
+text = "Run Tests"
 
 [node name="BtnGetMe" type="Button" parent="Panel/VBox/Buttons"]
 layout_mode = 2
@@ -67,7 +74,7 @@ size_flags_vertical = 3
 bbcode_enabled = true
 fit_content = true
 
-[connection signal="pressed" from="Panel/VBox/Buttons/BtnRunTest" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/BtnRunTests" to="." method="_on_run_tests_button_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnGetMe" to="." method="_on_get_me_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnMyGames" to="." method="_on_my_games_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnDownloadKey" to="." method="_on_btn_download_key_pressed"]
