@@ -1,0 +1,84 @@
+name: Build and Release GDExtension
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [created]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: sudo apt-get install -y scons
+      - name: Build for Linux
+        run: |
+          cd godot_itch_extension
+          scons platform=linux
+      - name: Copy binaries
+        run: |
+          mkdir -p addons/godot_itch/bin/linux
+          cp godot_itch_extension/bin/*linux* addons/godot_itch/bin/linux/
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-linux
+          path: addons/godot_itch/bin/linux/*
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: brew install scons
+      - name: Build for Mac
+        run: |
+          cd godot_itch_extension
+          scons platform=macos
+      - name: Copy binaries
+        run: |
+          mkdir -p addons/godot_itch/bin/macos
+          cp godot_itch_extension/bin/*osx* addons/godot_itch/bin/macos/
+      - name: Upload MacOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-macos
+          path: addons/godot_itch/bin/macos/*
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install SCons
+        run: choco install scons
+      - name: Build for Windows
+        run: |
+          cd godot_itch_extension
+          scons platform=windows
+      - name: Copy binaries
+        run: |
+          mkdir addons\godot_itch\bin\windows
+          copy godot_itch_extension\bin\*windows* addons\godot_itch\bin\windows\
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotitch-windows
+          path: addons/godot_itch/bin/windows/*
+
+  release:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Create Release with Full Folder
+        uses: softprops/action-gh-release@v2
+        with:
+          files: addons/godot_itch/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
