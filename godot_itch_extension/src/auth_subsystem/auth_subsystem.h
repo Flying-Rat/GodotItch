@@ -65,10 +65,6 @@ namespace godot
         bool has_api_key_present() const;
         String get_launch_api_key() const;
 
-        // API Key management
-        void set_api_key(const String &api_key);
-        String get_api_key() const;
-
         // OAuth configuration
         void set_oauth_client_id(const String &client_id);
         void set_oauth_redirect_uri(const String &redirect_uri);

@@ -15,7 +15,6 @@ void Itch::_bind_methods()
 	// API methods
 	ClassDB::bind_method(D_METHOD("get_me"), &Itch::get_me);
 	ClassDB::bind_method(D_METHOD("get_my_games"), &Itch::get_my_games);
-	ClassDB::bind_method(D_METHOD("test_request_http"), &Itch::test_request_http);
 	ClassDB::bind_method(D_METHOD("get_game_purchases", "game_id"), &Itch::get_game_purchases, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_game_uploads", "game_id"), &Itch::get_game_uploads, DEFVAL(""));
 
@@ -23,9 +22,7 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("verify_download_key", "download_key"), &Itch::verify_download_key);
 
 	// Utility methods
-	ClassDB::bind_method(D_METHOD("set_api_key", "api_key"), &Itch::set_api_key);
 	ClassDB::bind_method(D_METHOD("set_game_id", "game_id"), &Itch::set_game_id);
-	ClassDB::bind_method(D_METHOD("get_api_key"), &Itch::get_api_key);
 	ClassDB::bind_method(D_METHOD("get_game_id"), &Itch::get_game_id);
 
 	// Launch detection getters
@@ -207,10 +204,10 @@ void Itch::_setup_http_request()
 
 String Itch::_build_api_url(const String &endpoint) const
 {
-	String api_key = get_api_key();
+	String api_key = Auth::get_singleton()->get_launch_api_key();
 	if (api_key.is_empty())
 	{
-		UtilityFunctions::push_error("Itch.io API key not set in project settings");
+		UtilityFunctions::push_error("Itch.io Launch API key not set!");
 		return "";
 	}
 	return "https://itch.io/api/1/" + api_key + endpoint;
@@ -229,11 +226,19 @@ void Itch::get_me()
 	if (url.is_empty())
 		return;
 
+	String token = Auth::get_singleton()->get_oauth_token();
+	if (token.is_empty())
+	{
+		UtilityFunctions::push_error("OAuth token not set - user not logged in");
+		return;
+	}
+
 	pending_request_type = "get_me";
 	pending_request_data.clear();
 
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
+	headers.push_back("Authorization: Bearer " + Auth::get_singleton()->get_oauth_token());
 	// Diagnostics: log whether HTTPRequest is inside scene tree
 	if (http_request->is_inside_tree())
 	{
@@ -248,19 +253,6 @@ void Itch::get_me()
 	// Schedule an internal deferred method which will call HTTPRequest::request
 	call_deferred("_perform_request", url, headers);
 	UtilityFunctions::print("Itch: Deferred internal request scheduled");
-}
-
-void Itch::test_request_http()
-{
-	if (!http_request)
-	{
-		UtilityFunctions::print("Itch: test_request_http - http_request not initialized");
-		return;
-	}
-	String url = "http://example.com/";
-	PackedStringArray headers;
-	headers.push_back("User-Agent: GodotItch/1.0");
-	call_deferred("_perform_request", url, headers);
 }
 
 void Itch::get_my_games()
@@ -459,19 +451,9 @@ void Itch::post_request_check()
 }
 
 // Utility Methods - delegate to modular architecture
-void Itch::set_api_key(const String &api_key)
-{
-	Auth::get_singleton()->set_api_key(api_key);
-}
-
 void Itch::set_game_id(const String &game_id)
 {
 	Core::get_singleton()->set_game_id(game_id);
-}
-
-String Itch::get_api_key() const
-{
-	return Auth::get_singleton()->get_api_key();
 }
 
 String Itch::get_game_id() const

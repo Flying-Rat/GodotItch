@@ -37,8 +37,8 @@ namespace godot
         HTTPRequest *http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
-    DataCache* data_cache = nullptr;
-    Auth* auth = nullptr;
+        DataCache *data_cache = nullptr;
+        Auth *auth = nullptr;
 
         // OAuth configuration
         String oauth_client_id;
@@ -88,9 +88,7 @@ namespace godot
         void verify_download_key(const String &download_key);
 
         // Utility methods
-        void set_api_key(const String &api_key);
         void set_game_id(const String &game_id);
-        String get_api_key() const;
         String get_game_id() const;
 
         // OAuth helpers
@@ -116,8 +114,7 @@ namespace godot
         // Entitlements signal handlers
         void _on_entitlement_verified(bool success, const Dictionary& data);
         void _on_entitlement_error(const String& error_message);
-        // Test helper: perform a plain HTTP request to example.com
-        void test_request_http();
+
         // Internal deferred request helper
         void _perform_request(const String &url, const PackedStringArray &headers);
         // Post-request diagnostic check

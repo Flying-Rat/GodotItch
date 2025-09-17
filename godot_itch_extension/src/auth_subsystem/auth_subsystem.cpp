@@ -23,10 +23,6 @@ void Auth::_bind_methods()
     ClassDB::bind_method(D_METHOD("has_api_key_present"), &Auth::has_api_key_present);
     ClassDB::bind_method(D_METHOD("get_launch_api_key"), &Auth::get_launch_api_key);
 
-    // API Key management
-    ClassDB::bind_method(D_METHOD("set_api_key", "api_key"), &Auth::set_api_key);
-    ClassDB::bind_method(D_METHOD("get_api_key"), &Auth::get_api_key);
-
     // OAuth configuration
     ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &Auth::set_oauth_client_id);
     ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &Auth::set_oauth_redirect_uri);
@@ -38,6 +34,8 @@ void Auth::_bind_methods()
     // OAuth token
     ClassDB::bind_method(D_METHOD("set_oauth_token", "token"), &Auth::set_oauth_token);
     ClassDB::bind_method(D_METHOD("get_oauth_token"), &Auth::get_oauth_token);
+    ClassDB::bind_method(D_METHOD("build_oauth_authorize_url"), &Auth::build_oauth_authorize_url);
+    ClassDB::bind_method(D_METHOD("start_oauth_authorization"), &Auth::start_oauth_authorization);
 }
 
 Auth::Auth()
@@ -148,23 +146,6 @@ bool Auth::has_api_key_present() const
 String Auth::get_launch_api_key() const
 {
     return launch_api_key;
-}
-
-// API Key management methods
-void Auth::set_api_key(const String &api_key)
-{
-    // For development, allow user to set API key (not stored in project settings)
-    dev_api_key = api_key;
-}
-
-String Auth::get_api_key() const
-{
-    // If launched via itch, use launch_api_key
-    if (!launch_api_key.is_empty()) {
-        return launch_api_key;
-    }
-    // For development, allow user to set API key (not stored in project settings)
-    return dev_api_key;
 }
 
 // OAuth configuration methods
