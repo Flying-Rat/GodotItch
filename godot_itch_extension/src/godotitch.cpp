@@ -246,21 +246,6 @@ void Itch::get_credentials_info()
 	}
 }
 
-void Itch::get_credentials_info()
-{
-	// Delegate to the Auth module
-	Auth *auth = get_auth();
-	if (auth)
-	{
-		auth->get_credentials_info();
-	}
-	else
-	{
-		UtilityFunctions::push_error("Auth module not available");
-		emit_signal("auth_result", false, Dictionary());
-	}
-}
-
 void Itch::_perform_request(const String &url, const PackedStringArray &headers)
 {
 	if (!http_request)
