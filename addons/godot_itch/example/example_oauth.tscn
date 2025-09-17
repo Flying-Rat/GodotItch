@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://yb4lk1uos45n"]
+[gd_scene load_steps=2 format=3 uid="uid://yb4lk1uos45n"]
+
+[ext_resource type="Script" uid="uid://cvff4wk6q1eqw" path="res://addons/godot_itch/example/example_oauth.gd" id="1_oauth_script"]
 
 [node name="SecondScene" type="Control"]
 layout_mode = 3
@@ -7,19 +9,82 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_oauth_script")
 
-[node name="Label" type="Label" parent="."]
+[node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -25.0
-offset_right = 100.0
-offset_bottom = 25.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 250.0
+offset_top = 50.0
+offset_right = -230.0
+offset_bottom = -246.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Second Scene Stub"
+
+[node name="Title2" type="Label" parent="VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLarge"
+text = "OAuth Verification"
 horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBox"]
+layout_mode = 2
+
+[node name="Inputs" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="ClientIdLabel" type="Label" parent="VBox/Inputs"]
+layout_mode = 2
+text = "Client ID:"
+
+[node name="ClientId" type="LineEdit" parent="VBox/Inputs"]
+layout_mode = 2
+placeholder_text = "Enter OAuth Client ID"
+
+[node name="RedirectUriLabel" type="Label" parent="VBox/Inputs"]
+layout_mode = 2
+text = "Redirect URI:"
+
+[node name="RedirectUri" type="LineEdit" parent="VBox/Inputs"]
+layout_mode = 2
+placeholder_text = "Enter Redirect URI"
+
+[node name="TokenLabel" type="Label" parent="VBox/Inputs"]
+layout_mode = 2
+text = "OAuth Token:"
+
+[node name="Token" type="LineEdit" parent="VBox/Inputs"]
+layout_mode = 2
+placeholder_text = "Enter OAuth Token"
+secret = true
+
+[node name="Buttons" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="SaveOAuth" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+text = "Save OAuth Settings"
+
+[node name="OpenBrowser" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+text = "Open Browser"
+
+[node name="ValidateToken" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+text = "Validate Token"
+
+[node name="SaveToken" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+text = "Save Token"
+
+[node name="Output" type="RichTextLabel" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[connection signal="pressed" from="VBox/Buttons/SaveOAuth" to="." method="_on_save_oauth_pressed"]
+[connection signal="pressed" from="VBox/Buttons/OpenBrowser" to="." method="_on_open_browser_pressed"]
+[connection signal="pressed" from="VBox/Buttons/ValidateToken" to="." method="_on_validate_token_pressed"]
+[connection signal="pressed" from="VBox/Buttons/SaveToken" to="." method="_on_save_token_pressed"]
