@@ -13,10 +13,6 @@
 namespace godot {
     class Core;
 }
-
-// The project's DataCache is declared in the global namespace (see data_cache.h)
-class DataCache;
-
 using namespace godot;
 
 /**
@@ -41,7 +37,6 @@ private:
     
     // Core dependencies
     Core* core = nullptr;
-    DataCache* data_cache = nullptr;
     HTTPRequest* http_request = nullptr;
     
     // Verification state

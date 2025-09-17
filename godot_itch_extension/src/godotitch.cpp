@@ -89,7 +89,6 @@ Itch::Itch()
 
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
-	data_cache = DataCache::get_singleton();
 	auth = Auth::get_singleton();
 
 	// Connect our own api_response signal to local handler
@@ -102,9 +101,6 @@ Itch::Itch()
 		entitlements->connect("entitlement_verified", Callable(this, "_on_entitlement_verified"));
 		entitlements->connect("entitlement_error", Callable(this, "_on_entitlement_error"));
 	}
-
-	// Launch detection is now handled by Auth submodule
-	// No need to call detect_launch_source() here - it's already done in Auth::initialize()
 }
 
 Itch::~Itch()
@@ -113,12 +109,10 @@ Itch::~Itch()
 	{
 		http_request->queue_free();
 	}
-	if (data_cache)
-	{
-		data_cache->shutdown();
-	}
 	if (s_singleton == this)
+	{
 		s_singleton = nullptr;
+	}
 }
 
 Itch *Itch::get_singleton()
@@ -391,12 +385,6 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 		verified = true; // any result treated as success here
 	}
 
-	// Save verification result if verified
-	if (verified && data_cache)
-	{
-		String download_key = pending_request_data["download_key"];
-		data_cache->set_verified(download_key, verified, data);
-	}
 
 	emit_signal("verify_download_key_result", verified, data);
 }

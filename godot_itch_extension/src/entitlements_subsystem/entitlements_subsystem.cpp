@@ -9,7 +9,6 @@
 
 // Local includes
 #include "../core_subsystem/core_subsystem.h"
-#include "../core_subsystem/persistent/data_cache.h"
 #include "../auth_subsystem/auth_subsystem.h"
 
 using namespace godot;
@@ -96,11 +95,6 @@ void Entitlements::initialize_instance() {
         return;
     }
 
-    data_cache = core->get_persistent_cache();
-    if (!data_cache) {
-        UtilityFunctions::push_error("Entitlements: DataCache not available from Core");
-        return;
-    }
 
     // HTTPRequest will be created later in initialize_with_scene() when we have access to scene tree
 
@@ -120,7 +114,6 @@ void Entitlements::shutdown_instance()
     _cleanup_http_request();
 
     core = nullptr;
-    data_cache = nullptr;
     is_verifying = false;
     pending_download_key = "";
     instance_initialized = false;
@@ -150,43 +143,6 @@ bool Entitlements::_is_cache_valid(const Dictionary& cached_data) const
     return cached_data.has("timestamp");
 }
 
-void Entitlements::_store_verification_result(const String& download_key, const Dictionary& result)
-{
-    if (!data_cache) {
-        return;
-    }
-
-    Dictionary cached_entry;
-    cached_entry["timestamp"] = (int64_t)Time::get_singleton()->get_unix_time_from_system();
-    cached_entry["result"] = result;
-    cached_entry["download_key"] = download_key;
-
-    String cache_key = "entitlement_" + download_key;
-    data_cache->set_verified(cache_key, true, cached_entry);
-    
-    // Log minimal info about caching
-    UtilityFunctions::print("Entitlements: cached verification for key: ", download_key);
-}
-
-Dictionary Entitlements::_get_cached_verification(const String& download_key) const
-{
-    if (!data_cache) {
-        return Dictionary();
-    }
-
-    String cache_key = "entitlement_" + download_key;
-    if (!data_cache->is_verified(cache_key)) {
-        return Dictionary();
-    }
-
-    Dictionary cached_data = data_cache->get_verification_data(cache_key);
-    if (_is_cache_valid(cached_data)) {
-        return cached_data.get("result", Dictionary());
-    }
-
-    return Dictionary();
-}
-
 void Entitlements::verify_entitlement(const String& download_key)
 {
     // Input validation
@@ -207,14 +163,6 @@ void Entitlements::verify_entitlement(const String& download_key)
         emit_signal("entitlement_error", "Entitlements module not initialized");
         return;
     }
-
-    // Check cache first
-    // Dictionary cached_result = _get_cached_verification(download_key);
-    // if (!cached_result.is_empty()) {
-    //     UtilityFunctions::print("Entitlements: Using cached verification for key: ", download_key);
-    //     emit_signal("entitlement_verified", true, cached_result);
-    //     return;
-    // }
 
     // Prevent concurrent verifications
     if (is_verifying) {
@@ -378,12 +326,8 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
         response_data["result"] = parsed;
     }
 
-    // Store in cache with safety check
-    if (core && data_cache) {
-    _store_verification_result(current_key, response_data);
-    } else {
-        UtilityFunctions::push_error("Entitlements: Cannot store result - core or data_cache is null");
-    }
+    // Print full response body for debugging (requested)
+    UtilityFunctions::print("Entitlements: Full response body:\n" + response_text);
 
     // Emit success signal
     emit_signal("entitlement_verified", true, response_data);
@@ -421,15 +365,4 @@ bool Entitlements::is_entitled(const String& download_key) const
     }
 
     return false;
-}
-
-Dictionary Entitlements::get_entitlement_record(const String& download_key) const
-{
-    return _get_cached_verification(download_key);
-}
-
-bool Entitlements::has_cached_entitlement(const String& download_key) const
-{
-    Dictionary cached_result = _get_cached_verification(download_key);
-    return !cached_result.is_empty();
 }

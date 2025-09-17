@@ -18,7 +18,7 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 
 // Local includes
-#include "core_subsystem/persistent/data_cache.h"
+
 #include "core_subsystem/core_subsystem.h"
 #include "auth_subsystem/auth_subsystem.h"
 #include "entitlements_subsystem/entitlements_subsystem.h"
@@ -37,7 +37,6 @@ namespace godot
         HTTPRequest *http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
-        DataCache* data_cache = nullptr;
         Auth* auth = nullptr;
         
         // OAuth configuration

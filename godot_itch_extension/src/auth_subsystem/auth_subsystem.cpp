@@ -9,7 +9,6 @@
 #include <godot_cpp/classes/json.hpp>
 
 // Local includes
-#include "../core_subsystem/persistent/data_cache.h"
 
 using namespace godot;
 
@@ -457,30 +456,4 @@ String Auth::get_bearer_token() const
 bool Auth::has_bearer_token() const
 {
     return !oauth_token.is_empty() || !launch_api_key.is_empty();
-}
-
-void Auth::save_token_to_cache()
-{
-    DataCache *cache = DataCache::get_singleton();
-    if (!cache)
-    {
-        return;
-    }
-    Dictionary meta;
-    meta["oauth_token"] = oauth_token;
-    cache->set_verified("oauth_token", true, meta);
-}
-
-void Auth::load_token_from_cache()
-{
-    DataCache *cache = DataCache::get_singleton();
-    if (!cache)
-    {
-        return;
-    }
-    Dictionary data = cache->get_verification_data("oauth_token");
-    if (data.has("oauth_token"))
-    {
-        oauth_token = data["oauth_token"];
-    }
 }

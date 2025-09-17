@@ -20,7 +20,7 @@ void Core::_bind_methods()
 
 Core::Core() 
 {
-    persistent_cache = nullptr;
+
 }
 
 Core::~Core() 
@@ -41,13 +41,6 @@ void Core::initialize_instance()
     // Initialize project settings first
     ensure_project_settings();
     
-    // Initialize persistent cache
-    persistent_cache = DataCache::get_singleton();
-    if (persistent_cache) 
-    {
-        persistent_cache->initialize();
-    }
-    
     initialized = true;
     UtilityFunctions::print("Core: Initialization complete");
 }
@@ -61,13 +54,6 @@ void Core::shutdown_instance()
     }
     
     UtilityFunctions::print("Core: Shutting down...");
-    
-    // Shutdown persistent cache
-    if (persistent_cache) 
-    {
-        persistent_cache->shutdown();
-        persistent_cache = nullptr;
-    }
     
     initialized = false;
     UtilityFunctions::print("Core: Shutdown complete");
