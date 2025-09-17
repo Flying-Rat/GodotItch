@@ -64,8 +64,17 @@ text = "State (optional)"
 layout_mode = 2
 placeholder_text = "opaque state"
 
+[node name="LabelDownloadKey" type="Label" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+text = "Download Key"
+
+[node name="DownloadKey" type="LineEdit" parent="Panel/VBox/Inputs"]
+layout_mode = 2
+placeholder_text = "Paste download key or URL"
+
 [node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 10
 
 [node name="BtnInit" type="Button" parent="Panel/VBox/Buttons"]
 layout_mode = 2
@@ -107,6 +116,22 @@ text = "Load Token"
 layout_mode = 2
 text = "Use Token"
 
+[node name="ButtonsEndpoints" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnCredentialsInfo" type="Button" parent="Panel/VBox/ButtonsEndpoints"]
+layout_mode = 2
+text = "Credentials Info"
+
+[node name="BtnVerifyKey" type="Button" parent="Panel/VBox/ButtonsEndpoints"]
+layout_mode = 2
+text = "Verify Download Key"
+
+[node name="BtnClearOutput" type="Button" parent="Panel/VBox/ButtonsEndpoints"]
+layout_mode = 2
+text = "Clear Output"
+
 [node name="Margin" type="MarginContainer" parent="Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -125,7 +150,8 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 focus_mode = 2
 bbcode_enabled = true
-text = "asdfasdfasdfasdf"
+text = "
+"
 fit_content = true
 scroll_following = true
 selection_enabled = true
@@ -140,3 +166,6 @@ selection_enabled = true
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnSaveToken" to="." method="_on_save_token_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnLoadToken" to="." method="_on_load_token_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnUseToken" to="." method="_on_use_token_pressed"]
+[connection signal="pressed" from="Panel/VBox/ButtonsEndpoints/BtnCredentialsInfo" to="." method="_on_btn_credentials_info_pressed"]
+[connection signal="pressed" from="Panel/VBox/ButtonsEndpoints/BtnVerifyKey" to="." method="_on_btn_verify_key_pressed"]
+[connection signal="pressed" from="Panel/VBox/ButtonsEndpoints/BtnClearOutput" to="." method="_on_btn_clear_output_pressed"]
