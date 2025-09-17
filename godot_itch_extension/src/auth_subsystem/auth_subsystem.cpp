@@ -35,6 +35,10 @@ void Auth::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_oauth_redirect_uri"), &Auth::get_oauth_redirect_uri);
     ClassDB::bind_method(D_METHOD("get_oauth_scope"), &Auth::get_oauth_scope);
 
+    // OAuth flow
+    ClassDB::bind_method(D_METHOD("build_oauth_authorize_url", "client_id", "redirect_uri", "state"), &Auth::build_oauth_authorize_url);
+    ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"), &Auth::start_oauth_authorization);
+
     // OAuth token
     ClassDB::bind_method(D_METHOD("set_oauth_token", "token"), &Auth::set_oauth_token);
     ClassDB::bind_method(D_METHOD("get_oauth_token"), &Auth::get_oauth_token);

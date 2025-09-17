@@ -5,9 +5,10 @@ extends Control
 @onready var token_edit: LineEdit = $VBox/Inputs/Token
 @onready var output: RichTextLabel = $VBox/Output
 
-var auth := Auth.new()
+var auth = null;
 
 func _ready():
+	auth = Itch.get_auth();
 	output.clear()
 	_log("=== OAuth Example ===")
 	if auth == null:
