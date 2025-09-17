@@ -12,12 +12,6 @@ static Itch *s_singleton = nullptr;
 
 void Itch::_bind_methods()
 {
-	// API methods
-	ClassDB::bind_method(D_METHOD("get_me"), &Itch::get_me);
-	ClassDB::bind_method(D_METHOD("get_my_games"), &Itch::get_my_games);
-	ClassDB::bind_method(D_METHOD("get_game_purchases", "game_id"), &Itch::get_game_purchases, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_game_uploads", "game_id"), &Itch::get_game_uploads, DEFVAL(""));
-
 	// Itch.io API wrappers
 	ClassDB::bind_method(D_METHOD("verify_download_key", "download_key"), &Itch::verify_download_key);
 
@@ -65,22 +59,30 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("get_oauth_redirect_uri"), &Itch::get_oauth_redirect_uri);
 	ClassDB::bind_method(D_METHOD("get_oauth_scope"), &Itch::get_oauth_scope);
 	ClassDB::bind_method(D_METHOD("build_oauth_authorize_url", "client_id", "redirect_uri", "state"),
-	                     &Itch::build_oauth_authorize_url, DEFVAL(""), DEFVAL(""), DEFVAL(""));
+						 &Itch::build_oauth_authorize_url, DEFVAL(""), DEFVAL(""), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("start_oauth_authorization", "client_id", "redirect_uri", "state"),
-	                     &Itch::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
+						 &Itch::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("is_user_authenticated"), &Itch::is_user_authenticated);
+	ClassDB::bind_method(D_METHOD("get_current_user"), &Itch::get_current_user);
+	ClassDB::bind_method(D_METHOD("get_current_user_name"), &Itch::get_current_user_name);
+	ClassDB::bind_method(D_METHOD("get_credentials_info"), &Itch::get_credentials_info);
 
 	// Signals
 	ADD_SIGNAL(MethodInfo("api_response", PropertyInfo(Variant::STRING, "endpoint"),
-	                      PropertyInfo(Variant::DICTIONARY, "data")));
+						  PropertyInfo(Variant::DICTIONARY, "data")));
 	ADD_SIGNAL(MethodInfo("api_error", PropertyInfo(Variant::STRING, "endpoint"),
-	                      PropertyInfo(Variant::STRING, "error_message"),
-	                      PropertyInfo(Variant::INT, "response_code")));
+						  PropertyInfo(Variant::STRING, "error_message"),
+						  PropertyInfo(Variant::INT, "response_code")));
 	ADD_SIGNAL(MethodInfo("verify_purchase_result", PropertyInfo(Variant::BOOL, "is_verified"),
-	                      PropertyInfo(Variant::DICTIONARY, "data")));
+						  PropertyInfo(Variant::DICTIONARY, "data")));
+
 	// Auth signals
 	ADD_SIGNAL(MethodInfo("user_logged_in", PropertyInfo(Variant::DICTIONARY, "user")));
 	ADD_SIGNAL(MethodInfo("user_logged_out"));
 	ADD_SIGNAL(MethodInfo("user_login_failed", PropertyInfo(Variant::STRING, "error")));
+	ADD_SIGNAL(MethodInfo("auth_result", PropertyInfo(Variant::BOOL, "success"),
+						  PropertyInfo(Variant::DICTIONARY, "data")));
 }
 
 Itch::Itch()
@@ -97,8 +99,9 @@ Itch::Itch()
 	connect("api_response", Callable(this, "_on_api_response"));
 
 	// Connect entitlements signals to facade methods
-	Entitlements* entitlements = Entitlements::get_singleton();
-	if (entitlements) {
+	Entitlements *entitlements = Entitlements::get_singleton();
+	if (entitlements)
+	{
 		entitlements->connect("entitlement_verified", Callable(this, "_on_entitlement_verified"));
 		entitlements->connect("entitlement_error", Callable(this, "_on_entitlement_error"));
 	}
@@ -150,26 +153,28 @@ bool Itch::has_api_key_present() const
 }
 
 // Module access methods
-Entitlements* Itch::get_entitlements() const
+Entitlements *Itch::get_entitlements() const
 {
 	return Entitlements::get_singleton();
 }
 
-Core* Itch::get_core() const
+Core *Itch::get_core() const
 {
 	return Core::get_singleton();
 }
 
-Auth* Itch::get_auth() const
+Auth *Itch::get_auth() const
 {
 	return Auth::get_singleton();
 }
 
-User* Itch::get_user() const {
+User *Itch::get_user() const
+{
 	return User::get_singleton();
 }
 
-Games* Itch::get_games() const {
+Games *Itch::get_games() const
+{
 	return Games::get_singleton();
 }
 
@@ -208,187 +213,10 @@ String Itch::_build_api_url(const String &endpoint) const
 	return String("https://itch.io/api/1/jwt") + endpoint;
 }
 
-// API Methods
-void Itch::get_me()
-{
-	if (!http_request)
-	{
-		UtilityFunctions::push_error("HTTPRequest not initialized");
-		return;
-	}
-
-	String url = _build_api_url("/me");
-	String token = Auth::get_singleton()->get_bearer_token();
-	if (token.is_empty()) {
-		UtilityFunctions::push_error("OAuth token not set - user not logged in");
-		return;
-	}
-
-	pending_request_type = "get_me";
-	pending_request_data.clear();
-
-	PackedStringArray headers;
-	headers.push_back("User-Agent: GodotItch/1.0");
-	headers.push_back("Authorization: Bearer " + token);
-	// Diagnostics: log whether HTTPRequest is inside scene tree
-	if (http_request->is_inside_tree())
-	{
-		UtilityFunctions::print("Itch: HTTPRequest is inside scene tree, issuing request");
-	}
-	else
-	{
-		UtilityFunctions::print("Itch: HTTPRequest NOT inside scene tree, deferring request");
-	}
-
-	// Use call_deferred so the request is executed after the node is in the scene tree.
-	// Schedule an internal deferred method which will call HTTPRequest::request
-	call_deferred("_perform_request", url, headers);
-	UtilityFunctions::print("Itch: Deferred internal request scheduled");
-}
-
-void Itch::get_my_games()
-{
-	if (!http_request)
-	{
-		UtilityFunctions::push_error("HTTPRequest not initialized");
-		return;
-	}
-
-	String url = _build_api_url("/my-games");
-
-	pending_request_type = "get_my_games";
-	pending_request_data.clear();
-
-	String token = Auth::get_singleton()->get_bearer_token();
-	if (token.is_empty()) {
-		UtilityFunctions::push_error("OAuth token not set - user not logged in");
-		return;
-	}
-	PackedStringArray headers;
-	headers.push_back("User-Agent: GodotItch/1.0");
-	headers.push_back("Authorization: Bearer " + token);
-
-	// Schedule deferred internal helper to perform the request
-	call_deferred("_perform_request", url, headers);
-	UtilityFunctions::print("Itch: Deferred internal request scheduled");
-}
-
-void Itch::get_game_purchases(const String &game_id)
-{
-	if (!http_request)
-	{
-		UtilityFunctions::push_error("HTTPRequest not initialized");
-		return;
-	}
-
-	String target_game_id = game_id.is_empty() ? get_game_id() : game_id;
-	if (target_game_id.is_empty())
-	{
-		UtilityFunctions::push_error("Game ID not provided and not set in project settings");
-		return;
-	}
-
-	String url = _build_api_url("/game/" + target_game_id + "/purchases");
-
-	pending_request_type = "get_game_purchases";
-	pending_request_data.clear();
-	pending_request_data["game_id"] = target_game_id;
-
-	String token = Auth::get_singleton()->get_bearer_token();
-	if (token.is_empty()) {
-		UtilityFunctions::push_error("OAuth token not set - user not logged in");
-		return;
-	}
-	PackedStringArray headers;
-	headers.push_back("User-Agent: GodotItch/1.0");
-	headers.push_back("Authorization: Bearer " + token);
-
-	// Schedule deferred internal helper to perform the request
-	call_deferred("_perform_request", url, headers);
-	UtilityFunctions::print("Itch: Deferred internal request scheduled");
-}
-
-void Itch::get_game_uploads(const String &game_id)
-{
-	if (!http_request)
-	{
-		UtilityFunctions::push_error("HTTPRequest not initialized");
-		return;
-	}
-
-	String target_game_id = game_id.is_empty() ? get_game_id() : game_id;
-	if (target_game_id.is_empty())
-	{
-		UtilityFunctions::push_error("Game ID not provided and not set in project settings");
-		return;
-	}
-
-	String url = _build_api_url("/game/" + target_game_id + "/uploads");
-
-	pending_request_type = "get_game_uploads";
-	pending_request_data.clear();
-	pending_request_data["game_id"] = target_game_id;
-
-	String token = Auth::get_singleton()->get_bearer_token();
-	if (token.is_empty()) {
-		UtilityFunctions::push_error("OAuth token not set - user not logged in");
-		return;
-	}
-	PackedStringArray headers;
-	headers.push_back("User-Agent: GodotItch/1.0");
-	headers.push_back("Authorization: Bearer " + token);
-
-	// Schedule deferred internal helper to perform the request
-	call_deferred("_perform_request", url, headers);
-	UtilityFunctions::print("Itch: Deferred internal request scheduled");
-}
-
-void Itch::get_download_key(const String &download_key, const String &game_id)
-{
-	if (!http_request)
-	{
-		UtilityFunctions::push_error("HTTPRequest not initialized");
-		return;
-	}
-
-	if (download_key.is_empty())
-	{
-		UtilityFunctions::push_error("Download key must be provided");
-		return;
-	}
-
-	String target_game_id = game_id.is_empty() ? get_game_id() : game_id;
-	if (target_game_id.is_empty())
-	{
-		UtilityFunctions::push_error("Game ID must be provided or set in project settings");
-		return;
-	}
-
-	String url = _build_api_url("/game/" + target_game_id + "/download_keys?download_key=" + download_key);
-
-	pending_request_type = "get_download_key";
-	pending_request_data.clear();
-	pending_request_data["download_key"] = download_key;
-	pending_request_data["game_id"] = game_id;
-
-	String token = Auth::get_singleton()->get_oauth_token();
-	if (token.is_empty()) {
-		UtilityFunctions::push_error("OAuth token not set - user not logged in");
-		return;
-	}
-	PackedStringArray headers;
-	headers.push_back("User-Agent: GodotItch/1.0");
-	headers.push_back("Authorization: Bearer " + token);
-
-	// Schedule deferred internal helper to perform the request
-	call_deferred("_perform_request", url, headers);
-	UtilityFunctions::print("Itch: Deferred internal request scheduled");
-}
-
 void Itch::verify_download_key(const String &download_key)
 {
 	// Delegate to the Entitlements module
-	Entitlements* entitlements = get_entitlements();
+	Entitlements *entitlements = get_entitlements();
 	if (entitlements)
 	{
 
@@ -398,11 +226,26 @@ void Itch::verify_download_key(const String &download_key)
 		pending_request_data["game_id"] = Core::get_singleton()->get_game_id();
 
 		entitlements->verify_entitlement(download_key);
-
-	} else
+	}
+	else
 	{
 		UtilityFunctions::push_error("Entitlements module not available");
 		emit_signal("verify_purchase_result", false, Dictionary());
+	}
+}
+
+void Itch::get_credentials_info()
+{
+	// Delegate to the Auth module
+	Auth *auth = get_auth();
+	if (auth)
+	{
+		auth->get_credentials_info();
+	}
+	else
+	{
+		UtilityFunctions::push_error("Auth module not available");
+		emit_signal("auth_result", false, Dictionary());
 	}
 }
 
@@ -483,7 +326,7 @@ void Itch::initialize_with_scene(Node *scene_node)
 
 	// Also give subsystems a chance to initialize with the scene node so they can
 	// create and attach their own HTTPRequest nodes if needed.
-	Entitlements* ent = Entitlements::get_singleton();
+	Entitlements *ent = Entitlements::get_singleton();
 	if (ent)
 	{
 		UtilityFunctions::print("Itch: Initializing Entitlements with scene node");
@@ -562,20 +405,19 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 }
 
 // Entitlements signal handlers
-void Itch::_on_entitlement_verified(bool success, const Dictionary& data)
+void Itch::_on_entitlement_verified(bool success, const Dictionary &data)
 {
 	// Forward the entitlements signal to the facade's verify_purchase_result signal
 	emit_signal("verify_purchase_result", success, data);
 }
 
-void Itch::_on_entitlement_error(const String& error_message)
+void Itch::_on_entitlement_error(const String &error_message)
 {
 	// Forward the entitlements error as a verify_purchase_result failure
 	Dictionary error_data;
 	error_data["error"] = error_message;
 	emit_signal("verify_purchase_result", false, error_data);
 }
-
 
 // OAuth settings setters
 // OAuth settings setters - delegate to Auth
@@ -608,6 +450,21 @@ String Itch::get_oauth_redirect_uri() const
 String Itch::get_oauth_scope() const
 {
 	return Auth::get_singleton()->get_oauth_scope();
+}
+
+bool godot::Itch::is_user_authenticated() const
+{
+	return is_user_logged_in;
+}
+
+Dictionary godot::Itch::get_current_user() const
+{
+	return current_user;
+}
+
+String godot::Itch::get_current_user_name() const
+{
+	return current_user.get("name", "");
 }
 
 // Build OAuth authorization URL

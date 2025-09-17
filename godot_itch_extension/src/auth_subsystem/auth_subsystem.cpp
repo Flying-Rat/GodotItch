@@ -4,6 +4,9 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/json.hpp>
 
 // Local includes
 #include "../core_subsystem/persistent/data_cache.h"
@@ -12,6 +15,13 @@ using namespace godot;
 
 // Explicit template instantiation for Auth CRTP
 template class Subsystem<Auth>;
+
+// Constants
+namespace {
+    constexpr int HTTP_OK = 200;
+    constexpr double HTTP_TIMEOUT_SECONDS = 10.0;
+    constexpr const char* USER_AGENT = "GodotItch-Auth/1.0";
+}
 
 void Auth::_bind_methods()
 {
@@ -40,6 +50,13 @@ void Auth::_bind_methods()
     // Unified bearer token helpers
     ClassDB::bind_method(D_METHOD("get_bearer_token"), &Auth::get_bearer_token);
     ClassDB::bind_method(D_METHOD("has_bearer_token"), &Auth::has_bearer_token);
+
+    // Define signals
+    ADD_SIGNAL(MethodInfo("auth_result", PropertyInfo(Variant::BOOL, "success"), PropertyInfo(Variant::DICTIONARY, "data")));
+    ADD_SIGNAL(MethodInfo("auth_error", PropertyInfo(Variant::STRING, "error_message")));
+
+    // Public API
+    ClassDB::bind_method(D_METHOD("get_credentials_info"), &Auth::get_credentials_info);
 }
 
 Auth::Auth()
@@ -135,6 +152,49 @@ void Auth::ensure_oauth_settings()
     }
 }
 
+void godot::Auth::_on_auth_result(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body)
+{
+    // Handle the authentication result for credentials/info
+    auto cleanup = [&]() {
+        if (http_request) {
+            if (http_request->is_connected("request_completed", Callable(this, "_on_auth_result"))) {
+                http_request->disconnect("request_completed", Callable(this, "_on_auth_result"));
+            }
+            http_request->queue_free();
+            http_request = nullptr;
+        }
+    };
+
+    if (result != OK) {
+        UtilityFunctions::push_error("Auth: HTTP transport error: " + String::num_int64(result));
+        emit_signal("auth_error", String("HTTP transport error: ") + String::num_int64(result));
+        cleanup();
+        return;
+    }
+
+    if (response_code != HTTP_OK) {
+        UtilityFunctions::push_error("Auth: HTTP response code: " + String::num_int64(response_code));
+        emit_signal("auth_error", String("HTTP error ") + String::num_int64(response_code));
+        cleanup();
+        return;
+    }
+
+    String body_string;
+    body_string.parse_utf8((const char*)body.ptr(), body.size());
+    Variant parsed = JSON::parse_string(body_string);
+    Dictionary data;
+    if (parsed.get_type() == Variant::DICTIONARY) {
+        data = parsed;
+    } else {
+        emit_signal("auth_error", String("Invalid JSON response"));
+        cleanup();
+        return;
+    }
+
+    bool success = data.has("scopes") && data.has("expires_at");
+    emit_signal("auth_result", success, data);
+    cleanup();
+}
 
 // Launch detection methods
 bool Auth::is_launched_via_itch() const
@@ -273,6 +333,76 @@ void Auth::start_oauth_authorization(const String &client_id, const String &redi
         {
             UtilityFunctions::push_error("Failed to open OAuth authorization URL in browser.");
         }
+    }
+}
+
+void godot::Auth::get_credentials_info()
+{
+    String url = "https://itch.io/api/1/jwt/credentials/info";
+    if (url.is_empty()) {
+        emit_signal("auth_error", "Could not build get credentials URL");
+        return;
+    }
+
+    String oauth_token = Auth::get_singleton()->get_bearer_token();
+    if (oauth_token.is_empty()) {
+        UtilityFunctions::push_error("Auth: No OAuth/launcher token available");
+        emit_signal("auth_error", "User not authenticated (missing OAuth/launcher token)");
+        return;
+    }
+
+    PackedStringArray headers;
+    headers.push_back(String("User-Agent: ") + USER_AGENT);
+    headers.push_back("Authorization: Bearer " + oauth_token);
+
+    UtilityFunctions::print("Auth: Making direct HTTP request to: ", url);
+
+    // Create a temporary HTTPRequest for this single operation
+    HTTPRequest* temp_request = memnew(HTTPRequest);
+    if (!temp_request) {
+        emit_signal("auth_error", "Failed to create temporary HTTP request");
+        return;
+    }
+
+    // Configure the temporary request
+    temp_request->set_use_threads(false);
+    temp_request->set_timeout(HTTP_TIMEOUT_SECONDS);
+
+    // Add to scene tree first (required for HTTPRequest to work)
+    SceneTree* scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+    Node* scene_root = scene_tree ? scene_tree->get_current_scene() : nullptr;
+    if (scene_root) {
+        scene_root->add_child(temp_request);
+
+        // Connect signal AFTER adding to scene tree
+        Error connect_result = temp_request->connect("request_completed", Callable(this, "_on_auth_result"));
+        if (connect_result != OK) {
+            UtilityFunctions::push_error("Auth: Failed to connect HTTP signal");
+            temp_request->queue_free();
+            emit_signal("auth_error", "Failed to connect HTTP signal");
+            return;
+        }
+
+        Error result = temp_request->request(url, headers);
+        UtilityFunctions::print("Auth: HTTP request call completed with result:", String::num_int64(result));
+
+        if (result != OK) {
+            // Disconnect before cleanup
+            if (temp_request->is_connected("request_completed", Callable(this, "_on_auth_result"))) {
+                temp_request->disconnect("request_completed", Callable(this, "_on_auth_result"));
+            }
+            temp_request->queue_free();
+            emit_signal("auth_error", "Failed to start HTTP request: " + String::num_int64(result));
+            return;
+        }
+
+        // Store reference to clean up later
+        http_request = temp_request;
+        UtilityFunctions::print("Auth: Started credential info request for key");
+    } else {
+        temp_request->queue_free();
+        emit_signal("auth_error", "Cannot access scene tree for HTTP request");
+        return;
     }
 }
 
