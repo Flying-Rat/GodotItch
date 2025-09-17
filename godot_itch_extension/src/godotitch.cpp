@@ -90,7 +90,7 @@ Itch::Itch()
 {
 	// Initialize modular architecture
 	// Core and Auth are already initialized in register_types.cpp
-	
+
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
 	data_cache = DataCache::get_singleton();
@@ -98,7 +98,7 @@ Itch::Itch()
 
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
-	
+
 	// Connect entitlements signals to facade methods
 	Entitlements* entitlements = Entitlements::get_singleton();
 	if (entitlements) {
@@ -142,28 +142,28 @@ void Itch::detect_launch_source()
 }
 
 // Delegate authentication methods to Auth submodule
-bool Itch::is_launched_via_itch() const 
-{ 
-	return Auth::get_singleton()->is_launched_via_itch(); 
+bool Itch::is_launched_via_itch() const
+{
+	return Auth::get_singleton()->is_launched_via_itch();
 }
 
-bool Itch::has_api_key_present() const 
-{ 
-	return Auth::get_singleton()->has_api_key_present(); 
+bool Itch::has_api_key_present() const
+{
+	return Auth::get_singleton()->has_api_key_present();
 }
 
 // Module access methods
-Entitlements* Itch::get_entitlements() const 
+Entitlements* Itch::get_entitlements() const
 {
 	return Entitlements::get_singleton();
 }
 
-Core* Itch::get_core() const 
+Core* Itch::get_core() const
 {
 	return Core::get_singleton();
 }
 
-Auth* Itch::get_auth() const 
+Auth* Itch::get_auth() const
 {
 	return Auth::get_singleton();
 }
@@ -390,17 +390,17 @@ void Itch::verify_download_key(const String &download_key)
 {
 	// Delegate to the Entitlements module
 	Entitlements* entitlements = get_entitlements();
-	if (entitlements) 
+	if (entitlements)
 	{
-		
+
 		pending_request_type = "verify_download_key";
 		pending_request_data.clear();
 		pending_request_data["download_key"] = download_key;
 		pending_request_data["game_id"] = Core::get_singleton()->get_game_id();
 
 		entitlements->verify_entitlement(download_key);
-		
-	} else 
+
+	} else
 	{
 		UtilityFunctions::push_error("Entitlements module not available");
 		emit_signal("verify_purchase_result", false, Dictionary());

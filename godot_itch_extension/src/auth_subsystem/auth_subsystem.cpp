@@ -118,10 +118,6 @@ void Auth::ensure_oauth_settings()
         return;
     }
 
-    if (!ps->has_setting(SETTING_API_KEY))
-    {
-        ps->set_setting(SETTING_API_KEY, "");
-    }
     if (!ps->has_setting(SETTING_OAUTH_CLIENT_ID))
     {
         ps->set_setting(SETTING_OAUTH_CLIENT_ID, "");
@@ -137,20 +133,6 @@ void Auth::ensure_oauth_settings()
     }
 }
 
-String Auth::get_api_key_from_settings() const
-{
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (!ps)
-    {
-        return "";
-    }
-    Variant v = ps->get_setting(SETTING_API_KEY);
-    if (v.get_type() == Variant::STRING)
-    {
-        return v;
-    }
-    return "";
-}
 
 // Launch detection methods
 bool Auth::is_launched_via_itch() const
@@ -171,22 +153,18 @@ String Auth::get_launch_api_key() const
 // API Key management methods
 void Auth::set_api_key(const String &api_key)
 {
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (ps)
-    {
-        ps->set_setting(SETTING_API_KEY, api_key);
-    }
+    // For development, allow user to set API key (not stored in project settings)
+    dev_api_key = api_key;
 }
 
 String Auth::get_api_key() const
 {
-    // Check if we have a launch API key first
-    if (!launch_api_key.is_empty())
-    {
+    // If launched via itch, use launch_api_key
+    if (!launch_api_key.is_empty()) {
         return launch_api_key;
     }
-    // Fall back to project settings
-    return get_api_key_from_settings();
+    // For development, allow user to set API key (not stored in project settings)
+    return dev_api_key;
 }
 
 // OAuth configuration methods

@@ -39,16 +39,16 @@ namespace godot
         Dictionary pending_request_data;
     DataCache* data_cache = nullptr;
     Auth* auth = nullptr;
-        
+
         // OAuth configuration
         String oauth_client_id;
         String oauth_redirect_uri;
         String oauth_scope;
-        
+
         // User state
         Dictionary current_user;
         bool is_user_logged_in = false;
-        
+
         void _setup_http_request();
         String _build_api_url(const String& endpoint) const;
 
@@ -70,10 +70,9 @@ namespace godot
         // Module access - expose all subsystems
         Entitlements* get_entitlements() const;
         Core* get_core() const;
-    Auth* get_auth() const;
+        Auth* get_auth() const;
         User* get_user() const;
         Games* get_games() const;
-    // Assets subsystem removed
 
         // Itch.io API methods
         bool itchInitEx(uint32_t app_id = 0, bool embed_callbacks = false);
