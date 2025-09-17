@@ -60,7 +60,7 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("oauth_login_failed", "error"), &Itch::oauth_login_failed);
 	ClassDB::bind_method(D_METHOD("oauth_logged_out"), &Itch::oauth_logged_out);
 
-	// OAuth helpers (delegated to ItchAuth)
+	// OAuth helpers (delegated to Auth)
 	ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &Itch::set_oauth_client_id);
 	ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &Itch::set_oauth_redirect_uri);
 	ClassDB::bind_method(D_METHOD("set_oauth_scope", "scope"), &Itch::set_oauth_scope);
@@ -89,12 +89,12 @@ void Itch::_bind_methods()
 Itch::Itch()
 {
 	// Initialize modular architecture
-	// Core and ItchAuth are already initialized in register_types.cpp
+	// Core and Auth are already initialized in register_types.cpp
 	
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
 	data_cache = ItchDataCache::get_singleton();
-	auth = ItchAuth::get_singleton();
+	auth = Auth::get_singleton();
 
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
@@ -106,8 +106,8 @@ Itch::Itch()
 		entitlements->connect("entitlement_error", Callable(this, "_on_entitlement_error"));
 	}
 
-	// Launch detection is now handled by ItchAuth submodule
-	// No need to call detect_launch_source() here - it's already done in ItchAuth::initialize()
+	// Launch detection is now handled by Auth submodule
+	// No need to call detect_launch_source() here - it's already done in Auth::initialize()
 }
 
 Itch::~Itch()
@@ -135,21 +135,21 @@ bool Itch::itchInitEx(uint32_t app_id, bool embed_callbacks)
 	return true;
 }
 
-// Delegate launch detection to ItchAuth submodule
+// Delegate launch detection to Auth submodule
 void Itch::detect_launch_source()
 {
-	ItchAuth::get_singleton()->do_detect_launch_source();
+	Auth::get_singleton()->do_detect_launch_source();
 }
 
-// Delegate authentication methods to ItchAuth submodule
+// Delegate authentication methods to Auth submodule
 bool Itch::is_launched_via_itch() const 
 { 
-	return ItchAuth::get_singleton()->is_launched_via_itch(); 
+	return Auth::get_singleton()->is_launched_via_itch(); 
 }
 
 bool Itch::has_api_key_present() const 
 { 
-	return ItchAuth::get_singleton()->has_api_key_present(); 
+	return Auth::get_singleton()->has_api_key_present(); 
 }
 
 // Module access methods
@@ -163,9 +163,9 @@ Core* Itch::get_core() const
 	return Core::get_singleton();
 }
 
-ItchAuth* Itch::get_auth() const 
+Auth* Itch::get_auth() const 
 {
-	return ItchAuth::get_singleton();
+	return Auth::get_singleton();
 }
 
 User* Itch::get_user() const {
@@ -176,9 +176,9 @@ Games* Itch::get_games() const {
 	return Games::get_singleton();
 }
 
-// These methods are now handled by Core and ItchAuth modules
+// These methods are now handled by Core and Auth modules
 // ensure_project_settings() -> Core::ensure_project_settings()
-// get_api_key_from_settings() -> ItchAuth::get_api_key()
+// get_api_key_from_settings() -> Auth::get_api_key()
 // get_game_id_from_settings() -> Core::get_game_id()
 
 // get_game_id_from_settings() removed - use get_game_id() which delegates to Core
@@ -461,7 +461,7 @@ void Itch::post_request_check()
 // Utility Methods - delegate to modular architecture
 void Itch::set_api_key(const String &api_key)
 {
-	ItchAuth::get_singleton()->set_api_key(api_key);
+	Auth::get_singleton()->set_api_key(api_key);
 }
 
 void Itch::set_game_id(const String &game_id)
@@ -471,7 +471,7 @@ void Itch::set_game_id(const String &game_id)
 
 String Itch::get_api_key() const
 {
-	return ItchAuth::get_singleton()->get_api_key();
+	return Auth::get_singleton()->get_api_key();
 }
 
 String Itch::get_game_id() const
@@ -589,50 +589,50 @@ void Itch::_on_entitlement_error(const String& error_message)
 
 
 // OAuth settings setters
-// OAuth settings setters - delegate to ItchAuth
+// OAuth settings setters - delegate to Auth
 void Itch::set_oauth_client_id(const String &client_id)
 {
-	ItchAuth::get_singleton()->set_oauth_client_id(client_id);
+	Auth::get_singleton()->set_oauth_client_id(client_id);
 }
 
 void Itch::set_oauth_redirect_uri(const String &redirect_uri)
 {
-	ItchAuth::get_singleton()->set_oauth_redirect_uri(redirect_uri);
+	Auth::get_singleton()->set_oauth_redirect_uri(redirect_uri);
 }
 
 void Itch::set_oauth_scope(const String &scope)
 {
-	ItchAuth::get_singleton()->set_oauth_scope(scope);
+	Auth::get_singleton()->set_oauth_scope(scope);
 }
 
-// OAuth settings getters - delegate to ItchAuth
+// OAuth settings getters - delegate to Auth
 String Itch::get_oauth_client_id() const
 {
-	return ItchAuth::get_singleton()->get_oauth_client_id();
+	return Auth::get_singleton()->get_oauth_client_id();
 }
 
 String Itch::get_oauth_redirect_uri() const
 {
-	return ItchAuth::get_singleton()->get_oauth_redirect_uri();
+	return Auth::get_singleton()->get_oauth_redirect_uri();
 }
 
 String Itch::get_oauth_scope() const
 {
-	return ItchAuth::get_singleton()->get_oauth_scope();
+	return Auth::get_singleton()->get_oauth_scope();
 }
 
 // Build OAuth authorization URL
 String Itch::build_oauth_authorize_url(const String &client_id, const String &redirect_uri, const String &state) const
 {
-	// Delegate to ItchAuth submodule
-	return ItchAuth::get_singleton()->build_oauth_authorize_url(client_id, redirect_uri, state);
+	// Delegate to Auth submodule
+	return Auth::get_singleton()->build_oauth_authorize_url(client_id, redirect_uri, state);
 }
 
 // Open OAuth authorization URL in system browser
 void Itch::start_oauth_authorization(const String &client_id, const String &redirect_uri, const String &state)
 {
-	// Delegate to ItchAuth submodule
-	ItchAuth::get_singleton()->start_oauth_authorization(client_id, redirect_uri, state);
+	// Delegate to Auth submodule
+	Auth::get_singleton()->start_oauth_authorization(client_id, redirect_uri, state);
 }
 
 void Itch::oauth_login_success(const Dictionary &user)

@@ -138,7 +138,7 @@ String Entitlements::_build_verification_url(const String& download_key) const
         return "";
     }
     
-    String api_key = ItchAuth::get_singleton()->get_api_key();
+    String api_key = Auth::get_singleton()->get_api_key();
     if (api_key.is_empty()) {
         UtilityFunctions::push_error("Entitlements: API key not available for verification");
         return "";

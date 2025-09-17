@@ -10,54 +10,54 @@
 
 using namespace godot;
 
-// Explicit template instantiation for ItchAuth CRTP
-template class Subsystem<ItchAuth>;
+// Explicit template instantiation for Auth CRTP
+template class Subsystem<Auth>;
 
-void ItchAuth::_bind_methods()
+void Auth::_bind_methods()
 {
     // Initialization
-    ClassDB::bind_method(D_METHOD("is_initialized"), &ItchAuth::is_initialized);
+    ClassDB::bind_method(D_METHOD("is_initialized"), &Auth::is_initialized);
 
     // Launch detection
-    ClassDB::bind_method(D_METHOD("is_launched_via_itch"), &ItchAuth::is_launched_via_itch);
-    ClassDB::bind_method(D_METHOD("has_api_key_present"), &ItchAuth::has_api_key_present);
-    ClassDB::bind_method(D_METHOD("get_launch_api_key"), &ItchAuth::get_launch_api_key);
+    ClassDB::bind_method(D_METHOD("is_launched_via_itch"), &Auth::is_launched_via_itch);
+    ClassDB::bind_method(D_METHOD("has_api_key_present"), &Auth::has_api_key_present);
+    ClassDB::bind_method(D_METHOD("get_launch_api_key"), &Auth::get_launch_api_key);
 
     // API Key management
-    ClassDB::bind_method(D_METHOD("set_api_key", "api_key"), &ItchAuth::set_api_key);
-    ClassDB::bind_method(D_METHOD("get_api_key"), &ItchAuth::get_api_key);
+    ClassDB::bind_method(D_METHOD("set_api_key", "api_key"), &Auth::set_api_key);
+    ClassDB::bind_method(D_METHOD("get_api_key"), &Auth::get_api_key);
 
     // OAuth configuration
-    ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &ItchAuth::set_oauth_client_id);
-    ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &ItchAuth::set_oauth_redirect_uri);
-    ClassDB::bind_method(D_METHOD("set_oauth_scope", "scope"), &ItchAuth::set_oauth_scope);
-    ClassDB::bind_method(D_METHOD("get_oauth_client_id"), &ItchAuth::get_oauth_client_id);
-    ClassDB::bind_method(D_METHOD("get_oauth_redirect_uri"), &ItchAuth::get_oauth_redirect_uri);
-    ClassDB::bind_method(D_METHOD("get_oauth_scope"), &ItchAuth::get_oauth_scope);
+    ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &Auth::set_oauth_client_id);
+    ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &Auth::set_oauth_redirect_uri);
+    ClassDB::bind_method(D_METHOD("set_oauth_scope", "scope"), &Auth::set_oauth_scope);
+    ClassDB::bind_method(D_METHOD("get_oauth_client_id"), &Auth::get_oauth_client_id);
+    ClassDB::bind_method(D_METHOD("get_oauth_redirect_uri"), &Auth::get_oauth_redirect_uri);
+    ClassDB::bind_method(D_METHOD("get_oauth_scope"), &Auth::get_oauth_scope);
 
     // OAuth token
-    ClassDB::bind_method(D_METHOD("set_oauth_token", "token"), &ItchAuth::set_oauth_token);
-    ClassDB::bind_method(D_METHOD("get_oauth_token"), &ItchAuth::get_oauth_token);
+    ClassDB::bind_method(D_METHOD("set_oauth_token", "token"), &Auth::set_oauth_token);
+    ClassDB::bind_method(D_METHOD("get_oauth_token"), &Auth::get_oauth_token);
 }
 
-ItchAuth::ItchAuth()
+Auth::Auth()
 {
     // Constructor implementation
 }
 
-ItchAuth::~ItchAuth()
+Auth::~Auth()
 {
     // Destructor implementation
 }
 
-// Override virtual initialization from Subsystem<ItchAuth>
-void ItchAuth::initialize_instance() {
+// Override virtual initialization from Subsystem<Auth>
+void Auth::initialize_instance() {
     if (initialized)
     {
         return;
     }
 
-    UtilityFunctions::print("ItchAuth: Initializing...");
+    UtilityFunctions::print("Auth: Initializing...");
 
     // Initialize OAuth settings first
     ensure_oauth_settings();
@@ -70,47 +70,47 @@ void ItchAuth::initialize_instance() {
     load_token_from_cache();
 
     initialized = true;
-    UtilityFunctions::print("ItchAuth: Initialization complete");
+    UtilityFunctions::print("Auth: Initialization complete");
 }
 
-// Override virtual shutdown from Subsystem<ItchAuth>
-void ItchAuth::shutdown_instance() {
+// Override virtual shutdown from Subsystem<Auth>
+void Auth::shutdown_instance() {
     if (!initialized)
     {
         return;
     }
 
-    UtilityFunctions::print("ItchAuth: Shutting down...");
+    UtilityFunctions::print("Auth: Shutting down...");
     initialized = false;
-    UtilityFunctions::print("ItchAuth: Shutdown complete");
+    UtilityFunctions::print("Auth: Shutdown complete");
 }
 
-void ItchAuth::do_detect_launch_source()
+void Auth::do_detect_launch_source()
 {
     launched_via_itch = false;
     has_api_key = false;
     launch_api_key = "";
 
-    UtilityFunctions::print("ItchAuth: Running launch detection...");
+    UtilityFunctions::print("Auth: Running launch detection...");
 
     // Check environment variable set by itch when scope = "profile:me"
     OS *os = OS::get_singleton();
     if (os)
     {
-        UtilityFunctions::print("ItchAuth: Detecting launch source via environment variable...");
+    UtilityFunctions::print("Auth: Detecting launch source via environment variable...");
         String env_key = os->get_environment("ITCHIO_API_KEY");
         if (!env_key.is_empty())
         {
-            UtilityFunctions::print("ItchAuth: Found ITCHIO_API_KEY in environment variables.");
+            UtilityFunctions::print("Auth: Found ITCHIO_API_KEY in environment variables.");
             launch_api_key = env_key;
             launched_via_itch = true;
             has_api_key = true;
-            UtilityFunctions::print("ItchAuth: Launched via itch with API key present.");
+            UtilityFunctions::print("Auth: Launched via itch with API key present.");
         }
     }
 }
 
-void ItchAuth::ensure_oauth_settings()
+void Auth::ensure_oauth_settings()
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (!ps)
@@ -137,7 +137,7 @@ void ItchAuth::ensure_oauth_settings()
     }
 }
 
-String ItchAuth::get_api_key_from_settings() const
+String Auth::get_api_key_from_settings() const
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (!ps)
@@ -153,23 +153,23 @@ String ItchAuth::get_api_key_from_settings() const
 }
 
 // Launch detection methods
-bool ItchAuth::is_launched_via_itch() const
+bool Auth::is_launched_via_itch() const
 {
     return launched_via_itch;
 }
 
-bool ItchAuth::has_api_key_present() const
+bool Auth::has_api_key_present() const
 {
     return has_api_key;
 }
 
-String ItchAuth::get_launch_api_key() const
+String Auth::get_launch_api_key() const
 {
     return launch_api_key;
 }
 
 // API Key management methods
-void ItchAuth::set_api_key(const String &api_key)
+void Auth::set_api_key(const String &api_key)
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (ps)
@@ -178,7 +178,7 @@ void ItchAuth::set_api_key(const String &api_key)
     }
 }
 
-String ItchAuth::get_api_key() const
+String Auth::get_api_key() const
 {
     // Check if we have a launch API key first
     if (!launch_api_key.is_empty())
@@ -190,7 +190,7 @@ String ItchAuth::get_api_key() const
 }
 
 // OAuth configuration methods
-void ItchAuth::set_oauth_client_id(const String &client_id)
+void Auth::set_oauth_client_id(const String &client_id)
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (ps)
@@ -199,7 +199,7 @@ void ItchAuth::set_oauth_client_id(const String &client_id)
     }
 }
 
-void ItchAuth::set_oauth_redirect_uri(const String &redirect_uri)
+void Auth::set_oauth_redirect_uri(const String &redirect_uri)
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (ps)
@@ -208,7 +208,7 @@ void ItchAuth::set_oauth_redirect_uri(const String &redirect_uri)
     }
 }
 
-void ItchAuth::set_oauth_scope(const String &scope)
+void Auth::set_oauth_scope(const String &scope)
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (ps)
@@ -217,7 +217,7 @@ void ItchAuth::set_oauth_scope(const String &scope)
     }
 }
 
-String ItchAuth::get_oauth_client_id() const
+String Auth::get_oauth_client_id() const
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (!ps)
@@ -232,7 +232,7 @@ String ItchAuth::get_oauth_client_id() const
     return "";
 }
 
-String ItchAuth::get_oauth_redirect_uri() const
+String Auth::get_oauth_redirect_uri() const
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (!ps)
@@ -247,7 +247,7 @@ String ItchAuth::get_oauth_redirect_uri() const
     return "";
 }
 
-String ItchAuth::get_oauth_scope() const
+String Auth::get_oauth_scope() const
 {
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (!ps)
@@ -263,7 +263,7 @@ String ItchAuth::get_oauth_scope() const
 }
 
 // OAuth flow management methods
-String ItchAuth::build_oauth_authorize_url(const String &client_id, const String &redirect_uri, const String &state) const
+String Auth::build_oauth_authorize_url(const String &client_id, const String &redirect_uri, const String &state) const
 {
     String cid = client_id.is_empty() ? get_oauth_client_id() : client_id;
     String ruri = redirect_uri.is_empty() ? get_oauth_redirect_uri() : redirect_uri;
@@ -295,7 +295,7 @@ String ItchAuth::build_oauth_authorize_url(const String &client_id, const String
     return url;
 }
 
-void ItchAuth::start_oauth_authorization(const String &client_id, const String &redirect_uri, const String &state)
+void Auth::start_oauth_authorization(const String &client_id, const String &redirect_uri, const String &state)
 {
     String url = build_oauth_authorize_url(client_id, redirect_uri, state);
     if (url.is_empty())
@@ -314,18 +314,18 @@ void ItchAuth::start_oauth_authorization(const String &client_id, const String &
 }
 
 // Token management
-void ItchAuth::set_oauth_token(const String &token)
+void Auth::set_oauth_token(const String &token)
 {
     oauth_token = token;
     save_token_to_cache();
 }
 
-String ItchAuth::get_oauth_token() const
+String Auth::get_oauth_token() const
 {
     return oauth_token;
 }
 
-void ItchAuth::save_token_to_cache()
+void Auth::save_token_to_cache()
 {
     ItchDataCache *cache = ItchDataCache::get_singleton();
     if (!cache)
@@ -337,7 +337,7 @@ void ItchAuth::save_token_to_cache()
     cache->set_verified("oauth_token", true, meta);
 }
 
-void ItchAuth::load_token_from_cache()
+void Auth::load_token_from_cache()
 {
     ItchDataCache *cache = ItchDataCache::get_singleton();
     if (!cache)

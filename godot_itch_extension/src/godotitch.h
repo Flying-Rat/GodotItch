@@ -37,8 +37,8 @@ namespace godot
         HTTPRequest *http_request = nullptr;
         String pending_request_type;
         Dictionary pending_request_data;
-        ItchDataCache* data_cache = nullptr;
-        ItchAuth* auth = nullptr;
+    ItchDataCache* data_cache = nullptr;
+    Auth* auth = nullptr;
         
         // OAuth configuration
         String oauth_client_id;
@@ -70,7 +70,7 @@ namespace godot
         // Module access - expose all subsystems
         Entitlements* get_entitlements() const;
         Core* get_core() const;
-        ItchAuth* get_auth() const;
+    Auth* get_auth() const;
         User* get_user() const;
         Games* get_games() const;
     // Assets subsystem removed

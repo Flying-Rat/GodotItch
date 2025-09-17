@@ -27,7 +27,7 @@ class ItchDataCache;
  * 
  * Requirements:
  * - Game ID must be configured in project settings (godot_itch/game_id)
- * - API key must be available through ItchAuth module
+ * - API key must be available through Auth module
  */
 class Entitlements : public Subsystem<Entitlements>
 {

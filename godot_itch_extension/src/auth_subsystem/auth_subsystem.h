@@ -11,12 +11,12 @@
 namespace godot
 {
     /**
-     * ItchAuth - Handles authentication and launch detection
+     * Auth - Handles authentication and launch detection
      * Uses CRTP for singleton pattern - no need for explicit static method declarations!
      */
-    class ItchAuth : public Subsystem<ItchAuth>
+    class Auth : public Subsystem<Auth>
     {
-        GDCLASS(ItchAuth, Subsystem<ItchAuth>);
+        GDCLASS(Auth, Subsystem<Auth>);
 
     private:
         bool initialized = false;
@@ -46,13 +46,13 @@ namespace godot
         static void _bind_methods();
     
     public:
-        ItchAuth();
-        ~ItchAuth();
+    Auth();
+    ~Auth();
 
         // Instance state
         bool is_initialized() const { return initialized; }
 
-        // Override virtual lifecycle methods from Subsystem<ItchAuth>
+    // Override virtual lifecycle methods from Subsystem<Auth>
         void initialize_instance() override;
         void shutdown_instance() override;
         

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://capwhiq2xo3ka" path="res://test_itch_auth.gd" id="1_g0s3y"]
 
-[node name="TestItchAuth" type="Control"]
+[node name="TestAuth" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

@@ -18,8 +18,8 @@
 			<description>Returns the current API key if set, otherwise an empty string.</description>
 		</method>
 		<method name="get_auth" qualifiers="const">
-			<return type="ItchAuth" />
-			<description>Returns the ItchAuth instance that manages authentication.</description>
+			<return type="Auth" />
+			<description>Returns the Auth instance that manages authentication.</description>
 		</method>
 		<method name="get_core" qualifiers="const">
 			<return type="Core" />

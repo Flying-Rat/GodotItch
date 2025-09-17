@@ -6,13 +6,13 @@ extends Control
 @onready var state_edit: LineEdit = $Panel/VBox/Inputs/State
 @onready var token_edit: LineEdit = $Panel/VBox/Inputs/Token
 
-var auth := ItchAuth.new()
+var auth := Auth.new()
 
 func _ready():
 	output.clear()
-	_log("=== ItchAuth UI Test ===")
+	_log("=== Auth UI Test ===")
 	if auth == null:
-		_error("ItchAuth class not found or failed to instantiate")
+		_error("Auth class not found or failed to instantiate")
 		return
 	_on_init_pressed()
 	# Prefill inputs from ProjectSettings
