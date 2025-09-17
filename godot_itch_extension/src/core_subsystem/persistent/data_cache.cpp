@@ -1,4 +1,4 @@
-#include "itch_data_cache.h"
+#include "data_cache.h"
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/time.hpp>
@@ -7,61 +7,64 @@
 
 using namespace godot;
 
-ItchDataCache* ItchDataCache::instance = nullptr;
+DataCache* DataCache::instance = nullptr;
 
-void ItchDataCache::_bind_methods()
+void DataCache::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("is_verified", "download_key"), &ItchDataCache::is_verified);
+    ClassDB::bind_method(D_METHOD("is_verified", "download_key"), &DataCache::is_verified);
     ClassDB::bind_method(D_METHOD("set_verified", "download_key", "verified", "metadata"),
-                         &ItchDataCache::set_verified, DEFVAL(Dictionary()));
-    ClassDB::bind_method(D_METHOD("get_verification_data", "download_key"), &ItchDataCache::get_verification_data);
-    ClassDB::bind_method(D_METHOD("clear_verification", "download_key"), &ItchDataCache::clear_verification);
-    ClassDB::bind_method(D_METHOD("clear_all_data"), &ItchDataCache::clear_all_data);
+                         &DataCache::set_verified, DEFVAL(Dictionary()));
+    ClassDB::bind_method(D_METHOD("get_verification_data", "download_key"), &DataCache::get_verification_data);
+    ClassDB::bind_method(D_METHOD("clear_verification", "download_key"), &DataCache::clear_verification);
+    ClassDB::bind_method(D_METHOD("clear_all_data"), &DataCache::clear_all_data);
 }
 
-ItchDataCache* ItchDataCache::get_singleton()
+DataCache* DataCache::get_singleton()
 {
     if (!instance) {
-        instance = memnew(ItchDataCache);
+        instance = memnew(DataCache);
     }
     return instance;
 }
 
-ItchDataCache::ItchDataCache() {
+DataCache::DataCache() {
     data_loaded = false;
     data_path = _get_secure_path();
     // Use a secure password for encryption - you can customize this
-    encryption_password = "ItchDataCache_2025_SecureKey";
+    encryption_password = "DataCache_2025_SecureKey";
 }
 
-ItchDataCache::~ItchDataCache() {
+DataCache::~DataCache() {
     if (instance == this) {
         instance = nullptr;
     }
 }
 
-void ItchDataCache::initialize() {
+void DataCache::initialize() {
     _load_data();
 }
 
-void ItchDataCache::shutdown() {
+void DataCache::shutdown() {
     _save_data();
 }
 
-String ItchDataCache::_get_secure_path() {
+String DataCache::_get_secure_path() {
     // Use user:// for secure, per-user data storage
     // This follows Godot's recommended pattern for user data
     return "user://itch_verification_cache.dat";
 }
 
-void ItchDataCache::_load_data() {
-    if (data_loaded) {
+void DataCache::_load_data() 
+{
+    if (data_loaded) 
+    {
         return;
     }
 
     // Try to load encrypted JSON data
     Ref<FileAccess> file = FileAccess::open_encrypted_with_pass(data_path, FileAccess::READ, encryption_password);
-    if (file.is_valid()) {
+    if (file.is_valid()) 
+    {
         // Read the encrypted content
         String json_content = file->get_as_text();
         file->close();
@@ -71,13 +74,16 @@ void ItchDataCache::_load_data() {
         json.instantiate();
         Error err = json->parse(json_content);
         
-        if (err == OK) {
+        if (err == OK) 
+        {
             data_cache = json->get_data();
-        } else {
+        } else 
+        {
             UtilityFunctions::push_warning("Failed to parse JSON data, starting fresh");
             data_cache = Dictionary();
         }
-    } else {
+    } else 
+    {
         // File doesn't exist or can't be opened - this is normal for first run
         UtilityFunctions::print("No encrypted JSON data file found, starting fresh");
         data_cache = Dictionary();
@@ -86,7 +92,8 @@ void ItchDataCache::_load_data() {
     data_loaded = true;
 }
 
-void ItchDataCache::_save_data() {
+void DataCache::_save_data() 
+{
     if (!data_loaded) {
         return; // Nothing to save if we haven't loaded anything
     }
@@ -106,14 +113,16 @@ void ItchDataCache::_save_data() {
     }
 }
 
-bool ItchDataCache::is_verified(const String &download_key) {
+bool DataCache::is_verified(const String &download_key) 
+{
     _load_data();
     
     Dictionary verifications = data_cache.get("verifications", Dictionary());
     return verifications.get(download_key, false);
 }
 
-void ItchDataCache::set_verified(const String &download_key, bool verified, const Dictionary &metadata) {
+void DataCache::set_verified(const String &download_key, bool verified, const Dictionary &metadata) 
+{
     _load_data();
     
     // Update verifications
@@ -140,14 +149,14 @@ void ItchDataCache::set_verified(const String &download_key, bool verified, cons
     _save_data();
 }
 
-Dictionary ItchDataCache::get_verification_data(const String &download_key) {
+Dictionary DataCache::get_verification_data(const String &download_key) {
     _load_data();
     
     Dictionary metadata_store = data_cache.get("metadata", Dictionary());
     return metadata_store.get(download_key, Dictionary());
 }
 
-void ItchDataCache::clear_verification(const String &download_key) {
+void DataCache::clear_verification(const String &download_key) {
     _load_data();
     
     // Remove from verifications
@@ -167,7 +176,7 @@ void ItchDataCache::clear_verification(const String &download_key) {
     _save_data();
 }
 
-void ItchDataCache::clear_all_data() {
+void DataCache::clear_all_data() {
     _load_data();
     data_cache.clear();
     _save_data();

@@ -13,7 +13,7 @@
 using namespace godot;
 
 // Forward declarations
-class ItchDataCache;
+class DataCache;
 
 /**
  * Entitlements - Handles purchase verification and entitlement caching
@@ -23,7 +23,7 @@ class ItchDataCache;
  * - Purchase/entitlement verification against itch.io API
  * - Local caching of verification results with TTL
  * - Fallback to cached results when API is unavailable
- * - Integration with ItchDataCache for persistent storage
+ * - Integration with DataCache for persistent storage
  * 
  * Requirements:
  * - Game ID must be configured in project settings (godot_itch/game_id)
@@ -37,7 +37,7 @@ private:
     
     // Core dependencies
     Core* core = nullptr;
-    ItchDataCache* data_cache = nullptr;
+    DataCache* data_cache = nullptr;
     HTTPRequest* http_request = nullptr;
     
     // Verification state

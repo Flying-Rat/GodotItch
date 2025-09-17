@@ -6,7 +6,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 // Local includes
-#include "../core_subsystem/persistent/itch_data_cache.h"
+#include "../core_subsystem/persistent/data_cache.h"
 
 using namespace godot;
 
@@ -327,7 +327,7 @@ String Auth::get_oauth_token() const
 
 void Auth::save_token_to_cache()
 {
-    ItchDataCache *cache = ItchDataCache::get_singleton();
+    DataCache *cache = DataCache::get_singleton();
     if (!cache)
     {
         return;
@@ -339,7 +339,7 @@ void Auth::save_token_to_cache()
 
 void Auth::load_token_from_cache()
 {
-    ItchDataCache *cache = ItchDataCache::get_singleton();
+    DataCache *cache = DataCache::get_singleton();
     if (!cache)
     {
         return;

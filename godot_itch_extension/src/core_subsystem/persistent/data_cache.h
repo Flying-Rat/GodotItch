@@ -1,5 +1,5 @@
-#ifndef ITCH_DATA_CACHE_H
-#define ITCH_DATA_CACHE_H
+#ifndef DATA_CACHE_H
+#define DATA_CACHE_H
 
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
@@ -8,11 +8,11 @@
 
 using namespace godot;
 
-class ItchDataCache : public Object {
-    GDCLASS(ItchDataCache, Object);
+class DataCache : public Object {
+    GDCLASS(DataCache, Object);
 
 private:
-    static ItchDataCache* instance;
+    static DataCache* instance;
     Dictionary data_cache;
     String data_path;
     String encryption_password;
@@ -26,10 +26,10 @@ protected:
     static void _bind_methods();
 
 public:
-    static ItchDataCache* get_singleton();
-    
-    ItchDataCache();
-    ~ItchDataCache();
+    static DataCache* get_singleton();
+
+    DataCache();
+    ~DataCache();
 
     void initialize();
     void shutdown();
@@ -41,4 +41,4 @@ public:
     void clear_all_data();
 };
 
-#endif // ITCH_DATA_CACHE_H
+#endif // DATA_CACHE_H

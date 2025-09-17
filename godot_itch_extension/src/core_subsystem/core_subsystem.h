@@ -5,7 +5,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
-#include "persistent/itch_data_cache.h"
+#include "persistent/data_cache.h"
 #include "subsystem.h"
 
 namespace godot {
@@ -19,7 +19,7 @@ namespace godot {
     private:
         bool initialized = false;
         
-        ItchDataCache* persistent_cache = nullptr;
+    DataCache* persistent_cache = nullptr;
         
         // Project setting keys
         const String SETTINGS_PREFIX = String("godot_itch/");
@@ -49,7 +49,7 @@ namespace godot {
         String get_game_id() const;
         
         // Persistent cache access
-        ItchDataCache* get_persistent_cache() { return persistent_cache; }
+    DataCache* get_persistent_cache() { return persistent_cache; }
     };
 }
 

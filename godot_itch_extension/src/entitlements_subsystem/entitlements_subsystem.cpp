@@ -10,7 +10,7 @@
 
 // Local includes
 #include "../core_subsystem/core_subsystem.h"
-#include "../core_subsystem/persistent/itch_data_cache.h"
+#include "../core_subsystem/persistent/data_cache.h"
 #include "../auth_subsystem/auth_subsystem.h"
 
 using namespace godot;
@@ -98,7 +98,7 @@ void Entitlements::initialize_instance() {
 
     data_cache = core->get_persistent_cache();
     if (!data_cache) {
-        UtilityFunctions::push_error("Entitlements: ItchDataCache not available from Core");
+        UtilityFunctions::push_error("Entitlements: DataCache not available from Core");
         return;
     }
 

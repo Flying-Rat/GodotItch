@@ -93,7 +93,7 @@ Itch::Itch()
 	
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
-	data_cache = ItchDataCache::get_singleton();
+	data_cache = DataCache::get_singleton();
 	auth = Auth::get_singleton();
 
 	// Connect our own api_response signal to local handler

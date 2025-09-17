@@ -7,7 +7,7 @@
 
 #include "godotitch.h"
 #include "core_subsystem/core_subsystem.h"
-#include "core_subsystem/persistent/itch_data_cache.h"
+#include "core_subsystem/persistent/data_cache.h"
 #include "auth_subsystem/auth_subsystem.h"
 #include "entitlements_subsystem/entitlements_subsystem.h"
 #include "user_subsystem/user_subsystem.h"
@@ -24,7 +24,7 @@ void initialize_godotitch_module(ModuleInitializationLevel level)
         ClassDB::register_class<Core>();
 
         // Register submodules in dependency order
-    ClassDB::register_class<ItchDataCache>();
+    ClassDB::register_class<DataCache>();
     ClassDB::register_class<Auth>();
         ClassDB::register_class<Entitlements>();
         ClassDB::register_class<User>();

@@ -38,7 +38,7 @@ void Core::initialize_instance() {
     ensure_project_settings();
     
     // Initialize persistent cache
-    persistent_cache = ItchDataCache::get_singleton();
+    persistent_cache = DataCache::get_singleton();
     if (persistent_cache) {
         persistent_cache->initialize();
     }
