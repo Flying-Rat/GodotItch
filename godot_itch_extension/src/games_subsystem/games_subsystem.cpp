@@ -22,3 +22,5 @@ Games::~Games()
 void Games::_bind_methods() 
 {
 }
+
+// This folder has been renamed from submodule_games to games_subsystem

@@ -22,8 +22,8 @@
 #include "core_subsystem/core_subsystem.h"
 #include "auth_subsystem/auth_subsystem.h"
 #include "entitlements_subsystem/entitlements_subsystem.h"
-#include "submodule_user/user_subsystem.h"
-#include "submodule_games/games_subsystem.h"
+#include "user_subsystem/user_subsystem.h"
+#include "games_subsystem/games_subsystem.h"
 
 namespace godot
 {

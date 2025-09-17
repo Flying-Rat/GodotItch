@@ -10,8 +10,8 @@
 #include "core_subsystem/persistent/itch_data_cache.h"
 #include "auth_subsystem/auth_subsystem.h"
 #include "entitlements_subsystem/entitlements_subsystem.h"
-#include "submodule_user/user_subsystem.h"
-#include "submodule_games/games_subsystem.h"
+#include "user/user_subsystem.h"
+#include "games_subsystem/games_subsystem.h"
 
 using namespace godot;
 
