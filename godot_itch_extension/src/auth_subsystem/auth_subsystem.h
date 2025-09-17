@@ -77,6 +77,10 @@ namespace godot
         void set_oauth_token(const String &token);
         String get_oauth_token() const;
 
+    // Unified bearer token (OAuth token or launch token from itch launcher)
+    String get_bearer_token() const;
+    bool has_bearer_token() const;
+
         // OAuth flow management
         String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const;
         void start_oauth_authorization(const String &client_id = "", const String &redirect_uri = "", const String &state = "");

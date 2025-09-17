@@ -204,13 +204,8 @@ void Itch::_setup_http_request()
 
 String Itch::_build_api_url(const String &endpoint) const
 {
-	String api_key = Auth::get_singleton()->get_launch_api_key();
-	if (api_key.is_empty())
-	{
-		UtilityFunctions::push_error("Itch.io Launch API key not set!");
-		return "";
-	}
-	return "https://itch.io/api/1/" + api_key + endpoint;
+	// Use JWT endpoints; endpoint should start with '/'
+	return String("https://itch.io/api/1/jwt") + endpoint;
 }
 
 // API Methods
@@ -223,12 +218,8 @@ void Itch::get_me()
 	}
 
 	String url = _build_api_url("/me");
-	if (url.is_empty())
-		return;
-
-	String token = Auth::get_singleton()->get_oauth_token();
-	if (token.is_empty())
-	{
+	String token = Auth::get_singleton()->get_bearer_token();
+	if (token.is_empty()) {
 		UtilityFunctions::push_error("OAuth token not set - user not logged in");
 		return;
 	}
@@ -238,7 +229,7 @@ void Itch::get_me()
 
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
-	headers.push_back("Authorization: Bearer " + Auth::get_singleton()->get_oauth_token());
+	headers.push_back("Authorization: Bearer " + token);
 	// Diagnostics: log whether HTTPRequest is inside scene tree
 	if (http_request->is_inside_tree())
 	{
@@ -264,14 +255,18 @@ void Itch::get_my_games()
 	}
 
 	String url = _build_api_url("/my-games");
-	if (url.is_empty())
-		return;
 
 	pending_request_type = "get_my_games";
 	pending_request_data.clear();
 
+	String token = Auth::get_singleton()->get_bearer_token();
+	if (token.is_empty()) {
+		UtilityFunctions::push_error("OAuth token not set - user not logged in");
+		return;
+	}
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
+	headers.push_back("Authorization: Bearer " + token);
 
 	// Schedule deferred internal helper to perform the request
 	call_deferred("_perform_request", url, headers);
@@ -294,15 +289,19 @@ void Itch::get_game_purchases(const String &game_id)
 	}
 
 	String url = _build_api_url("/game/" + target_game_id + "/purchases");
-	if (url.is_empty())
-		return;
 
 	pending_request_type = "get_game_purchases";
 	pending_request_data.clear();
 	pending_request_data["game_id"] = target_game_id;
 
+	String token = Auth::get_singleton()->get_bearer_token();
+	if (token.is_empty()) {
+		UtilityFunctions::push_error("OAuth token not set - user not logged in");
+		return;
+	}
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
+	headers.push_back("Authorization: Bearer " + token);
 
 	// Schedule deferred internal helper to perform the request
 	call_deferred("_perform_request", url, headers);
@@ -325,15 +324,19 @@ void Itch::get_game_uploads(const String &game_id)
 	}
 
 	String url = _build_api_url("/game/" + target_game_id + "/uploads");
-	if (url.is_empty())
-		return;
 
 	pending_request_type = "get_game_uploads";
 	pending_request_data.clear();
 	pending_request_data["game_id"] = target_game_id;
 
+	String token = Auth::get_singleton()->get_bearer_token();
+	if (token.is_empty()) {
+		UtilityFunctions::push_error("OAuth token not set - user not logged in");
+		return;
+	}
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
+	headers.push_back("Authorization: Bearer " + token);
 
 	// Schedule deferred internal helper to perform the request
 	call_deferred("_perform_request", url, headers);
@@ -362,16 +365,20 @@ void Itch::get_download_key(const String &download_key, const String &game_id)
 	}
 
 	String url = _build_api_url("/game/" + target_game_id + "/download_keys?download_key=" + download_key);
-	if (url.is_empty())
-		return;
 
 	pending_request_type = "get_download_key";
 	pending_request_data.clear();
 	pending_request_data["download_key"] = download_key;
 	pending_request_data["game_id"] = game_id;
 
+	String token = Auth::get_singleton()->get_oauth_token();
+	if (token.is_empty()) {
+		UtilityFunctions::push_error("OAuth token not set - user not logged in");
+		return;
+	}
 	PackedStringArray headers;
 	headers.push_back("User-Agent: GodotItch/1.0");
+	headers.push_back("Authorization: Bearer " + token);
 
 	// Schedule deferred internal helper to perform the request
 	call_deferred("_perform_request", url, headers);

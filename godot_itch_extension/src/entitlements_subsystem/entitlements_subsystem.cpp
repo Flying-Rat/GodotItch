@@ -232,16 +232,11 @@ void Entitlements::verify_entitlement(const String& download_key)
         return;
     }
 
-    String oauth_token = Auth::get_singleton()->get_oauth_token();
-    if (oauth_token.is_empty())
-    {
-        oauth_token = Auth::get_singleton()->get_launch_api_key();
-        if (oauth_token.is_empty())
-        {
-            UtilityFunctions::push_error("Entitlements: No OAuth token or API key available for verification");
-            emit_signal("entitlement_error", "User not authenticated (missing OAuth token and API key)");
-            return;
-        }
+    String oauth_token = Auth::get_singleton()->get_bearer_token();
+    if (oauth_token.is_empty()) {
+        UtilityFunctions::push_error("Entitlements: No OAuth/launcher token available for verification");
+        emit_signal("entitlement_error", "User not authenticated (missing OAuth/launcher token)");
+        return;
     }
 
     PackedStringArray headers;

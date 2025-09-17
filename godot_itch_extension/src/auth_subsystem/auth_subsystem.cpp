@@ -36,6 +36,10 @@ void Auth::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_oauth_token"), &Auth::get_oauth_token);
     ClassDB::bind_method(D_METHOD("build_oauth_authorize_url"), &Auth::build_oauth_authorize_url);
     ClassDB::bind_method(D_METHOD("start_oauth_authorization"), &Auth::start_oauth_authorization);
+
+    // Unified bearer token helpers
+    ClassDB::bind_method(D_METHOD("get_bearer_token"), &Auth::get_bearer_token);
+    ClassDB::bind_method(D_METHOD("has_bearer_token"), &Auth::has_bearer_token);
 }
 
 Auth::Auth()
@@ -282,6 +286,23 @@ void Auth::set_oauth_token(const String &token)
 String Auth::get_oauth_token() const
 {
     return oauth_token;
+}
+
+String Auth::get_bearer_token() const
+{
+    // Prefer OAuth token if present; otherwise use launch_api_key (itch launcher provides a short-lived token)
+    if (!oauth_token.is_empty()) {
+        return oauth_token;
+    }
+    if (!launch_api_key.is_empty()) {
+        return launch_api_key;
+    }
+    return String("");
+}
+
+bool Auth::has_bearer_token() const
+{
+    return !oauth_token.is_empty() || !launch_api_key.is_empty();
 }
 
 void Auth::save_token_to_cache()
