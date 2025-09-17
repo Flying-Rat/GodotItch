@@ -49,10 +49,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "download key"
 
-[node name="BtnDownloadKey" type="Button" parent="Panel/VBox/Buttons"]
-layout_mode = 2
-text = "Download Key"
-
 [node name="BtnVerifyKey" type="Button" parent="Panel/VBox/Buttons"]
 layout_mode = 2
 text = "Verify Key"
@@ -77,5 +73,4 @@ fit_content = true
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnRunTests" to="." method="_on_run_tests_button_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnGetMe" to="." method="_on_get_me_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnMyGames" to="." method="_on_my_games_pressed"]
-[connection signal="pressed" from="Panel/VBox/Buttons/BtnDownloadKey" to="." method="_on_btn_download_key_pressed"]
 [connection signal="pressed" from="Panel/VBox/Buttons/BtnVerifyKey" to="." method="_on_btn_verify_purchase_pressed"]

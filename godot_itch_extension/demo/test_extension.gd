@@ -32,12 +32,6 @@ func _ready():
 	error_occurred = false
 	print("✓ Basic method calls work")
 
-	# Use error handling for method calls
-	if Itch.has_method("get_api_key"):
-		api_key = Itch.get_api_key()
-	else:
-		error_occurred = true
-
 	if Itch.has_method("get_game_id"):
 		game_id = Itch.get_game_id()
 	else:
@@ -117,7 +111,7 @@ func _on_run_tests_button_pressed() -> void:
 	output.append_text("[b]Testing sequence...[/b]\n")
 	Itch.get_my_games()
 	await get_tree().create_timer(3.0).timeout
-	Itch.get_download_key(download_key, game_id)
+	Itch.verify_download_key(download_key)
 	await get_tree().create_timer(3.0).timeout
 	output.append_text("[b]Done.[/b]\n")
 
@@ -129,16 +123,6 @@ func _on_my_games_pressed() -> void:
 	output.append_text("[b]Request:[/b] get_my_games\n")
 	Itch.get_my_games()
 
-
-func _on_btn_download_key_pressed() -> void:
-	var download_key_text = download_key_line_edit.text.strip_edges()
-	if download_key_text.is_empty():
-		output.append_text("[c]Download key is empty![c]")
-		return
-	download_key = download_key_text;
-	output.append_text("[b]Request:[/b] get_download_key %s\n" % download_key)
-	Itch.get_download_key(download_key, game_id)
-
 func _on_btn_verify_purchase_pressed() -> void:
 	var download_key_text = download_key_line_edit.text.strip_edges()
 	if download_key_text.is_empty():
@@ -146,4 +130,4 @@ func _on_btn_verify_purchase_pressed() -> void:
 		return
 	download_key = download_key_text
 	output.append_text("[b]Request:[/b] verify_purchase %s\n" % download_key)
-	Itch.verify_purchase(download_key)
+	Itch.verify_download_key(download_key)

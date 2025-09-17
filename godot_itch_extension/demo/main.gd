@@ -4,8 +4,8 @@ extends Node2D
 @onready var auth_tests : Control = $CanvasLayer/TestAuth
 
 func _ready() -> void:
-	itch_api_tests.visible = true
-	auth_tests.visible = false
+	itch_api_tests.visible = false
+	auth_tests.visible = true
 
 func _on_itch_api_tests_button_pressed() -> void:
 	itch_api_tests.visible = true

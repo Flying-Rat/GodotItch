@@ -9,9 +9,9 @@ script = ExtResource("1_h2yge")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="TestItchApi" parent="CanvasLayer" instance=ExtResource("1_ig7tw")]
-
 [node name="TestAuth" parent="CanvasLayer" instance=ExtResource("2_0xm2m")]
+
+[node name="TestItchApi" parent="CanvasLayer" instance=ExtResource("1_ig7tw")]
 visible = false
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
@@ -27,13 +27,13 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 20
 
-[node name="ItchApiTestsButton" type="Button" parent="CanvasLayer/HBoxContainer"]
-layout_mode = 2
-text = "Itch API Tests"
-
 [node name="AuthTestsButton" type="Button" parent="CanvasLayer/HBoxContainer"]
 layout_mode = 2
 text = "Auth Tests"
 
-[connection signal="pressed" from="CanvasLayer/HBoxContainer/ItchApiTestsButton" to="." method="_on_itch_api_tests_button_pressed"]
+[node name="ItchApiTestsButton" type="Button" parent="CanvasLayer/HBoxContainer"]
+layout_mode = 2
+text = "Itch API Tests"
+
 [connection signal="pressed" from="CanvasLayer/HBoxContainer/AuthTestsButton" to="." method="_on_itch_auth_tests_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/HBoxContainer/ItchApiTestsButton" to="." method="_on_itch_api_tests_button_pressed"]
