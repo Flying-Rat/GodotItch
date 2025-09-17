@@ -39,7 +39,7 @@ void Entitlements::_bind_methods()
 
     // Internal HTTP response handler
     ClassDB::bind_method(D_METHOD("_on_verification_response", "result", "response_code", "headers", "body"), &Entitlements::_on_verification_response);
-    
+
     // Define signals
     ADD_SIGNAL(MethodInfo("entitlement_verified", PropertyInfo(Variant::BOOL, "success"), PropertyInfo(Variant::DICTIONARY, "data")));
     ADD_SIGNAL(MethodInfo("entitlement_error", PropertyInfo(Variant::STRING, "error_message")));
@@ -54,7 +54,7 @@ Entitlements::Entitlements()
 Entitlements::~Entitlements()
 {
     _cleanup_http_request();
-    
+
     // Clear state
     pending_download_key = "";
     instance_initialized = false;
@@ -134,21 +134,15 @@ String Entitlements::_build_verification_url(const String& download_key) const
         UtilityFunctions::push_error("Entitlements: Core not available for URL building");
         return "";
     }
-    
-    String api_key = Auth::get_singleton()->get_api_key();
-    if (api_key.is_empty()) {
-        UtilityFunctions::push_error("Entitlements: API key not available for verification");
-        return "";
-    }
-    
+
     // Always get game_id from project settings
     String target_game_id = core->get_game_id();
     if (target_game_id.is_empty()) {
         UtilityFunctions::push_error("Entitlements: Game ID not configured in project settings (godot_itch/game_id)");
         return "";
     }
-    
-    return "https://itch.io/api/1/" + api_key + "/game/" + target_game_id + "/download_keys?download_key=" + download_key;
+
+    return "https://itch.io/api/1/jwt/game/" + target_game_id + "/download_keys?download_key=" + download_key;
 }
 
 bool Entitlements::_is_cache_valid(const Dictionary& cached_data) const
@@ -161,12 +155,12 @@ void Entitlements::_store_verification_result(const String& download_key, const 
     if (!data_cache) {
         return;
     }
-    
+
     Dictionary cached_entry;
     cached_entry["timestamp"] = (int64_t)Time::get_singleton()->get_unix_time_from_system();
     cached_entry["result"] = result;
     cached_entry["download_key"] = download_key;
-    
+
     String cache_key = "entitlement_" + download_key;
     data_cache->set_verified(cache_key, true, cached_entry);
     
@@ -179,17 +173,17 @@ Dictionary Entitlements::_get_cached_verification(const String& download_key) co
     if (!data_cache) {
         return Dictionary();
     }
-    
+
     String cache_key = "entitlement_" + download_key;
     if (!data_cache->is_verified(cache_key)) {
         return Dictionary();
     }
-    
+
     Dictionary cached_data = data_cache->get_verification_data(cache_key);
     if (_is_cache_valid(cached_data)) {
         return cached_data.get("result", Dictionary());
     }
-    
+
     return Dictionary();
 }
 
@@ -201,32 +195,33 @@ void Entitlements::verify_entitlement(const String& download_key)
         emit_signal("entitlement_error", "Download key cannot be empty");
         return;
     }
-    
+
     if (download_key.length() < 10) {
         UtilityFunctions::push_error("Entitlements: Download key appears to be too short");
         emit_signal("entitlement_error", "Download key appears to be invalid (too short)");
         return;
     }
-    
+
     if (!instance_initialized) {
         UtilityFunctions::push_error("Entitlements: Module not properly initialized");
         emit_signal("entitlement_error", "Entitlements module not initialized");
         return;
     }
-    
+
     // Check cache first
-    Dictionary cached_result = _get_cached_verification(download_key);
-    if (!cached_result.is_empty()) {
-        emit_signal("entitlement_verified", true, cached_result);
-        return;
-    }
-    
+    // Dictionary cached_result = _get_cached_verification(download_key);
+    // if (!cached_result.is_empty()) {
+    //     UtilityFunctions::print("Entitlements: Using cached verification for key: ", download_key);
+    //     emit_signal("entitlement_verified", true, cached_result);
+    //     return;
+    // }
+
     // Prevent concurrent verifications
     if (is_verifying) {
         emit_signal("entitlement_error", "Verification already in progress");
         return;
     }
-    
+
     // Use a simpler approach - delegate to main Itch class HTTP system
     // This avoids potential conflicts with multiple HTTPRequest instances
     String url = _build_verification_url(download_key);
@@ -234,15 +229,23 @@ void Entitlements::verify_entitlement(const String& download_key)
         emit_signal("entitlement_error", "Could not build verification URL");
         return;
     }
-    
+
+    String oauth_token = Auth::get_singleton()->get_bearer_token();
+    if (oauth_token.is_empty()) {
+        UtilityFunctions::push_error("Entitlements: No OAuth/launcher token available for verification");
+        emit_signal("entitlement_error", "User not authenticated (missing OAuth/launcher token)");
+        return;
+    }
+
     PackedStringArray headers;
     headers.push_back(String("User-Agent: ") + USER_AGENT);
-    
+    headers.push_back("Authorization: Bearer " + oauth_token);
+
     pending_download_key = download_key;
     is_verifying = true;
-    
-    // Starting HTTP verification request
-    
+
+    UtilityFunctions::print("Entitlements: Making direct HTTP request to: ", url);
+
     // Create a temporary HTTPRequest for this single operation
     HTTPRequest* temp_request = memnew(HTTPRequest);
     if (!temp_request) {
@@ -251,17 +254,17 @@ void Entitlements::verify_entitlement(const String& download_key)
         emit_signal("entitlement_error", "Failed to create temporary HTTP request");
         return;
     }
-    
+
     // Configure the temporary request
     temp_request->set_use_threads(false);
     temp_request->set_timeout(HTTP_TIMEOUT_SECONDS);
-    
+
     // Add to scene tree first (required for HTTPRequest to work)
     SceneTree* scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
     Node* scene_root = scene_tree ? scene_tree->get_current_scene() : nullptr;
     if (scene_root) {
         scene_root->add_child(temp_request);
-        
+
         // Connect signal AFTER adding to scene tree
         Error connect_result = temp_request->connect("request_completed", Callable(this, "_on_verification_response"));
         if (connect_result != OK) {
@@ -272,9 +275,10 @@ void Entitlements::verify_entitlement(const String& download_key)
             emit_signal("entitlement_error", "Failed to connect HTTP signal");
             return;
         }
-        
-    Error result = temp_request->request(url, headers);
-        
+
+        Error result = temp_request->request(url, headers);
+        UtilityFunctions::print("Entitlements: HTTP request call completed with result:", String::num_int64(result));
+
         if (result != OK) {
             is_verifying = false;
             pending_download_key = "";
@@ -286,7 +290,7 @@ void Entitlements::verify_entitlement(const String& download_key)
             emit_signal("entitlement_error", "Failed to start HTTP request: " + String::num_int64(result));
             return;
         }
-        
+
         // Store reference to clean up later
         http_request = temp_request;
         // Request started successfully
@@ -301,17 +305,20 @@ void Entitlements::verify_entitlement(const String& download_key)
 
 void Entitlements::_on_verification_response(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body)
 {
+    UtilityFunctions::print("Entitlements: _on_verification_response called - result:", String::num_int64(result), "response_code:", String::num_int64(response_code));
+
     // Critical safety check - ensure object is still valid
     if (!instance_initialized || !http_request) {
         UtilityFunctions::push_error("Entitlements: Response callback called on invalid instance");
         return;
     }
-    
-    
+
+    UtilityFunctions::print("Entitlements: Safety checks passed, processing response...");
+
     // Store http_request reference before clearing member variable
     HTTPRequest* temp_http_request = http_request;
     http_request = nullptr;  // Clear member immediately to prevent reuse
-    
+
     is_verifying = false;
     String current_key = pending_download_key;
     pending_download_key = "";
@@ -330,7 +337,7 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
         emit_signal("entitlement_error", "Network request failed: " + error_description);
         return;
     }
-    
+
     if (response_code != HTTP_OK) {
         String error_description = "HTTP response code: " + String::num_int64(response_code);
         UtilityFunctions::push_error("Entitlements: ", error_description);
@@ -343,10 +350,11 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
         emit_signal("entitlement_error", "Server returned error code: " + String::num_int64(response_code));
         return;
     }
-    
+
     // Parse JSON response
     String response_text = body.get_string_from_utf8();
-    
+    UtilityFunctions::print("Entitlements: Response text length:", String::num_int64(response_text.length()));
+
     Variant parsed = JSON::parse_string(response_text);
     if (parsed.get_type() == Variant::NIL) {
         String error_description = "Failed to parse JSON response";
@@ -360,7 +368,7 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
         emit_signal("entitlement_error", "Invalid server response format");
         return;
     }
-    
+
     UtilityFunctions::print("Entitlements: JSON parsed successfully");
     Dictionary response_data;
     if (parsed.get_type() == Variant::DICTIONARY) {
@@ -369,17 +377,18 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
         // Wrap non-dictionary JSON into a result container for consistency
         response_data["result"] = parsed;
     }
-    
+
     // Store in cache with safety check
     if (core && data_cache) {
     _store_verification_result(current_key, response_data);
     } else {
         UtilityFunctions::push_error("Entitlements: Cannot store result - core or data_cache is null");
     }
-    
+
     // Emit success signal
     emit_signal("entitlement_verified", true, response_data);
-    
+    UtilityFunctions::print("Entitlements: Verification complete for key: ", current_key);
+
     // Clean up temporary HTTPRequest safely
     if (temp_http_request && temp_http_request->is_inside_tree()) {
         // Disconnect signal first to prevent any additional callbacks
@@ -396,7 +405,7 @@ bool Entitlements::is_entitled(const String& download_key) const
     if (cached_result.is_empty()) {
         return false;
     }
-    
+
     // Check if the response indicates a valid entitlement
     // itch.io API returns a "download_key" object when valid
     if (cached_result.has("download_key")) {
@@ -404,13 +413,13 @@ bool Entitlements::is_entitled(const String& download_key) const
         // Valid if we have a dictionary object with key data
         return dk.get_type() == Variant::DICTIONARY;
     }
-    
+
     // Fallback: check for download_keys array (alternative API format)
     if (cached_result.has("download_keys") && cached_result["download_keys"].get_type() == Variant::ARRAY) {
         Array download_keys = cached_result["download_keys"];
         return download_keys.size() > 0;
     }
-    
+
     return false;
 }
 

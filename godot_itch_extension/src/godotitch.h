@@ -44,11 +44,11 @@ namespace godot
         String oauth_client_id;
         String oauth_redirect_uri;
         String oauth_scope;
-        
+
         // User state
         Dictionary current_user;
         bool is_user_logged_in = false;
-        
+
         void _setup_http_request();
         String _build_api_url(const String& endpoint) const;
 
@@ -88,9 +88,7 @@ namespace godot
         void verify_download_key(const String &download_key);
 
         // Utility methods
-        void set_api_key(const String &api_key);
         void set_game_id(const String &game_id);
-        String get_api_key() const;
         String get_game_id() const;
 
         // OAuth helpers
@@ -116,8 +114,7 @@ namespace godot
         // Entitlements signal handlers
         void _on_entitlement_verified(bool success, const Dictionary& data);
         void _on_entitlement_error(const String& error_message);
-        // Test helper: perform a plain HTTP request to example.com
-        void test_request_http();
+
         // Internal deferred request helper
         void _perform_request(const String &url, const PackedStringArray &headers);
         // Post-request diagnostic check

@@ -26,8 +26,6 @@ window/stretch/mode="canvas_items"
 enabled=PackedStringArray("res://addons/godot_itch/plugin.cfg")
 
 [godot_itch]
-
-api_key=""
 game_id=""
 advanced/debug_logging=false
 oauth_client_id=""

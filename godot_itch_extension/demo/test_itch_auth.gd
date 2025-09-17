@@ -52,12 +52,19 @@ func _on_launch_info_pressed() -> void:
 func _on_save_oauth_pressed() -> void:
 	var cid := client_id_edit.text.strip_edges()
 	var ruri := redirect_uri_edit.text.strip_edges()
+	var token := token_edit.text.strip_edges()
+	
 	if cid.is_empty() or ruri.is_empty():
 		_error("client_id and redirect_uri are required")
 		return
+	
+	if token.is_empty():
+		_error("OAuth token is required!")
+	
 	auth.set_oauth_client_id(cid)
 	auth.set_oauth_redirect_uri(ruri)
 	auth.set_oauth_scope("profile:me")
+	auth.set_oauth_token(token)
 	_log("Saved OAuth settings. client_id=%s redirect_uri=%s" % [cid, ruri])
 
 
@@ -68,10 +75,10 @@ func _on_show_oauth_pressed() -> void:
 
 
 func _on_build_url_pressed() -> void:
-	var cid := client_id_edit.text.strip_edges()
-	var ruri := redirect_uri_edit.text.strip_edges()
-	var state := state_edit.text.strip_edges()
-	var url := auth.build_oauth_authorize_url(cid, ruri, state)
+	var cid : String = client_id_edit.text.strip_edges()
+	var ruri : String = redirect_uri_edit.text.strip_edges()
+	var state : String = state_edit.text.strip_edges()
+	var url : String = auth.build_oauth_authorize_url(cid, ruri, state)
 	if ruri.is_empty():
 		_log("Authorize URL (no redirect_uri): %s" % url)
 	else:

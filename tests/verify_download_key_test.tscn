@@ -34,17 +34,7 @@ vertical_alignment = 1
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="ApiKeyContainer" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="ApiKeyLabel" type="Label" parent="VBoxContainer/ApiKeyContainer"]
-layout_mode = 2
-text = "API Key:"
-
-[node name="ApiKeyInput" type="LineEdit" parent="VBoxContainer/ApiKeyContainer"]
-layout_mode = 2
-placeholder_text = "Enter your itch.io API key..."
-secret = true
+; Removed API key input; OAuth/launcher token is used
 
 [node name="GameIdContainer" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2

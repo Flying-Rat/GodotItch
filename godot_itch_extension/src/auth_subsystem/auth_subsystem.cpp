@@ -23,10 +23,6 @@ void Auth::_bind_methods()
     ClassDB::bind_method(D_METHOD("has_api_key_present"), &Auth::has_api_key_present);
     ClassDB::bind_method(D_METHOD("get_launch_api_key"), &Auth::get_launch_api_key);
 
-    // API Key management
-    ClassDB::bind_method(D_METHOD("set_api_key", "api_key"), &Auth::set_api_key);
-    ClassDB::bind_method(D_METHOD("get_api_key"), &Auth::get_api_key);
-
     // OAuth configuration
     ClassDB::bind_method(D_METHOD("set_oauth_client_id", "client_id"), &Auth::set_oauth_client_id);
     ClassDB::bind_method(D_METHOD("set_oauth_redirect_uri", "redirect_uri"), &Auth::set_oauth_redirect_uri);
@@ -42,6 +38,12 @@ void Auth::_bind_methods()
     // OAuth token
     ClassDB::bind_method(D_METHOD("set_oauth_token", "token"), &Auth::set_oauth_token);
     ClassDB::bind_method(D_METHOD("get_oauth_token"), &Auth::get_oauth_token);
+    ClassDB::bind_method(D_METHOD("build_oauth_authorize_url"), &Auth::build_oauth_authorize_url);
+    ClassDB::bind_method(D_METHOD("start_oauth_authorization"), &Auth::start_oauth_authorization);
+
+    // Unified bearer token helpers
+    ClassDB::bind_method(D_METHOD("get_bearer_token"), &Auth::get_bearer_token);
+    ClassDB::bind_method(D_METHOD("has_bearer_token"), &Auth::has_bearer_token);
 }
 
 Auth::Auth()
@@ -130,10 +132,6 @@ void Auth::ensure_oauth_settings()
         return;
     }
 
-    if (!ps->has_setting(SETTING_API_KEY))
-    {
-        ps->set_setting(SETTING_API_KEY, "");
-    }
     if (!ps->has_setting(SETTING_OAUTH_CLIENT_ID))
     {
         ps->set_setting(SETTING_OAUTH_CLIENT_ID, "");
@@ -149,20 +147,6 @@ void Auth::ensure_oauth_settings()
     }
 }
 
-String Auth::get_api_key_from_settings() const
-{
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (!ps)
-    {
-        return "";
-    }
-    Variant v = ps->get_setting(SETTING_API_KEY);
-    if (v.get_type() == Variant::STRING)
-    {
-        return v;
-    }
-    return "";
-}
 
 // Launch detection methods
 bool Auth::is_launched_via_itch() const
@@ -178,27 +162,6 @@ bool Auth::has_api_key_present() const
 String Auth::get_launch_api_key() const
 {
     return launch_api_key;
-}
-
-// API Key management methods
-void Auth::set_api_key(const String &api_key)
-{
-    ProjectSettings *ps = ProjectSettings::get_singleton();
-    if (ps)
-    {
-        ps->set_setting(SETTING_API_KEY, api_key);
-    }
-}
-
-String Auth::get_api_key() const
-{
-    // Check if we have a launch API key first
-    if (!launch_api_key.is_empty())
-    {
-        return launch_api_key;
-    }
-    // Fall back to project settings
-    return get_api_key_from_settings();
 }
 
 // OAuth configuration methods
@@ -335,6 +298,23 @@ void Auth::set_oauth_token(const String &token)
 String Auth::get_oauth_token() const
 {
     return oauth_token;
+}
+
+String Auth::get_bearer_token() const
+{
+    // Prefer OAuth token if present; otherwise use launch_api_key (itch launcher provides a short-lived token)
+    if (!oauth_token.is_empty()) {
+        return oauth_token;
+    }
+    if (!launch_api_key.is_empty()) {
+        return launch_api_key;
+    }
+    return String("");
+}
+
+bool Auth::has_bearer_token() const
+{
+    return !oauth_token.is_empty() || !launch_api_key.is_empty();
 }
 
 void Auth::save_token_to_cache()
