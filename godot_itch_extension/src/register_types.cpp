@@ -6,10 +6,10 @@
 #include <godot_cpp/classes/engine.hpp>
 
 #include "godotitch.h"
-#include "core/core.h"
-#include "core/persistent/itch_data_cache.h"
-#include "submodule_auth/itch_auth.h"
-#include "submodule_entitlements/entitlements.h"
+#include "core_subsystem/core_subsystem.h"
+#include "core_subsystem/persistent/itch_data_cache.h"
+#include "auth_subsystem/auth_subsystem.h"
+#include "entitlements_subsystem/entitlements_subsystem.h"
 #include "submodule_user/user_subsystem.h"
 #include "submodule_games/games_subsystem.h"
 
@@ -37,7 +37,7 @@ void initialize_godotitch_module(ModuleInitializationLevel level)
         User::create_singleton();
         Games::create_singleton();
 
-        // Phase 2: Initialize singletons (calls virtual initialize_impl() on each)
+        // Phase 2: Initialize singletons (calls virtual initialize_instance() on each)
         Core::initialize();
         ItchAuth::initialize();
         Entitlements::initialize();

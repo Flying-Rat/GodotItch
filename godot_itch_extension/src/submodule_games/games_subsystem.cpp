@@ -5,11 +5,11 @@
 #include <godot_cpp/core/memory.hpp>
 
 // Local includes
-#include "../core/submodule.h"
+#include "../core_subsystem/subsystem.h"
 using namespace godot;
 
 // Explicit template instantiation for Games CRTP
-template class Submodule<Games>;
+template class Subsystem<Games>;
 
 Games::Games()
 {

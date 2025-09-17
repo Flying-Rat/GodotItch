@@ -1,4 +1,4 @@
-#include "entitlements.h"
+#include "entitlements_subsystem.h"
 
 // System includes
 #include <godot_cpp/classes/time.hpp>
@@ -9,14 +9,14 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 // Local includes
-#include "../core/core.h"
-#include "../core/persistent/itch_data_cache.h"
-#include "../submodule_auth/itch_auth.h"
+#include "../core_subsystem/core_subsystem.h"
+#include "../core_subsystem/persistent/itch_data_cache.h"
+#include "../auth_subsystem/auth_subsystem.h"
 
 using namespace godot;
 
 // Explicit template instantiation for Entitlements CRTP
-template class Submodule<Entitlements>;
+template class Subsystem<Entitlements>;
 
 // Constants
 namespace {
@@ -85,7 +85,7 @@ void Entitlements::_cleanup_http_request()
 }
 
 
-// Override virtual initialization from Submodule<Entitlements>
+// Override virtual initialization from Subsystem<Entitlements>
 void Entitlements::initialize_instance() {
     UtilityFunctions::print("Entitlements: Initializing...");
 
@@ -115,7 +115,7 @@ void Entitlements::initialize_with_scene(Node *scene_node)
     UtilityFunctions::print("Entitlements: Using temporary HTTPRequest approach - no persistent setup required");
 }
 
-// Override virtual shutdown from Submodule<Entitlements>
+// Override virtual shutdown from Subsystem<Entitlements>
 void Entitlements::shutdown_instance()
 {
     UtilityFunctions::print("Entitlements: Shutting down...");
@@ -434,9 +434,6 @@ Dictionary Entitlements::get_entitlement_record(const String& download_key) cons
 {
     return _get_cached_verification(download_key);
 }
-
-
-
 
 bool Entitlements::has_cached_entitlement(const String& download_key) const
 {

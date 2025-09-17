@@ -1,5 +1,5 @@
-#ifndef SUBMODULE_H
-#define SUBMODULE_H
+#ifndef SUBSYSTEM_H
+#define SUBSYSTEM_H
 
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/core/memory.hpp>
@@ -10,13 +10,13 @@ using namespace godot;
 // Derived is the actual subsystem class that inherits from this template.
 // This provides a clean two-phase lifecycle: creation + initialization.
 template <typename Derived>
-class Submodule : public Object {
+class Subsystem : public Object {
 private:
     static Derived* s_instance;
 
 protected:
     // Protected constructor - only derived classes can instantiate
-    Submodule() = default;
+    Subsystem() = default;
 
 public:
     // Static singleton access - returns the specific derived type
@@ -60,11 +60,11 @@ public:
 
 public:
     // Virtual destructor for proper cleanup
-    virtual ~Submodule() = default;
+    virtual ~Subsystem() = default;
 };
 
 // Static member definition - each instantiation gets its own static instance
 template <typename Derived>
-Derived* Submodule<Derived>::s_instance = nullptr;
+Derived* Subsystem<Derived>::s_instance = nullptr;
 
-#endif // SUBMODULE_H
+#endif // SUBSYSTEM_H

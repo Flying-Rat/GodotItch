@@ -7,7 +7,7 @@
 using namespace godot;
 
 // Explicit template instantiation for User CRTP
-template class Submodule<User>;
+template class Subsystem<User>;
 
 User::User() 
 {

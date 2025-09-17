@@ -6,8 +6,8 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/callable.hpp>
-#include "../core/core.h"
-#include "../core/submodule.h"
+#include "../core_subsystem/core_subsystem.h"
+#include "../core_subsystem/subsystem.h"
 #include <godot_cpp/classes/node.hpp>
 
 using namespace godot;
@@ -29,8 +29,9 @@ class ItchDataCache;
  * - Game ID must be configured in project settings (godot_itch/game_id)
  * - API key must be available through ItchAuth module
  */
-class Entitlements : public Submodule<Entitlements> {
-    GDCLASS(Entitlements, Submodule<Entitlements>);
+class Entitlements : public Subsystem<Entitlements>
+{
+    GDCLASS(Entitlements, Subsystem<Entitlements>);
 
 private:
     
@@ -43,11 +44,6 @@ private:
     String pending_download_key;
     bool is_verifying = false;
     bool instance_initialized = false;
-    
-    // Cache configuration
-    // TTL removed: cache entries are persistent. Cache-clearing requests from callers
-    // are intentionally ignored by this module (we never remove entries from the
-    // underlying ItchDataCache here).
     
     // Internal methods
     void _setup_http_request();
@@ -68,30 +64,23 @@ public:
     Entitlements();
     ~Entitlements();
 
+    // TODO(jakub.hubacek): refactor scene initialization
     // Scene-aware initialization so HTTPRequest can be added to a scene node
     void initialize_with_scene(Node *scene_node);
 
-        // Override virtual lifecycle methods from Submodule<Entitlements>
+        // Override virtual lifecycle methods from Subsystem<Entitlements>
     void initialize_instance() override;
-    void shutdown_instance() override;
-    
-public:
+    void shutdown_instance() override;public:
     
     // Core entitlements API
     void verify_entitlement(const String& download_key);
     bool is_entitled(const String& download_key) const;
     Dictionary get_entitlement_record(const String& download_key) const;
     
-    // Debug utilities
-    void dump_debug_state() const;
-    
     // Cache management
     void clear_entitlement_cache();
     void clear_entitlement_cache_for_key(const String& download_key);
     bool has_cached_entitlement(const String& download_key) const;
-    
-    // Configuration
-    // (TTL configuration removed — cache entries are kept until cleared)
     
     // Signals (will be bound in _bind_methods)
     // - entitlement_verified(bool success, Dictionary data)

@@ -6,7 +6,7 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
-#include "../core/submodule.h"
+#include "../core_subsystem/subsystem.h"
 
 namespace godot
 {
@@ -14,9 +14,9 @@ namespace godot
      * ItchAuth - Handles authentication and launch detection
      * Uses CRTP for singleton pattern - no need for explicit static method declarations!
      */
-    class ItchAuth : public Submodule<ItchAuth>
+    class ItchAuth : public Subsystem<ItchAuth>
     {
-        GDCLASS(ItchAuth, Submodule<ItchAuth>);
+        GDCLASS(ItchAuth, Subsystem<ItchAuth>);
 
     private:
         bool initialized = false;
@@ -52,7 +52,7 @@ namespace godot
         // Instance state
         bool is_initialized() const { return initialized; }
 
-        // Override virtual lifecycle methods from Submodule<ItchAuth>
+        // Override virtual lifecycle methods from Subsystem<ItchAuth>
         void initialize_instance() override;
         void shutdown_instance() override;
         

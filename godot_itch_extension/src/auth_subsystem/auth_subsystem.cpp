@@ -1,4 +1,4 @@
-#include "itch_auth.h"
+#include "auth_subsystem.h"
 
 // System includes
 #include <godot_cpp/classes/project_settings.hpp>
@@ -6,12 +6,12 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 // Local includes
-#include "core/persistent/itch_data_cache.h"
+#include "../core_subsystem/persistent/itch_data_cache.h"
 
 using namespace godot;
 
 // Explicit template instantiation for ItchAuth CRTP
-template class Submodule<ItchAuth>;
+template class Subsystem<ItchAuth>;
 
 void ItchAuth::_bind_methods()
 {
@@ -50,7 +50,7 @@ ItchAuth::~ItchAuth()
     // Destructor implementation
 }
 
-// Override virtual initialization from Submodule<ItchAuth>
+// Override virtual initialization from Subsystem<ItchAuth>
 void ItchAuth::initialize_instance() {
     if (initialized)
     {
@@ -73,7 +73,7 @@ void ItchAuth::initialize_instance() {
     UtilityFunctions::print("ItchAuth: Initialization complete");
 }
 
-// Override virtual shutdown from Submodule<ItchAuth>
+// Override virtual shutdown from Subsystem<ItchAuth>
 void ItchAuth::shutdown_instance() {
     if (!initialized)
     {

@@ -18,10 +18,10 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 
 // Local includes
-#include "core/persistent/itch_data_cache.h"
-#include "core/core.h"
-#include "submodule_auth/itch_auth.h"
-#include "submodule_entitlements/entitlements.h"
+#include "core_subsystem/persistent/itch_data_cache.h"
+#include "core_subsystem/core_subsystem.h"
+#include "auth_subsystem/auth_subsystem.h"
+#include "entitlements_subsystem/entitlements_subsystem.h"
 #include "submodule_user/user_subsystem.h"
 #include "submodule_games/games_subsystem.h"
 

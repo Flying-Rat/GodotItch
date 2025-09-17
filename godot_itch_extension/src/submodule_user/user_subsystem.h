@@ -7,7 +7,7 @@
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/string.hpp>
 
-#include "../core/submodule.h"
+#include "../core_subsystem/subsystem.h"
 
 using namespace godot;
 
@@ -15,8 +15,8 @@ using namespace godot;
  * User - Minimal stub for user management
  * Uses CRTP for singleton pattern - no need for explicit static method declarations!
  */
-class User : public Submodule<User> {
-    GDCLASS(User, Submodule<User>);
+class User : public Subsystem<User> {
+    GDCLASS(User, Subsystem<User>);
 
 protected:
     static void _bind_methods();

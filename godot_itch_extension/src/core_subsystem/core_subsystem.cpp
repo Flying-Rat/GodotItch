@@ -1,4 +1,4 @@
-#include "core.h"
+#include "core_subsystem.h"
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -6,7 +6,7 @@
 using namespace godot;
 
 // Explicit template instantiation for Core CRTP
-template class Submodule<Core>;
+template class Subsystem<Core>;
 
 void Core::_bind_methods()
 {
@@ -26,7 +26,7 @@ Core::~Core() {
     // Destructor - cleanup handled by shutdown_impl()
 }
 
-// Override virtual initialization from Submodule<Core>
+// Override virtual initialization from Subsystem<Core>
 void Core::initialize_instance() {
     if (initialized) {
         return;
@@ -47,7 +47,7 @@ void Core::initialize_instance() {
     UtilityFunctions::print("Core: Initialization complete");
 }
 
-// Override virtual shutdown from Submodule<Core>  
+// Override virtual shutdown from Subsystem<Core>  
 void Core::shutdown_instance() {
     if (!initialized) {
         return;
