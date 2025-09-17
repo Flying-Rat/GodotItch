@@ -57,6 +57,9 @@ void Auth::_bind_methods()
 
     // Public API
     ClassDB::bind_method(D_METHOD("get_credentials_info"), &Auth::get_credentials_info);
+
+    // Internal HTTP callback
+    ClassDB::bind_method(D_METHOD("_on_auth_result", "result", "response_code", "headers", "body"), &Auth::_on_auth_result);
 }
 
 Auth::Auth()
@@ -154,6 +157,7 @@ void Auth::ensure_oauth_settings()
 
 void godot::Auth::_on_auth_result(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body)
 {
+    UtilityFunctions::push_warning("Auth: _on_auth_result called");
     // Handle the authentication result for credentials/info
     auto cleanup = [&]() {
         if (http_request) {
@@ -191,7 +195,8 @@ void godot::Auth::_on_auth_result(int result, int response_code, const PackedStr
         return;
     }
 
-    bool success = data.has("scopes") && data.has("expires_at");
+    bool success = !data.has("errors");
+    UtilityFunctions::push_warning("Auth: _on_auth_result success=" + String(success ? "true" : "false"));
     emit_signal("auth_result", success, data);
     cleanup();
 }
@@ -338,22 +343,29 @@ void Auth::start_oauth_authorization(const String &client_id, const String &redi
 
 void godot::Auth::get_credentials_info()
 {
-    String url = "https://itch.io/api/1/jwt/credentials/info";
-    if (url.is_empty()) {
-        emit_signal("auth_error", "Could not build get credentials URL");
-        return;
-    }
+    UtilityFunctions::push_warning("Auth: get_credentials_info called");
 
-    String oauth_token = Auth::get_singleton()->get_bearer_token();
-    if (oauth_token.is_empty()) {
-        UtilityFunctions::push_error("Auth: No OAuth/launcher token available");
-        emit_signal("auth_error", "User not authenticated (missing OAuth/launcher token)");
-        return;
-    }
+    // Prefer OAuth (JWT) if available; otherwise use launcher key
+    const String oauth = get_oauth_token();
+    const String launcher_key = get_launch_api_key();
+    const bool use_jwt = !oauth.is_empty();
 
+    String url;
     PackedStringArray headers;
     headers.push_back(String("User-Agent: ") + USER_AGENT);
-    headers.push_back("Authorization: Bearer " + oauth_token);
+
+    if (use_jwt) {
+        url = "https://itch.io/api/1/jwt/credentials/info";
+        headers.push_back("Authorization: Bearer " + oauth);
+        UtilityFunctions::print("Auth: Using OAuth JWT for credentials/info");
+    } else if (!launcher_key.is_empty()) {
+        url = "https://itch.io/api/1/" + launcher_key + "/credentials/info";
+        UtilityFunctions::print("Auth: Using launcher key for credentials/info");
+    } else {
+        UtilityFunctions::push_error("Auth: No OAuth token or launcher key available");
+        emit_signal("auth_error", "User not authenticated (missing OAuth token and launcher key)");
+        return;
+    }
 
     UtilityFunctions::print("Auth: Making direct HTTP request to: ", url);
 
@@ -398,7 +410,7 @@ void godot::Auth::get_credentials_info()
 
         // Store reference to clean up later
         http_request = temp_request;
-        UtilityFunctions::print("Auth: Started credential info request for key");
+        UtilityFunctions::print("Auth: Started credentials/info request");
     } else {
         temp_request->queue_free();
         emit_signal("auth_error", "Cannot access scene tree for HTTP request");

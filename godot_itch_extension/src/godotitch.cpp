@@ -81,8 +81,6 @@ void Itch::_bind_methods()
 	ADD_SIGNAL(MethodInfo("user_logged_in", PropertyInfo(Variant::DICTIONARY, "user")));
 	ADD_SIGNAL(MethodInfo("user_logged_out"));
 	ADD_SIGNAL(MethodInfo("user_login_failed", PropertyInfo(Variant::STRING, "error")));
-	ADD_SIGNAL(MethodInfo("auth_result", PropertyInfo(Variant::BOOL, "success"),
-						  PropertyInfo(Variant::DICTIONARY, "data")));
 }
 
 Itch::Itch()

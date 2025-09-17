@@ -26,6 +26,7 @@ func _ready():
 		Itch.api_response.connect(_on_api_response)
 		Itch.api_error.connect(_on_api_error)
 		Itch.verify_purchase_result.connect(_on_verify_purchase)
+		Itch.get_auth().auth_result.connect(_on_auth_result)
 
 
 func _on_save_token_pressed() -> void:
@@ -174,3 +175,6 @@ func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
 
 func _on_btn_clear_output_pressed() -> void:
 	$Panel/VBox/Margin/Scroll/Output.text = ""
+
+func _on_auth_result(success : bool, data: Dictionary) -> void:
+	print("Auth result success=%s data=%s" % [success, JSON.stringify(data, "  ")])
