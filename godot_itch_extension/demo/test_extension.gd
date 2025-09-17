@@ -20,7 +20,7 @@ func _ready():
 		print("  Version: ", Itch.get_godotitch_version())
 		Itch.api_response.connect(_on_api_response)
 		Itch.api_error.connect(_on_api_error)
-		Itch.verify_purchase_result.connect(_on_verify_purchase)
+		Itch.verify_download_key_result.connect(_on_verify_download_key_result)
 	else:
 		print("✗ Itch singleton NOT found")
 		return
@@ -107,7 +107,7 @@ func _on_api_error(endpoint: String, error_message: String, response_code: int):
 
 	error_occurred = true
 
-func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
+func _on_verify_download_key_result(verified: bool, _data: Dictionary) -> void:
 	if verified:
 		output.append_text("[color=green]Download key is VALID![/color]\n")
 	else:		
@@ -145,5 +145,5 @@ func _on_btn_verify_purchase_pressed() -> void:
 		output.append_text("[color=red]Download key is empty![/color]")
 		return
 	download_key = download_key_text
-	output.append_text("[b]Request:[/b] verify_purchase %s\n" % download_key)
-	Itch.verify_purchase(download_key)
+	output.append_text("[b]Request:[/b] verify_download_key %s\n" % download_key)
+	Itch.verify_download_key(download_key)

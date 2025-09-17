@@ -78,7 +78,7 @@ void Itch::_bind_methods()
 	ADD_SIGNAL(MethodInfo("api_error", PropertyInfo(Variant::STRING, "endpoint"),
 	                      PropertyInfo(Variant::STRING, "error_message"),
 	                      PropertyInfo(Variant::INT, "response_code")));
-	ADD_SIGNAL(MethodInfo("verify_purchase_result", PropertyInfo(Variant::BOOL, "is_verified"),
+	ADD_SIGNAL(MethodInfo("verify_download_key_result", PropertyInfo(Variant::BOOL, "is_verified"),
 	                      PropertyInfo(Variant::DICTIONARY, "data")));
 	// Auth signals
 	ADD_SIGNAL(MethodInfo("user_logged_in", PropertyInfo(Variant::DICTIONARY, "user")));
@@ -403,7 +403,7 @@ void Itch::verify_download_key(const String &download_key)
 	} else 
 	{
 		UtilityFunctions::push_error("Entitlements module not available");
-		emit_signal("verify_purchase_result", false, Dictionary());
+		emit_signal("verify_download_key_result", false, Dictionary());
 	}
 }
 
@@ -569,22 +569,22 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 		data_cache->set_verified(download_key, verified, data);
 	}
 
-	emit_signal("verify_purchase_result", verified, data);
+	emit_signal("verify_download_key_result", verified, data);
 }
 
 // Entitlements signal handlers
 void Itch::_on_entitlement_verified(bool success, const Dictionary& data)
 {
-	// Forward the entitlements signal to the facade's verify_purchase_result signal
-	emit_signal("verify_purchase_result", success, data);
+	// Forward the entitlements signal to the facade's verify_download_key_result signal
+	emit_signal("verify_download_key_result", success, data);
 }
 
 void Itch::_on_entitlement_error(const String& error_message)
 {
-	// Forward the entitlements error as a verify_purchase_result failure
+	// Forward the entitlements error as a verify_download_key_result failure
 	Dictionary error_data;
 	error_data["error"] = error_message;
-	emit_signal("verify_purchase_result", false, error_data);
+	emit_signal("verify_download_key_result", false, error_data);
 }
 
 

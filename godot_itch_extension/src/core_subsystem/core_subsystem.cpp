@@ -18,17 +18,21 @@ void Core::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_game_id"), &Core::get_game_id);
 }
 
-Core::Core() {
+Core::Core() 
+{
     persistent_cache = nullptr;
 }
 
-Core::~Core() {
+Core::~Core() 
+{
     // Destructor - cleanup handled by shutdown_impl()
 }
 
 // Override virtual initialization from Subsystem<Core>
-void Core::initialize_instance() {
-    if (initialized) {
+void Core::initialize_instance() 
+{
+    if (initialized) 
+    {
         return;
     }
     
@@ -39,7 +43,8 @@ void Core::initialize_instance() {
     
     // Initialize persistent cache
     persistent_cache = DataCache::get_singleton();
-    if (persistent_cache) {
+    if (persistent_cache) 
+    {
         persistent_cache->initialize();
     }
     
@@ -48,15 +53,18 @@ void Core::initialize_instance() {
 }
 
 // Override virtual shutdown from Subsystem<Core>  
-void Core::shutdown_instance() {
-    if (!initialized) {
+void Core::shutdown_instance() 
+{
+    if (!initialized) 
+    {
         return;
     }
     
     UtilityFunctions::print("Core: Shutting down...");
     
     // Shutdown persistent cache
-    if (persistent_cache) {
+    if (persistent_cache) 
+    {
         persistent_cache->shutdown();
         persistent_cache = nullptr;
     }
@@ -65,37 +73,46 @@ void Core::shutdown_instance() {
     UtilityFunctions::print("Core: Shutdown complete");
 }
 
-void Core::ensure_project_settings() {
+void Core::ensure_project_settings() 
+{
     ProjectSettings* ps = ProjectSettings::get_singleton();
-    if (!ps) {
+    if (!ps) 
+    {
         return;
     }
     
-    if (!ps->has_setting(SETTING_GAME_ID)) {
+    if (!ps->has_setting(SETTING_GAME_ID)) 
+    {
         ps->set_setting(SETTING_GAME_ID, "");
     }
 }
 
-String Core::get_game_id_from_settings() const {
+String Core::get_game_id_from_settings() const 
+{
     ProjectSettings* ps = ProjectSettings::get_singleton();
-    if (!ps) {
+    if (!ps) 
+    {
         return "";
     }
     Variant v = ps->get_setting(SETTING_GAME_ID);
-    if (v.get_type() == Variant::STRING) {
+    if (v.get_type() == Variant::STRING) 
+    {
         return v;
     }
     return "";
 }
 
 // Configuration methods
-void Core::set_game_id(const String& game_id) {
+void Core::set_game_id(const String& game_id) 
+{
     ProjectSettings* ps = ProjectSettings::get_singleton();
-    if (ps) {
+    if (ps) 
+    {
         ps->set_setting(SETTING_GAME_ID, game_id);
     }
 }
 
-String Core::get_game_id() const {
+String Core::get_game_id() const 
+{
     return get_game_id_from_settings();
 }

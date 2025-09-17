@@ -24,22 +24,22 @@ void initialize_godotitch_module(ModuleInitializationLevel level)
         ClassDB::register_class<Core>();
 
         // Register submodules in dependency order
-    ClassDB::register_class<DataCache>();
-    ClassDB::register_class<Auth>();
+        ClassDB::register_class<DataCache>();
+        ClassDB::register_class<Auth>();
         ClassDB::register_class<Entitlements>();
         ClassDB::register_class<User>();
         ClassDB::register_class<Games>();
         ClassDB::register_class<Itch>();
         // Phase 1: Create singletons in dependency order
         Core::create_singleton();
-    Auth::create_singleton();
+        Auth::create_singleton();
         Entitlements::create_singleton();
         User::create_singleton();
         Games::create_singleton();
 
         // Phase 2: Initialize singletons (calls virtual initialize_instance() on each)
         Core::initialize();
-    Auth::initialize();
+        Auth::initialize();
         Entitlements::initialize();
         User::initialize();
         Games::initialize();
@@ -64,7 +64,7 @@ void uninitialize_godotitch_module(ModuleInitializationLevel level)
         Games::shutdown();
         User::shutdown();
         Entitlements::shutdown();
-    Auth::shutdown();
+        Auth::shutdown();
         Core::shutdown();
     }
 }

@@ -51,7 +51,8 @@ Auth::~Auth()
 }
 
 // Override virtual initialization from Subsystem<Auth>
-void Auth::initialize_instance() {
+void Auth::initialize_instance() 
+{
     if (initialized)
     {
         return;
@@ -74,7 +75,8 @@ void Auth::initialize_instance() {
 }
 
 // Override virtual shutdown from Subsystem<Auth>
-void Auth::shutdown_instance() {
+void Auth::shutdown_instance() 
+{
     if (!initialized)
     {
         return;
@@ -97,8 +99,14 @@ void Auth::do_detect_launch_source()
     OS *os = OS::get_singleton();
     if (os)
     {
-    UtilityFunctions::print("Auth: Detecting launch source via environment variable...");
+        UtilityFunctions::print("Auth: Detecting launch source via environment variable...");
         String env_key = os->get_environment("ITCHIO_API_KEY");
+        if (env_key.is_empty()) 
+        {
+            // some environments/tools use underscore form
+            env_key = os->get_environment("ITCH_IO_API_KEY");
+        }
+        env_key = env_key.strip_edges(true, true);
         if (!env_key.is_empty())
         {
             UtilityFunctions::print("Auth: Found ITCHIO_API_KEY in environment variables.");

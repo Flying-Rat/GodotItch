@@ -17,7 +17,7 @@ func _ready() -> void:
 
 	# Connect to plugin signals
 	if Itch:
-		Itch.verify_purchase_result.connect(_on_verify_purchase_result)		
+		Itch.verify_download_key_result.connect(_on_verify_download_key_result)
 
 func _on_verify_pressed() -> void:
 	var api_key = api_key_input.text.strip_edges()
@@ -44,12 +44,12 @@ func _on_verify_pressed() -> void:
 	verify_button.disabled = true
 	
 	if Itch:
-		Itch.verify_purchase(download_key)
+		Itch.verify_download_key(download_key)
 	else:
 		result_label.text = "Error: GodotItch plugin not available"
 		verify_button.disabled = false
 
-func _on_verify_purchase_result(verified: bool, data: Dictionary) -> void:
+func _on_verify_download_key_result(verified: bool, data: Dictionary) -> void:
 	if verified:
 		print("Verification succeeded for user: " + str(data))
 	else:		

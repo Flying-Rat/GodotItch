@@ -46,13 +46,13 @@ namespace godot
         static void _bind_methods();
     
     public:
-    Auth();
-    ~Auth();
+        Auth();
+        ~Auth();
 
         // Instance state
         bool is_initialized() const { return initialized; }
 
-    // Override virtual lifecycle methods from Subsystem<Auth>
+        // Override virtual lifecycle methods from Subsystem<Auth>
         void initialize_instance() override;
         void shutdown_instance() override;
         

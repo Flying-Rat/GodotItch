@@ -49,9 +49,9 @@ Optional:
 ```gdscript
 func _ready() -> void:
     Itch.initialize_with_scene(self)
-    Itch.verify_purchase_result.connect(_on_verify_purchase_result)
+    Itch.verify_download_key_result.connect(_on_verify_download_key_result)
 
-func _on_verify_purchase_result(verified: bool, data: Dictionary) -> void:
+func _on_verify_download_key_result(verified: bool, data: Dictionary) -> void:
     if verified:
         print("Verification succeeded:", data)
     else:

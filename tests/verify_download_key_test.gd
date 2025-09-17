@@ -81,7 +81,7 @@ func _initialize_itch_system():
 	# TODO(jakub.hubacek): find a way around this
 	Itch.initialize_with_scene(self)
 	# Connect signal handlers
-	Itch.verify_purchase_result.connect(_on_verify_purchase)
+	Itch.verify_download_key_result.connect(_on_verify_download_key_result)
 	
 	print("[TEST] Itch system initialized")
 
@@ -146,9 +146,9 @@ func _on_clear_button_pressed():
 	status_label.text = "Status: Fields cleared"
 	result_label.text = ""
 
-func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
+func _on_verify_download_key_result(verified: bool, data: Dictionary) -> void:
 	"""Handle verification result"""
-	print("[TEST] _on_verify_purchase callback triggered")
+	print("[TEST] _on_verify_download_key_result callback triggered")
 	print("[TEST] Verified:", verified)
 	if data:
 		print("[TEST] Response data keys:", data.keys())
