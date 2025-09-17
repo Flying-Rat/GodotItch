@@ -48,7 +48,8 @@ void Entitlements::_bind_methods()
 
 Entitlements::Entitlements()
 { 
-    UtilityFunctions::print("Entitlements: Constructor called"); 
+    // Constructor - keep minimal logging
+    UtilityFunctions::print("Entitlements: constructed"); 
 }
 
 Entitlements::~Entitlements()
@@ -87,7 +88,7 @@ void Entitlements::_cleanup_http_request()
 
 // Override virtual initialization from Subsystem<Entitlements>
 void Entitlements::initialize_instance() {
-    UtilityFunctions::print("Entitlements: Initializing...");
+    // Initialization started
 
     // Get Core dependencies
     core = godot::Core::get_singleton();
@@ -105,20 +106,17 @@ void Entitlements::initialize_instance() {
     // HTTPRequest will be created later in initialize_with_scene() when we have access to scene tree
 
     instance_initialized = true;
-    UtilityFunctions::print("Entitlements: Initialization complete");
 }
 
 void Entitlements::initialize_with_scene(Node *scene_node)
 {
-    UtilityFunctions::print("Entitlements: initialize_with_scene() called");
-    // We now use temporary HTTPRequest instances, so no persistent setup needed
-    UtilityFunctions::print("Entitlements: Using temporary HTTPRequest approach - no persistent setup required");
+    // No scene-specific setup required for current temporary HTTPRequest approach
 }
 
 // Override virtual shutdown from Subsystem<Entitlements>
 void Entitlements::shutdown_instance()
 {
-    UtilityFunctions::print("Entitlements: Shutting down...");
+    // Shutting down
 
     _cleanup_http_request();
 
@@ -173,7 +171,8 @@ void Entitlements::_store_verification_result(const String& download_key, const 
     String cache_key = "entitlement_" + download_key;
     data_cache->set_verified(cache_key, true, cached_entry);
     
-    UtilityFunctions::print("Entitlements: Stored verification result for key: ", download_key);
+    // Log minimal info about caching
+    UtilityFunctions::print("Entitlements: cached verification for key: ", download_key);
 }
 
 Dictionary Entitlements::_get_cached_verification(const String& download_key) const
@@ -205,7 +204,7 @@ void Entitlements::verify_entitlement(const String& download_key)
     }
     
     if (download_key.length() < 10) {
-        UtilityFunctions::push_error("Entitlements: Download key appears to be too short: ", download_key);
+        UtilityFunctions::push_error("Entitlements: Download key appears to be too short");
         emit_signal("entitlement_error", "Download key appears to be invalid (too short)");
         return;
     }
@@ -219,7 +218,6 @@ void Entitlements::verify_entitlement(const String& download_key)
     // Check cache first
     Dictionary cached_result = _get_cached_verification(download_key);
     if (!cached_result.is_empty()) {
-        UtilityFunctions::print("Entitlements: Using cached verification for key: ", download_key);
         emit_signal("entitlement_verified", true, cached_result);
         return;
     }
@@ -244,7 +242,7 @@ void Entitlements::verify_entitlement(const String& download_key)
     pending_download_key = download_key;
     is_verifying = true;
     
-    UtilityFunctions::print("Entitlements: Making direct HTTP request to: ", url);
+    // Starting HTTP verification request
     
     // Create a temporary HTTPRequest for this single operation
     HTTPRequest* temp_request = memnew(HTTPRequest);
@@ -276,8 +274,7 @@ void Entitlements::verify_entitlement(const String& download_key)
             return;
         }
         
-        Error result = temp_request->request(url, headers);
-        UtilityFunctions::print("Entitlements: HTTP request call completed with result:", String::num_int64(result));
+    Error result = temp_request->request(url, headers);
         
         if (result != OK) {
             is_verifying = false;
@@ -293,7 +290,7 @@ void Entitlements::verify_entitlement(const String& download_key)
         
         // Store reference to clean up later
         http_request = temp_request;
-        UtilityFunctions::print("Entitlements: Started verification request for key: ", download_key);
+        // Request started successfully
     } else {
         is_verifying = false;
         pending_download_key = "";
@@ -305,15 +302,12 @@ void Entitlements::verify_entitlement(const String& download_key)
 
 void Entitlements::_on_verification_response(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body)
 {
-    UtilityFunctions::print("Entitlements: _on_verification_response called - result:", String::num_int64(result), "response_code:", String::num_int64(response_code));
-    
     // Critical safety check - ensure object is still valid
     if (!instance_initialized || !http_request) {
         UtilityFunctions::push_error("Entitlements: Response callback called on invalid instance");
         return;
     }
     
-    UtilityFunctions::print("Entitlements: Safety checks passed, processing response...");
     
     // Store http_request reference before clearing member variable
     HTTPRequest* temp_http_request = http_request;
@@ -323,7 +317,7 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
     String current_key = pending_download_key;
     pending_download_key = "";
     
-    // Simplified error handling: if the request failed, log and cleanup
+    // Simplified error handling: if the request failed, cleanup and emit error
     if (result != HTTPRequest::RESULT_SUCCESS) {
         String error_description = "HTTP request failed (code " + String::num_int64(result) + ")";
         UtilityFunctions::push_error("Entitlements: ", error_description);
@@ -334,8 +328,6 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
             }
             temp_http_request->queue_free();
         }
-        is_verifying = false;
-        pending_download_key = "";
         emit_signal("entitlement_error", "Network request failed: " + error_description);
         return;
     }
@@ -354,9 +346,7 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
     }
     
     // Parse JSON response
-    UtilityFunctions::print("Entitlements: Parsing HTTP response...");
     String response_text = body.get_string_from_utf8();
-    UtilityFunctions::print("Entitlements: Response text length:", String::num_int64(response_text.length()));
     
     Variant parsed = JSON::parse_string(response_text);
     if (parsed.get_type() == Variant::NIL) {
@@ -382,22 +372,17 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
     }
     
     // Store in cache with safety check
-    UtilityFunctions::print("Entitlements: Storing verification result in cache...");
     if (core && data_cache) {
-        _store_verification_result(current_key, response_data);
-        UtilityFunctions::print("Entitlements: Result stored in cache");
+    _store_verification_result(current_key, response_data);
     } else {
         UtilityFunctions::push_error("Entitlements: Cannot store result - core or data_cache is null");
     }
     
     // Emit success signal
-    UtilityFunctions::print("Entitlements: Emitting success signal...");
     emit_signal("entitlement_verified", true, response_data);
-    UtilityFunctions::print("Entitlements: Verification complete for key: ", current_key);
     
     // Clean up temporary HTTPRequest safely
     if (temp_http_request && temp_http_request->is_inside_tree()) {
-        UtilityFunctions::print("Entitlements: Cleaning up temporary HTTPRequest");
         // Disconnect signal first to prevent any additional callbacks
         if (temp_http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
             temp_http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
