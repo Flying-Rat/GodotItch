@@ -85,18 +85,17 @@ theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
 text = "[color=#6699CC][b]🚀 Quick Start[/b][/color]
 
-[color=#99CCFF]1. Get your credentials:[/color]
-   • Visit [color=#66AAFF][url=https://itch.io/user/settings/api-keys]itch.io API keys[/url][/color]
-   • Generate a new API key
-   • Copy your game's numeric ID from its URL
+[color=#99CCFF]1. Authenticate:[/color]
+   • Preferred: Launch your game from the [color=#66AAFF]itch.io app[/color] — it provides a secure launcher token automatically.
+   • Or: Configure OAuth in Project Settings (Client ID, Scope, Redirect URI), then use the [b]OAuth Login[/b] button on the right to sign in.
 
 [color=#99CCFF]2. Configure settings:[/color]
-   • Enter your API Key and Game ID on the right
-   • Enable debug logging if needed for troubleshooting
+   • Enter your [b]Game ID[/b] on the right (numeric ID from your game's URL)
+   • Optionally enable [b]Debug logging[/b] for troubleshooting
 
 [color=#99CCFF]3. Save and integrate:[/color]
    • Click \"Save Settings\" to persist configuration
-   • Use the plugin in your game code
+   • Use the plugin APIs in your game code
 
 [color=#6699CC][b]💻 Code Integration[/b][/color]
 
@@ -105,20 +104,18 @@ text = "[color=#6699CC][b]🚀 Quick Start[/b][/color]
 extends Control
 
 func _ready():
-    # Connect verification signals
-    Itch.connect_verification_completed(_on_success)
-    Itch.connect_verification_failed(_on_failure)
-    
-    # Verify a download key
-    Itch.verify(\"user_download_key_here\")
+    # Initialize and connect signals
+    Itch.initialize_with_scene(self)
+    Itch.verify_purchase_result.connect(_on_verify_result)
 
-func _on_success(user_info: Dictionary):
-    print(\"Welcome \", user_info.display_name)
-    # Grant access to premium content
-    
-func _on_failure(error: String, code: String):
-    print(\"Verification failed: \", error)
-    # Handle failure gracefully
+    # Verify a download key
+    Itch.verify_download_key(\"user_download_key_here\")
+
+func _on_verify_result(verified: bool, data: Dictionary):
+    if verified:
+        print(\"Access granted\")
+    else:
+        print(\"Access denied\")
 [/code]
 
 [color=#6699CC][b]🔧 Input Formats Supported[/b][/color]
@@ -130,22 +127,22 @@ func _on_failure(error: String, code: String):
 
 [color=#6699CC][b]⚙️ Configuration Options[/b][/color]
 
-[color=#FFCC99]API Key:[/color] Your personal itch.io API key for authentication
+[color=#FFCC99]OAuth/Launcher Token:[/color] Automatically provided by itch app or via OAuth login
 [color=#FFCC99]Game ID:[/color] Numeric identifier for your specific game
 [color=#FFCC99]Debug Logging:[/color] Enable detailed console output for troubleshooting
 
 [color=#6699CC][b]🛡️ Security Notes[/b][/color]
 
-• API keys are stored in project settings, never transmitted
-• Only your game can access the stored credentials
-• Verification happens securely through itch.io's API
+• No API keys are used — only short-lived tokens
+• Tokens are sent via HTTPS Authorization: Bearer headers
+• Never commit secrets to your repository
 
 [color=#6699CC][b]📋 Troubleshooting[/b][/color]
 
 [color=#FF9999]Common issues and solutions:[/color]
 • [color=#CCCCCC]Plugin not found:[/color] Enable in Project > Plugins, restart Godot
-• [color=#CCCCCC]API errors:[/color] Check API key and game ID are correct
-• [color=#CCCCCC]Invalid key format:[/color] Keys must be 20-64 characters, alphanumeric
+• [color=#CCCCCC]Missing token:[/color] Launch from itch app or sign in via OAuth
+• [color=#CCCCCC]Invalid download key:[/color] Check the key or try a different account
 • [color=#CCCCCC]Network issues:[/color] Enable debug logging for detailed errors
 
 [color=#99CCFF]For more help, check the README.md file in the plugin directory.[/color]"
@@ -182,7 +179,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
-text = "Configure your itch.io credentials and verification settings"
+text = "Configure authentication and verification settings for itch.io"
 horizontal_alignment = 1
 
 [node name="HSeparator1" type="HSeparator" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
@@ -204,16 +201,6 @@ theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 8
 columns = 2
 
-[node name="LabelAPI" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
-layout_mode = 2
-text = "API Key:"
-vertical_alignment = 1
-
-[node name="APIKey" type="LineEdit" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Enter your itch.io API key"
-
 [node name="LabelGameID" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
 layout_mode = 2
 text = "Game ID:"
@@ -223,6 +210,24 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Your game's numeric ID"
+
+[node name="LabelOAuth" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
+layout_mode = 2
+text = "OAuth Login:"
+vertical_alignment = 1
+
+[node name="OAuthLogin" type="Button" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
+layout_mode = 2
+text = "Sign in with itch.io"
+
+[node name="LabelStatus" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
+layout_mode = 2
+text = "Auth Status:"
+vertical_alignment = 1
+
+[node name="OAuthStatus" type="Label" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox/CredentialsSection/CredentialsGrid"]
+layout_mode = 2
+text = "Not authenticated"
 
 [node name="HSeparator2" type="HSeparator" parent="MainMargin/HBoxRoot/RightPanel/RightMargin/VBox"]
 layout_mode = 2
