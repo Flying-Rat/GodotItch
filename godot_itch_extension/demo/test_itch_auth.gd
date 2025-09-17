@@ -5,6 +5,7 @@ extends Control
 @onready var redirect_uri_edit: LineEdit = $Panel/VBox/Inputs/RedirectUri
 @onready var state_edit: LineEdit = $Panel/VBox/Inputs/State
 @onready var token_edit: LineEdit = $Panel/VBox/Inputs/Token
+@onready var download_key_edit: LineEdit = $Panel/VBox/Inputs/DownloadKey
 
 var auth := Auth.new()
 
@@ -19,6 +20,13 @@ func _ready():
 	client_id_edit.text = ProjectSettings.get_setting("godot_itch/oauth_client_id", "")
 	redirect_uri_edit.text = ProjectSettings.get_setting("godot_itch/oauth_redirect_uri", "")
 	token_edit.text = auth.get_oauth_token()
+
+	# Hook Itch facade signals to show results
+	if Itch:
+		Itch.api_response.connect(_on_api_response)
+		Itch.api_error.connect(_on_api_error)
+		Itch.verify_purchase_result.connect(_on_verify_purchase)
+		Itch.get_auth().auth_result.connect(_on_auth_result)
 
 
 func _on_save_token_pressed() -> void:
@@ -53,14 +61,14 @@ func _on_save_oauth_pressed() -> void:
 	var cid := client_id_edit.text.strip_edges()
 	var ruri := redirect_uri_edit.text.strip_edges()
 	var token := token_edit.text.strip_edges()
-	
+
 	if cid.is_empty() or ruri.is_empty():
 		_error("client_id and redirect_uri are required")
 		return
-	
+
 	if token.is_empty():
 		_error("OAuth token is required!")
-	
+
 	auth.set_oauth_client_id(cid)
 	auth.set_oauth_redirect_uri(ruri)
 	auth.set_oauth_scope("profile:me")
@@ -94,6 +102,24 @@ func _on_open_browser_pressed() -> void:
 		_log("Opened browser for OAuth authorization (no redirect_uri)")
 	else:
 		_log("Opened browser for OAuth authorization")
+
+func _on_btn_credentials_info_pressed() -> void:
+	if not Itch:
+		_error("Itch not available")
+		return
+	Itch.get_credentials_info()
+	_log("Requested credentials info")
+
+func _on_btn_verify_key_pressed() -> void:
+	var key := download_key_edit.text.strip_edges()
+	if key.is_empty():
+		_error("Download key is required")
+		return
+	if not Itch:
+		_error("Itch not available")
+		return
+	Itch.verify_download_key(key)
+	_log("Requested verify_download_key")
 
 
 func _mask(s: String) -> String:
@@ -130,3 +156,25 @@ func _on_use_token_pressed() -> void:
 	# Copy to clipboard for convenience and log header example
 	DisplayServer.clipboard_set(token)
 	_log("Token copied to clipboard. Add header: Authorization: Bearer %s" % _mask(token))
+
+func _on_api_response(endpoint: String, data: Dictionary) -> void:
+	_log("[b]API Response:[/b] %s\n%s" % [endpoint, JSON.stringify(data, "  ")])
+	if endpoint == "verify_download_key":
+		# Handled also by verify_purchase_result
+		pass
+
+func _on_api_error(endpoint: String, error_message: String, response_code: int) -> void:
+	_error("API Error %s (%d): %s" % [endpoint, response_code, error_message])
+
+func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
+	if verified:
+		_log("[color=green]Download key is VALID![/color]")
+	else:
+		_error("Download key is INVALID!")
+
+
+func _on_btn_clear_output_pressed() -> void:
+	$Panel/VBox/Margin/Scroll/Output.text = ""
+
+func _on_auth_result(success : bool, data: Dictionary) -> void:
+	print("Auth result success=%s data=%s" % [success, JSON.stringify(data, "  ")])

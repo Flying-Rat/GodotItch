@@ -25,11 +25,16 @@ godot_itch_extension/demo/bin/
 
 # Ignore secrets files
 *.secrets
+tests/*.secrets
+**/*.secrets
 
 # Build artifacts
 *.obj
 *.exp
 *.lib
+**/bin/
+**/.sconsign.dblite
+**/.godot/
 
 # Godot-cpp generated files
 godot_itch_extension/src/gen

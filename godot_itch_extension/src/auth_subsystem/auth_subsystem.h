@@ -5,6 +5,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/classes/http_request.hpp>
 
 #include "../core_subsystem/subsystem.h"
 
@@ -20,6 +21,7 @@ namespace godot
 
     private:
         bool initialized = false;
+        HTTPRequest *http_request = nullptr;
 
         // Token management
         String oauth_token = "";
@@ -43,6 +45,7 @@ namespace godot
         void ensure_oauth_settings();
         String get_api_key_from_settings() const;
 
+        void _on_auth_result(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
 
     protected:
         static void _bind_methods();
@@ -77,13 +80,15 @@ namespace godot
         void set_oauth_token(const String &token);
         String get_oauth_token() const;
 
-    // Unified bearer token (OAuth token or launch token from itch launcher)
-    String get_bearer_token() const;
-    bool has_bearer_token() const;
+        // Unified bearer token (OAuth token or launch token from itch launcher)
+        String get_bearer_token() const;
+        bool has_bearer_token() const;
 
         // OAuth flow management
         String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const;
         void start_oauth_authorization(const String &client_id = "", const String &redirect_uri = "", const String &state = "");
+
+        void get_credentials_info();
     };
 }
 

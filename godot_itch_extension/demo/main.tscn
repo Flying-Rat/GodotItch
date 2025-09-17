@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://13lhyugvlplp"]
+[gd_scene load_steps=3 format=3 uid="uid://13lhyugvlplp"]
 
 [ext_resource type="Script" uid="uid://vkpryhdbr3me" path="res://main.gd" id="1_h2yge"]
-[ext_resource type="PackedScene" uid="uid://bqmkd6cxc8qke" path="res://test_itch_api.tscn" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://djxg6yilc6yyb" path="res://test_itch_auth.tscn" id="2_0xm2m"]
 
 [node name="Main" type="Node2D"]
@@ -10,30 +9,3 @@ script = ExtResource("1_h2yge")
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="TestAuth" parent="CanvasLayer" instance=ExtResource("2_0xm2m")]
-
-[node name="TestItchApi" parent="CanvasLayer" instance=ExtResource("1_ig7tw")]
-visible = false
-
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -20.0
-offset_top = -40.0
-offset_right = 20.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_constants/separation = 20
-
-[node name="AuthTestsButton" type="Button" parent="CanvasLayer/HBoxContainer"]
-layout_mode = 2
-text = "Auth Tests"
-
-[node name="ItchApiTestsButton" type="Button" parent="CanvasLayer/HBoxContainer"]
-layout_mode = 2
-text = "Itch API Tests"
-
-[connection signal="pressed" from="CanvasLayer/HBoxContainer/AuthTestsButton" to="." method="_on_itch_auth_tests_button_pressed"]
-[connection signal="pressed" from="CanvasLayer/HBoxContainer/ItchApiTestsButton" to="." method="_on_itch_api_tests_button_pressed"]

@@ -77,13 +77,6 @@ namespace godot
         // Itch.io API methods
         bool itchInitEx(uint32_t app_id = 0, bool embed_callbacks = false);
 
-        // Async API methods (use signals for results)
-        void get_me();
-        void get_my_games();
-        void get_game_purchases(const String &game_id = "");
-        void get_game_uploads(const String &game_id = "");
-        void get_download_key(const String &download_key, const String &game_id = "");
-
         // Itch.io API wrappers
         void verify_download_key(const String &download_key);
 
@@ -98,6 +91,12 @@ namespace godot
         String get_oauth_client_id() const;
         String get_oauth_redirect_uri() const;
         String get_oauth_scope() const;
+
+        bool is_user_authenticated() const;
+        Dictionary get_current_user() const;
+        String get_current_user_name() const;
+
+        void get_credentials_info();
 
         // Build the authorization URL for itch.io OAuth
         String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const;
