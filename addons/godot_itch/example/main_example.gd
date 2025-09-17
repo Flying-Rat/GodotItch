@@ -4,7 +4,8 @@ extends Control
 @onready var top_buttons = $VBox/TopButtons
 @onready var placeholder_label = $VBox/ContentArea/PlaceholderLabel
 
-@export var scenes: Array = [
+@export var scenes: Array = 
+[
 	{ "scene": preload("res://addons/godot_itch/example/example_verification.tscn"), "name": "Verification" },
 	{ "scene": preload("res://addons/godot_itch/example/example_oauth.tscn"), "name": "OAuth" }
 ]

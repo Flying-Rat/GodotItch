@@ -26,10 +26,13 @@ layout_mode = 2
 
 [node name="Headline" type="HBoxContainer" parent="VBox"]
 layout_mode = 2
+size_flags_horizontal = 4
 alignment = 1
 
 [node name="Icon" type="TextureRect" parent="VBox/Headline"]
 layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 3
 texture = ExtResource("3_icon")
 expand_mode = 3
 stretch_mode = 4
@@ -37,7 +40,7 @@ stretch_mode = 4
 [node name="TitleLabel" type="Label" parent="VBox/Headline"]
 layout_mode = 2
 theme_type_variation = &"HeaderLarge"
-theme_override_font_sizes/font_size = 48
+theme_override_font_sizes/font_size = 56
 text = "Godot Itch"
 horizontal_alignment = 1
 
