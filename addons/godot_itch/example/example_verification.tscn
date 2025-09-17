@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bmg5r3kswwxnz"]
+[gd_scene load_steps=2 format=3 uid="uid://bmg5r3kswwxn0"]
 
-[ext_resource type="Script" uid="uid://bmg5r3kswwxny" path="res://addons/godot_itch/godot_itch_showcase.gd" id="1_showcase_script"]
+[ext_resource type="Script" uid="uid://hwyef7x25vbs" path="res://addons/godot_itch/example/example_verification.gd" id="1_showcase_script"]
 
 [node name="GodotItchShowcase" type="Control"]
 layout_mode = 3
@@ -28,7 +28,7 @@ grow_vertical = 2
 [node name="Title" type="Label" parent="VBox"]
 layout_mode = 2
 theme_type_variation = &"HeaderLarge"
-text = "GodotItch Plugin - Simple Demo"
+text = "Download Key Verification"
 horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="VBox"]
