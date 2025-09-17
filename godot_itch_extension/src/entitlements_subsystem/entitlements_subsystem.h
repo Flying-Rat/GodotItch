@@ -1,19 +1,23 @@
 #ifndef ENTITLEMENTS_H
 #define ENTITLEMENTS_H
 
-#include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/classes/http_request.hpp>
+#include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/callable.hpp>
-#include "../core_subsystem/core_subsystem.h"
 #include "../core_subsystem/subsystem.h"
-#include <godot_cpp/classes/node.hpp>
+
+// Forward declarations to avoid heavy header includes in this header file
+namespace godot {
+    class Core;
+}
+
+// The project's DataCache is declared in the global namespace (see data_cache.h)
+class DataCache;
 
 using namespace godot;
-
-// Forward declarations
-class DataCache;
 
 /**
  * Entitlements - Handles purchase verification and entitlement caching
@@ -68,9 +72,11 @@ public:
     // Scene-aware initialization so HTTPRequest can be added to a scene node
     void initialize_with_scene(Node *scene_node);
 
-        // Override virtual lifecycle methods from Subsystem<Entitlements>
+    // Override virtual lifecycle methods from Subsystem<Entitlements>
     void initialize_instance() override;
-    void shutdown_instance() override;public:
+    void shutdown_instance() override;
+
+public:
     
     // Core entitlements API
     void verify_entitlement(const String& download_key);

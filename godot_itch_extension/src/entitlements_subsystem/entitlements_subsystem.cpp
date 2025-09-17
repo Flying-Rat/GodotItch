@@ -2,7 +2,6 @@
 
 // System includes
 #include <godot_cpp/classes/time.hpp>
-#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -18,12 +17,12 @@ using namespace godot;
 // Explicit template instantiation for Entitlements CRTP
 template class Subsystem<Entitlements>;
 
-// Constants
+// Constants (internal linkage)
 namespace {
-    constexpr int HTTP_OK = 200;
-    constexpr double HTTP_TIMEOUT_SECONDS = 10.0;
-    constexpr const char* USER_AGENT = "GodotItch-Entitlements/1.0";
-}
+constexpr int HTTP_OK = 200;
+constexpr double HTTP_TIMEOUT_SECONDS = 10.0;
+constexpr const char* USER_AGENT = "GodotItch-Entitlements/1.0";
+} // anonymous namespace
 
 void Entitlements::_bind_methods()
 {
@@ -66,22 +65,22 @@ void Entitlements::_cleanup_http_request()
     if (!http_request) {
         return;
     }
-    
+
     if (is_verifying) {
         http_request->cancel_request();
         is_verifying = false;
     }
-    
+
     // Disconnect signals before cleanup to prevent callbacks
     if (http_request->is_connected("request_completed", Callable(this, "_on_verification_response"))) {
         http_request->disconnect("request_completed", Callable(this, "_on_verification_response"));
     }
-    
+
     // Only queue_free if object is still in tree
     if (http_request->is_inside_tree()) {
         http_request->queue_free();
     }
-    
+
     http_request = nullptr;
 }
 
