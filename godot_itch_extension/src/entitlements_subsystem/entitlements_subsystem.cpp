@@ -210,14 +210,6 @@ void Entitlements::verify_entitlement(const String& download_key)
         return;
     }
 
-    // Check cache first
-    // Dictionary cached_result = _get_cached_verification(download_key);
-    // if (!cached_result.is_empty()) {
-    //     UtilityFunctions::print("Entitlements: Using cached verification for key: ", download_key);
-    //     emit_signal("entitlement_verified", true, cached_result);
-    //     return;
-    // }
-
     // Prevent concurrent verifications
     if (is_verifying) {
         emit_signal("entitlement_error", "Verification already in progress");
