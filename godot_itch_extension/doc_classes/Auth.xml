@@ -1,93 +1,142 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Auth" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
-    <brief_description>
-        Authentication manager for API keys and OAuth with itch.io.
-    </brief_description>
-    <tutorials>
-    </tutorials>
-    <methods>
-        <method name="build_oauth_authorize_url" qualifiers="const">
-            <return type="String" />
-            <param index="0" name="client_id" type="String" default="&quot;&quot;" />
-            <param index="1" name="redirect_uri" type="String" default="&quot;&quot;" />
-            <param index="2" name="state" type="String" default="&quot;&quot;" />
-            <description>Builds and returns the OAuth authorization URL for itch.io using the provided `client_id`, `redirect_uri`, and optional `state` parameter.</description>
-        </method>
-        <method name="get_api_key" qualifiers="const">
-            <return type="String" />
-            <description>Returns the currently configured API key, or an empty string if none is set.</description>
-        </method>
-        <method name="get_launch_api_key" qualifiers="const">
-            <return type="String" />
-            <description>Returns an API key provided by the launcher (if the game was started via the itch app), otherwise returns an empty string.</description>
-        </method>
-        <method name="get_oauth_client_id" qualifiers="const">
-            <return type="String" />
-            <description>Returns the OAuth client ID used for user authorization.</description>
-        </method>
-        <method name="get_oauth_redirect_uri" qualifiers="const">
-            <return type="String" />
-            <description>Returns the OAuth redirect URI used after user authorization.</description>
-        </method>
-        <method name="get_oauth_scope" qualifiers="const">
-            <return type="String" />
-            <description>Returns the OAuth scope string requested during authorization.</description>
-        </method>
-        <method name="get_oauth_token" qualifiers="const">
-            <return type="String" />
-            <description>Returns the current OAuth access token if available, otherwise an empty string.</description>
-        </method>
-        <method name="has_api_key_present" qualifiers="const">
-            <return type="bool" />
-            <description>Returns true if an API key is available either from configuration or via the itch launcher.</description>
-        </method>
-        <method name="initialize">
-            <return type="void" />
-            <description>Initializes the authentication subsystem. Call before performing requests that require credentials.</description>
-        </method>
-        <method name="is_initialized" qualifiers="const">
-            <return type="bool" />
-            <description>Returns true if the authentication subsystem has been initialized.</description>
-        </method>
-        <method name="is_launched_via_itch" qualifiers="const">
-            <return type="bool" />
-            <description>Returns true if the game was launched through the itch.io app and launcher information is available.</description>
-        </method>
-        <method name="set_api_key">
-            <return type="void" />
-            <param index="0" name="api_key" type="String" />
-            <description>Sets the API key to use for requests. Overrides any launcher-provided key.</description>
-        </method>
-        <method name="set_oauth_client_id">
-            <return type="void" />
-            <param index="0" name="client_id" type="String" />
-            <description>Sets the OAuth client ID used to identify your application.</description>
-        </method>
-        <method name="set_oauth_redirect_uri">
-            <return type="void" />
-            <param index="0" name="redirect_uri" type="String" />
-            <description>Sets the OAuth redirect URI registered for your application.</description>
-        </method>
-        <method name="set_oauth_scope">
-            <return type="void" />
-            <param index="0" name="scope" type="String" />
-            <description>Sets the OAuth scope string to request during authorization.</description>
-        </method>
-        <method name="set_oauth_token">
-            <return type="void" />
-            <param index="0" name="token" type="String" />
-            <description>Sets the OAuth access token obtained from the authorization flow.</description>
-        </method>
-        <method name="shutdown">
-            <return type="void" />
-            <description>Shuts down the authentication subsystem and clears any transient state.</description>
-        </method>
-        <method name="start_oauth_authorization">
-            <return type="void" />
-            <param index="0" name="client_id" type="String" default="&quot;&quot;" />
-            <param index="1" name="redirect_uri" type="String" default="&quot;&quot;" />
-            <param index="2" name="state" type="String" default="&quot;&quot;" />
-            <description>Starts the OAuth authorization process using the provided parameters. Typically opens a browser to the authorization URL.</description>
-        </method>
-    </methods>
+	<brief_description>
+		Authentication manager for API keys and OAuth with itch.io.
+	</brief_description>
+	<description>
+		Handles acquisition and storage of credentials used for itch.io API calls.
+		Sources include:
+		- the itch launcher (environment variable [code]ITCHIO_API_KEY[/code])
+		- an OAuth access token obtained via the authorization flow
+
+		Provides helpers to configure the OAuth client, start the browser-based flow, and
+		retrieve a unified bearer token for use in HTTP requests.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="build_oauth_authorize_url" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="client_id" type="String" />
+			<param index="1" name="redirect_uri" type="String" />
+			<param index="2" name="state" type="String" />
+			<description>
+				Builds and returns the OAuth authorization URL for itch.io using the provided `client_id`, `redirect_uri`, and optional `state` parameter.
+			</description>
+		</method>
+		<method name="get_bearer_token" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current bearer token, preferring an OAuth token if present, otherwise the launcher API key.
+				Returns an empty string if no credential is available.
+			</description>
+		</method>
+		<method name="get_launch_api_key" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns an API key provided by the launcher (if the game was started via the itch app), otherwise returns an empty string.
+			</description>
+		</method>
+		<method name="get_oauth_client_id" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the OAuth client ID used for user authorization.
+			</description>
+		</method>
+		<method name="get_oauth_redirect_uri" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the OAuth redirect URI used after user authorization.
+			</description>
+		</method>
+		<method name="get_oauth_scope" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the OAuth scope string requested during authorization.
+			</description>
+		</method>
+		<method name="get_oauth_token" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current OAuth access token if available, otherwise an empty string.
+			</description>
+		</method>
+		<method name="has_api_key_present" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if an API key is available either from configuration or via the itch launcher.
+			</description>
+		</method>
+		<method name="has_bearer_token" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if either an OAuth token or a launcher API key is available.
+			</description>
+		</method>
+		<method name="is_initialized" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the authentication subsystem has been initialized.
+			</description>
+		</method>
+		<method name="is_launched_via_itch" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the game was launched through the itch.io app and launcher information is available.
+			</description>
+		</method>
+		<method name="set_oauth_client_id">
+			<return type="void" />
+			<param index="0" name="client_id" type="String" />
+			<description>
+				Sets the OAuth client ID used to identify your application.
+			</description>
+		</method>
+		<method name="set_oauth_redirect_uri">
+			<return type="void" />
+			<param index="0" name="redirect_uri" type="String" />
+			<description>
+				Sets the OAuth redirect URI registered for your application.
+			</description>
+		</method>
+		<method name="set_oauth_scope">
+			<return type="void" />
+			<param index="0" name="scope" type="String" />
+			<description>
+				Sets the OAuth scope string to request during authorization.
+			</description>
+		</method>
+		<method name="set_oauth_token">
+			<return type="void" />
+			<param index="0" name="token" type="String" />
+			<description>
+				Sets the OAuth access token obtained from the authorization flow.
+			</description>
+		</method>
+		<method name="start_oauth_authorization">
+			<return type="void" />
+			<param index="0" name="client_id" type="String" />
+			<param index="1" name="redirect_uri" type="String" />
+			<param index="2" name="state" type="String" />
+			<description>
+				Starts the OAuth authorization process using the provided parameters. Typically opens a browser to the authorization URL.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="auth_error">
+			<param index="0" name="error_message" type="String" />
+			<description>
+				Emitted when an authentication-related network call fails or returns an error.
+			</description>
+		</signal>
+		<signal name="auth_result">
+			<param index="0" name="success" type="bool" />
+			<param index="1" name="data" type="Dictionary" />
+			<description>
+				Emitted after an authentication-related HTTP call completes (e.g., [code]credentials/info[/code]).
+				[code]data[/code] contains the parsed response.
+			</description>
+		</signal>
+	</signals>
 </class>

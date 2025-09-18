@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="User" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-	Represents the current authenticated itch.io user.
+		Represents the current authenticated itch.io user.
 	</brief_description>
+	<description>
+		Convenience container for user-related data and helpers. The primary way to fetch user
+		information is via [code]Itch.get_me()[/code], which returns a dictionary with fields such as
+		[code]username[/code], [code]display_name[/code], and [code]id[/code].
+	</description>
 	<tutorials>
 	</tutorials>
 </class>

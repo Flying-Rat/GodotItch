@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Games" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-	Helpers for game-related operations and data access.
+		Helpers for game-related operations and data access.
 	</brief_description>
+	<description>
+		Placeholder for game-related helpers. This module may expose additional endpoints as itch.io expands OAuth scopes.
+		Access via [code]Itch.get_games()[/code].
 	</description>
 	<tutorials>
 	</tutorials>

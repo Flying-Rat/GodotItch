@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Itch" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-	High-level API for interacting with itch.io from Godot.
+		High-level API for interacting with itch.io from Godot.
 	</brief_description>
+	<description>
+		Facade over the GodotItch GDExtension. Provides convenient methods to call itch.io endpoints
+		and emits signals with parsed results. Requires calling [code]initialize_with_scene[/code] so the
+		internal HTTPRequest can be added to the scene tree.
+
+		Authentication can come from either:
+		- the itch launcher (environment variable [code]ITCHIO_API_KEY[/code]), or
+		- an OAuth access token set via [code]Auth[/code] (see [code]start_oauth_authorization[/code]).
+
+		The extension automatically chooses the correct server path for your credential:
+		- API key: [code]/api/1/key/...[/code]
+		- JWT (OAuth): [code]/api/1/jwt/...[/code]
+		In both cases, the token is sent in the [code]Authorization: Bearer &lt;token&gt;[/code] header.
+
+		Currently, with OAuth, only the [code]profile:me[/code] scope is supported by itch.io.
+		As a result, the main supported endpoints are [code]get_credentials_info()[/code] and [code]get_me()[/code].
+	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
@@ -11,147 +28,170 @@
 			<param index="0" name="client_id" type="String" default="&quot;&quot;" />
 			<param index="1" name="redirect_uri" type="String" default="&quot;&quot;" />
 			<param index="2" name="state" type="String" default="&quot;&quot;" />
-			<description>Returns the OAuth authorization URL built from the provided parameters.</description>
-		</method>
-		<method name="get_api_key" qualifiers="const">
-			<return type="String" />
-			<description>Returns the current API key if set, otherwise an empty string.</description>
+			<description>
+				Returns the OAuth authorization URL built from the provided parameters.
+			</description>
 		</method>
 		<method name="get_auth" qualifiers="const">
 			<return type="Auth" />
-			<description>Returns the Auth instance that manages authentication.</description>
+			<description>
+				Returns the Auth instance that manages authentication.
+			</description>
 		</method>
 		<method name="get_core" qualifiers="const">
 			<return type="Core" />
-			<description>Returns the Core instance providing low-level lifecycle and configuration.</description>
+			<description>
+				Returns the Core instance providing low-level lifecycle and configuration.
+			</description>
 		</method>
-		<method name="get_download_key">
+		<method name="get_credentials_info">
 			<return type="void" />
-			<param index="0" name="download_key" type="String" default="&quot;&quot;" />
-			<param index="1" name="game_id" type="String" default="&quot;&quot;" />
-			<description>Requests details for a specific download key and optional game ID. Emits api_response or api_error on completion.</description>
-		</method>
-		<method name="get_entitlements" qualifiers="const">
-			<return type="Entitlements" />
-			<description>Returns the Entitlements helper used to verify game ownership.</description>
+			<description>
+				Requests information about the current credentials.
+				Calls [code]GET /api/1/{key|jwt}/credentials/info[/code] and emits
+				[signal api_response] with endpoint [code]"credentials_info"[/code] on success.
+				The response typically contains [code]scopes[/code] and, for JWT, an [code]expires_at[/code] field.
+				On error, emits [signal api_error].
+			</description>
 		</method>
 		<method name="get_game_id" qualifiers="const">
 			<return type="String" />
-			<description>Returns the configured itch.io game ID used by API requests.</description>
-		</method>
-		<method name="get_game_purchases">
-			<return type="void" />
-			<param index="0" name="game_id" type="String" default="&quot;&quot;" />
-			<description>Fetches purchases for the specified game. Emits api_response or api_error when done.</description>
-		</method>
-		<method name="get_game_uploads">
-			<return type="void" />
-			<param index="0" name="game_id" type="String" default="&quot;&quot;" />
-			<description>Fetches upload records for the specified game. Emits api_response or api_error when done.</description>
+			<description>
+				Returns the configured itch.io game ID used by API requests.
+			</description>
 		</method>
 		<method name="get_games" qualifiers="const">
 			<return type="Games" />
-			<description>Returns the Games helper for game-related API operations.</description>
+			<description>
+				Returns the Games helper for game-related API operations.
+			</description>
 		</method>
 		<method name="get_godotitch_version" qualifiers="const">
 			<return type="String" />
-			<description>Returns the version string of the GodotItch extension.</description>
+			<description>
+				Returns the version string of the GodotItch extension.
+			</description>
 		</method>
 		<method name="get_me">
 			<return type="void" />
-			<description>Requests information about the currently authenticated user. Emits user_logged_in on success or user_login_failed on error.</description>
-		</method>
-		<method name="get_my_games">
-			<return type="void" />
-			<description>Requests a list of games owned by or associated with the current user. Emits api_response or api_error.</description>
+			<description>
+				Requests the current user's public profile data.
+				Calls [code]GET /api/1/{key|jwt}/me[/code] (requires [code]profile:me[/code] scope) and emits
+				[signal api_response] with endpoint [code]"get_me"[/code] on success.
+				On error, emits [signal api_error].
+			</description>
 		</method>
 		<method name="get_oauth_client_id" qualifiers="const">
 			<return type="String" />
-			<description>Returns the OAuth client ID configured in the auth subsystem.</description>
+			<description>
+				Returns the OAuth client ID configured in the auth subsystem.
+			</description>
 		</method>
 		<method name="get_oauth_redirect_uri" qualifiers="const">
 			<return type="String" />
-			<description>Returns the OAuth redirect URI configured in the auth subsystem.</description>
+			<description>
+				Returns the OAuth redirect URI configured in the auth subsystem.
+			</description>
 		</method>
 		<method name="get_oauth_scope" qualifiers="const">
 			<return type="String" />
-			<description>Returns the OAuth scope string configured in the auth subsystem.</description>
+			<description>
+				Returns the OAuth scope string configured in the auth subsystem.
+			</description>
 		</method>
 		<method name="get_user" qualifiers="const">
 			<return type="User" />
-			<description>Returns the User helper exposing user-related data accessors.</description>
+			<description>
+				Returns the User helper exposing user-related data accessors.
+			</description>
 		</method>
 		<method name="has_api_key_present" qualifiers="const">
 			<return type="bool" />
-			<description>Returns true if an API key is available from settings or the itch launcher.</description>
+			<description>
+				Returns true if an API key is available from settings or the itch launcher.
+			</description>
 		</method>
 		<method name="initialize_with_scene">
 			<return type="void" />
 			<param index="0" name="scene_node" type="Node" />
-			<description>Initializes the extension and wires it to the provided scene node for processing and signal emission.</description>
+			<description>
+				Initializes the extension and wires it to the provided scene node for processing and signal emission.
+			</description>
 		</method>
 		<method name="is_launched_via_itch" qualifiers="const">
 			<return type="bool" />
-			<description>Returns true if the game was started via the itch.io app.</description>
+			<description>
+				Returns true if the game was started via the itch.io app.
+			</description>
+		</method>
+		<method name="is_user_authenticated" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a bearer token is currently available (either OAuth token or launcher API key).
+			</description>
 		</method>
 		<method name="oauth_logged_out">
 			<return type="void" />
-			<description>Clears the current OAuth session and emits user_logged_out.</description>
+			<description>
+				Clears the current OAuth session and emits user_logged_out.
+			</description>
 		</method>
 		<method name="oauth_login_failed">
 			<return type="void" />
 			<param index="0" name="error" type="String" />
-			<description>Handles a failed OAuth login attempt with the provided error message. Emits user_login_failed.</description>
+			<description>
+				Handles a failed OAuth login attempt with the provided error message. Emits user_login_failed.
+			</description>
 		</method>
 		<method name="oauth_login_success">
 			<return type="void" />
 			<param index="0" name="user" type="Dictionary" />
-			<description>Handles a successful OAuth login with the authenticated user payload. Emits user_logged_in.</description>
+			<description>
+				Handles a successful OAuth login with the authenticated user payload. Emits user_logged_in.
+			</description>
 		</method>
 		<method name="post_request_check">
 			<return type="void" />
-			<description>Internal helper to process any pending HTTP requests or callbacks. Call within _process() if needed.</description>
-		</method>
-		<method name="set_api_key">
-			<return type="void" />
-			<param index="0" name="api_key" type="String" />
-			<description>Sets the API key used for authenticated API requests.</description>
+			<description>
+				Internal helper to process any pending HTTP requests or callbacks. Call within _process() if needed.
+			</description>
 		</method>
 		<method name="set_game_id">
 			<return type="void" />
 			<param index="0" name="game_id" type="String" />
-			<description>Sets the itch.io game ID for subsequent API operations.</description>
+			<description>
+				Sets the itch.io game ID for subsequent API operations.
+			</description>
 		</method>
 		<method name="set_oauth_client_id">
 			<return type="void" />
 			<param index="0" name="client_id" type="String" />
-			<description>Sets the OAuth client ID in the auth subsystem.</description>
+			<description>
+				Sets the OAuth client ID in the auth subsystem.
+			</description>
 		</method>
 		<method name="set_oauth_redirect_uri">
 			<return type="void" />
 			<param index="0" name="redirect_uri" type="String" />
-			<description>Sets the OAuth redirect URI in the auth subsystem.</description>
+			<description>
+				Sets the OAuth redirect URI in the auth subsystem.
+			</description>
 		</method>
 		<method name="set_oauth_scope">
 			<return type="void" />
 			<param index="0" name="scope" type="String" />
-			<description>Sets the OAuth scope string in the auth subsystem.</description>
+			<description>
+				Sets the OAuth scope string in the auth subsystem.
+			</description>
 		</method>
 		<method name="start_oauth_authorization">
 			<return type="void" />
 			<param index="0" name="client_id" type="String" default="&quot;&quot;" />
 			<param index="1" name="redirect_uri" type="String" default="&quot;&quot;" />
 			<param index="2" name="state" type="String" default="&quot;&quot;" />
-			<description>Starts the OAuth authorization flow and opens the authorization URL for the user.</description>
-		</method>
-		<method name="test_request_http">
-			<return type="void" />
-			<description>Issues a simple HTTP request to validate networking and authentication wiring. Emits api_response or api_error.</description>
-		</method>
-		<method name="verify_download_key">
-			<return type="void" />
-			<param index="0" name="download_key" type="String" />
-			<description>Verifies the provided download key against itch.io. Emits verify_download_key_result upon completion.</description>
+			<description>
+				Starts the OAuth authorization flow and opens the authorization URL for the user.
+			</description>
 		</method>
 	</methods>
 	<signals>
@@ -159,28 +199,33 @@
 			<param index="0" name="endpoint" type="String" />
 			<param index="1" name="error_message" type="String" />
 			<param index="2" name="response_code" type="int" />
-			<description>Emitted when an API call fails. Includes the endpoint path, error message, and HTTP status code.</description>
+			<description>
+				Emitted when an API call fails. Includes the endpoint path, error message, and HTTP status code.
+			</description>
 		</signal>
 		<signal name="api_response">
 			<param index="0" name="endpoint" type="String" />
 			<param index="1" name="data" type="Dictionary" />
-			<description>Emitted when an API call succeeds. Provides the endpoint path and parsed response data.</description>
+			<description>
+				Emitted when an API call succeeds. Provides the endpoint path and parsed response data.
+			</description>
 		</signal>
 		<signal name="user_logged_in">
 			<param index="0" name="user" type="Dictionary" />
-			<description>Emitted after a successful login with the authenticated user payload.</description>
+			<description>
+				Emitted after a successful login with the authenticated user payload.
+			</description>
 		</signal>
 		<signal name="user_logged_out">
-			<description>Emitted when the current user logs out or the session is cleared.</description>
+			<description>
+				Emitted when the current user logs out or the session is cleared.
+			</description>
 		</signal>
 		<signal name="user_login_failed">
 			<param index="0" name="error" type="String" />
-			<description>Emitted when a login attempt fails. Contains a human-readable error message.</description>
-		</signal>
-		<signal name="verify_download_key_result">
-			<param index="0" name="is_verified" type="bool" />
-			<param index="1" name="data" type="Dictionary" />
-			<description>Emitted after verifying a purchase/download key. `is_verified` indicates success and `data` contains details from the verification.</description>
+			<description>
+				Emitted when a login attempt fails. Contains a human-readable error message.
+			</description>
 		</signal>
 	</signals>
 </class>
