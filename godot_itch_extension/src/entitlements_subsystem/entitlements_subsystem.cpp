@@ -183,8 +183,8 @@ void Entitlements::verify_entitlement(const String& download_key)
         return;
     }
 
-    String oauth_token = Auth::get_singleton()->get_bearer_token();
-    if (oauth_token.is_empty()) {
+    String token = Auth::get_singleton()->get_bearer_token();
+    if (token.is_empty()) {
         UtilityFunctions::push_error("Entitlements: No OAuth/launcher token available for verification");
         emit_signal("entitlement_error", "User not authenticated (missing OAuth/launcher token)");
         return;
@@ -192,7 +192,7 @@ void Entitlements::verify_entitlement(const String& download_key)
 
     PackedStringArray headers;
     headers.push_back(String("User-Agent: ") + USER_AGENT);
-    headers.push_back("Authorization: Bearer " + oauth_token);
+    headers.push_back("Authorization: Bearer " + token);
 
     pending_download_key = download_key;
     is_verifying = true;
@@ -258,7 +258,7 @@ void Entitlements::verify_entitlement(const String& download_key)
 
 void Entitlements::_on_verification_response(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body)
 {
-    UtilityFunctions::print("Entitlements: _on_verification_response called - result:", String::num_int64(result), "response_code:", String::num_int64(response_code));
+    UtilityFunctions::print("Entitlements: _on_verification_response called - result: ", String::num_int64(result), ", response_code:", String::num_int64(response_code));
 
     // Critical safety check - ensure object is still valid
     if (!instance_initialized || !http_request) {

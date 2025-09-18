@@ -1,11 +1,11 @@
 extends Control
 
-@onready var output: RichTextLabel = $Panel/VBox/Margin/Scroll/Output
-@onready var client_id_edit: LineEdit = $Panel/VBox/Inputs/ClientId
-@onready var redirect_uri_edit: LineEdit = $Panel/VBox/Inputs/RedirectUri
-@onready var state_edit: LineEdit = $Panel/VBox/Inputs/State
-@onready var token_edit: LineEdit = $Panel/VBox/Inputs/Token
-@onready var download_key_edit: LineEdit = $Panel/VBox/Inputs/DownloadKey
+@onready var output: RichTextLabel = $Panel/VBoxContainer/Margin/Scroll/Output
+@onready var client_id_edit: LineEdit = $Panel/VBoxContainer/OauthBox/Inputs/ClientId
+@onready var redirect_uri_edit: LineEdit = $Panel/VBoxContainer/OauthBox/Inputs/RedirectUri
+@onready var state_edit: LineEdit = $Panel/VBoxContainer/OauthBox/Inputs/State
+@onready var token_edit: LineEdit = $Panel/VBoxContainer/OauthBox/Inputs/Token
+@onready var download_key_edit: LineEdit = $Panel/VBoxContainer/DownloadKeyHBox/Inputs/DownloadKey
 
 func _ready():
 	output.clear()
@@ -147,15 +147,6 @@ func _on_btn_validate_token_pressed() -> void:
 	else:
 		_error("Token is too short or invalid")
 
-func _on_use_token_pressed() -> void:
-	var token := Itch.get_auth().get_oauth_token()
-	if token.is_empty():
-		_error("No token saved. Save a token first.")
-		return
-	# Copy to clipboard for convenience and log header example
-	DisplayServer.clipboard_set(token)
-	_log("Token copied to clipboard. Add header: Authorization: Bearer %s" % _mask(token))
-
 func _on_api_response(endpoint: String, data: Dictionary) -> void:
 	_log("[b]API Response:[/b] %s\n%s" % [endpoint, JSON.stringify(data, "  ")])
 	if endpoint == "verify_download_key":
@@ -173,7 +164,7 @@ func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
 
 
 func _on_btn_clear_output_pressed() -> void:
-	$Panel/VBox/Margin/Scroll/Output.text = ""
+	output.text = ""
 
 func _on_auth_result(success : bool, data: Dictionary) -> void:
 	print("Auth result success=%s data=%s" % [success, JSON.stringify(data, "  ")])
