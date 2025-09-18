@@ -193,14 +193,15 @@ void Itch::get_credentials_info()
 	if (!auth)
 	{
 		UtilityFunctions::push_error("Auth module not available");
-		emit_signal("api_error", false, Dictionary());
+		emit_signal("api_error", String("credentials_info"), String("Auth module not available"), -1);
+		return;
 	}
 
 	String token = auth->get_bearer_token();
 	if (token.is_empty())
 	{
 		UtilityFunctions::push_error("No bearer token available for credentials info");
-		emit_signal("api_error", false, Dictionary());
+		emit_signal("api_error", String("credentials_info"), String("No bearer token available"), -1);
 		return;
 	}
 
@@ -231,14 +232,15 @@ void Itch::get_me()
 	if (!auth)
 	{
 		UtilityFunctions::push_error("Auth module not available");
-		emit_signal("api_error", false, Dictionary());
+		emit_signal("api_error", String("get_me"), String("Auth module not available"), -1);
+		return;
 	}
 
 	String token = auth->get_bearer_token();
 	if (token.is_empty())
 	{
 		UtilityFunctions::push_error("No bearer token available for get_me");
-		emit_signal("api_error", false, Dictionary());
+		emit_signal("api_error", String("get_me"), String("No bearer token available"), -1);
 		return;
 	}
 
