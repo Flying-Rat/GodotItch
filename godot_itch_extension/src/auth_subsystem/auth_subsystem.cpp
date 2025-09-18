@@ -47,8 +47,6 @@ void Auth::_bind_methods()
     // OAuth token
     ClassDB::bind_method(D_METHOD("set_oauth_token", "token"), &Auth::set_oauth_token);
     ClassDB::bind_method(D_METHOD("get_oauth_token"), &Auth::get_oauth_token);
-    ClassDB::bind_method(D_METHOD("build_oauth_authorize_url"), &Auth::build_oauth_authorize_url);
-    ClassDB::bind_method(D_METHOD("start_oauth_authorization"), &Auth::start_oauth_authorization);
 
     // Unified bearer token helpers
     ClassDB::bind_method(D_METHOD("get_bearer_token"), &Auth::get_bearer_token);

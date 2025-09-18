@@ -129,7 +129,7 @@ func _on_verify_button_pressed():
 func _on_clear_button_pressed():
 	"""Clear all input fields"""
 	if not secrets_loaded:
-		api_key_input.text = ""
+		game_id_input.text = ""
 		game_id_input.text = ""
 	download_key_input.text = ""
 	status_label.text = "Status: Fields cleared"

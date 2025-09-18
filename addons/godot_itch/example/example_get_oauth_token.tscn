@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3 uid="uid://yb4lk1uos45n"]
 
-[ext_resource type="Script" uid="uid://cvff4wk6q1eqw" path="res://addons/godot_itch/example/example_oauth.gd" id="1_oauth_script"]
+[ext_resource type="Script" uid="uid://bebmd124se3ik" path="res://addons/godot_itch/example/example_get_oauth_token.gd" id="1_oauth_script"]
 
-[node name="SecondScene" type="Control"]
+[node name="ExampleGetOAuthToken" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,7 +26,7 @@ grow_vertical = 2
 [node name="Title2" type="Label" parent="VBox"]
 layout_mode = 2
 theme_type_variation = &"HeaderLarge"
-text = "OAuth Verification"
+text = "Get OAuth Token"
 horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="VBox"]
