@@ -256,6 +256,85 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Download Linux x86_64 Debug artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: godotitch-linux-x86_64-debug
+          path: artifacts/linux/x86_64/debug
+
+      - name: Download Linux x86_64 Release artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: godotitch-linux-x86_64-release
+          path: artifacts/linux/x86_64/release
+
+      - name: Download Mac debug artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: godotitch-macos-debug
+          path: artifacts/macos/debug
+
+      - name: Download Mac release artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: godotitch-macos-release
+          path: artifacts/macos/release
+
+      - name: Download Windows x86_64 Debug artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: godotitch-windows-x86_64-debug
+          path: artifacts/windows/x86_64/debug
+
+      - name: Download Windows x86_64 Release artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: godotitch-windows-x86_64-release
+          path: artifacts/windows/x86_64/release
+
+      - name: Create bin directories in addons
+        run: |
+          mkdir -p addons/godot_itch/bin/linux
+          mkdir -p addons/godot_itch/bin/macos
+          mkdir -p addons/godot_itch/bin/windows
+
+      - name: Copy downloaded build artifacts into addons
+        run: |
+          # Copy Linux x86_64 debug/release files if present
+          if [ -d artifacts/linux/x86_64/debug ]; then
+            cp -a artifacts/linux/x86_64/debug/. addons/godot_itch/bin/linux/ || true
+          fi
+          if [ -d artifacts/linux/x86_64/release ]; then
+            cp -a artifacts/linux/x86_64/release/. addons/godot_itch/bin/linux/ || true
+          fi
+
+          # Copy macOS debug/release
+          if [ -d artifacts/macos/debug ]; then
+            cp -a artifacts/macos/debug/. addons/godot_itch/bin/macos/ || true
+          fi
+          if [ -d artifacts/macos/release ]; then
+            cp -a artifacts/macos/release/. addons/godot_itch/bin/macos/ || true
+          fi
+
+          # Copy Windows debug/release
+          if [ -d artifacts/windows/x86_64/debug ]; then
+            cp -a artifacts/windows/x86_64/debug/. addons/godot_itch/bin/windows/ || true
+          fi
+          if [ -d artifacts/windows/x86_64/release ]; then
+            cp -a artifacts/windows/x86_64/release/. addons/godot_itch/bin/windows/ || true
+          fi
+
+      - name: Show contents of addons/bin for debug
+        run: |
+          echo "Listing addons/godot_itch/bin"
+          ls -R addons/godot_itch/bin || true
+
       - name: Zip entire addons folder with tag name
         shell: bash
         run: zip -r "GodotItch_${{ github.ref_name }}.zip" addons
