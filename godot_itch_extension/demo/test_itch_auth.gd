@@ -7,10 +7,9 @@ extends Control
 @onready var token_edit: LineEdit = $Panel/VBox/Inputs/Token
 @onready var download_key_edit: LineEdit = $Panel/VBox/Inputs/DownloadKey
 
-var auth := Auth.new()
-
 func _ready():
 	output.clear()
+	var auth = Itch.get_auth()
 	_log("=== Auth UI Test ===")
 	if auth == null:
 		_error("Auth class not found or failed to instantiate")
@@ -34,11 +33,11 @@ func _on_save_token_pressed() -> void:
 	if token.is_empty():
 		_error("OAuth token is required")
 		return
-	auth.set_oauth_token(token)
+	Itch.get_auth().set_oauth_token(token)
 	_log("Saved OAuth token: %s" % _mask(token))
 
 func _on_load_token_pressed() -> void:
-	var token = auth.get_oauth_token()
+	var token = Itch.get_auth().get_oauth_token()
 	if token.is_empty():
 		_error("OAuth token is empty")
 		return
@@ -47,14 +46,14 @@ func _on_load_token_pressed() -> void:
 	_log("Loaded OAuth token: %s" % _mask(token))
 
 func _on_init_pressed() -> void:
-	_log("Auth: is_initialized: %s" % str(auth.is_initialized()))
+	_log("Auth: is_initialized: %s" % str(Itch.get_auth().is_initialized()))
 
 
 func _on_launch_info_pressed() -> void:
-	_log("Launched via itch: %s" % str(auth.is_launched_via_itch()))
-	_log("Has API key present: %s" % str(auth.has_api_key_present()))
-	if auth.has_api_key_present():
-		_log("Launch API key (masked): %s" % _mask(auth.get_launch_api_key()))
+	_log("Launched via itch: %s" % str(Itch.get_auth().is_launched_via_itch()))
+	_log("Has API key present: %s" % str(Itch.get_auth().has_api_key_present()))
+	if Itch.get_auth().has_api_key_present():
+		_log("Launch API key (masked): %s" % _mask(Itch.get_auth().get_launch_api_key()))
 
 
 func _on_save_oauth_pressed() -> void:
@@ -69,24 +68,24 @@ func _on_save_oauth_pressed() -> void:
 	if token.is_empty():
 		_error("OAuth token is required!")
 
-	auth.set_oauth_client_id(cid)
-	auth.set_oauth_redirect_uri(ruri)
-	auth.set_oauth_scope("profile:me")
-	auth.set_oauth_token(token)
+	Itch.get_auth().set_oauth_client_id(cid)
+	Itch.get_auth().set_oauth_redirect_uri(ruri)
+	Itch.get_auth().set_oauth_scope("profile:me")
+	Itch.get_auth().set_oauth_token(token)
 	_log("Saved OAuth settings. client_id=%s redirect_uri=%s" % [cid, ruri])
 
 
 func _on_show_oauth_pressed() -> void:
-	_log("OAuth -> client_id=%s" % auth.get_oauth_client_id())
-	_log("OAuth -> redirect_uri=%s" % auth.get_oauth_redirect_uri())
-	_log("OAuth -> scope=%s" % auth.get_oauth_scope())
+	_log("OAuth -> client_id=%s" % Itch.get_auth().get_oauth_client_id())
+	_log("OAuth -> redirect_uri=%s" % Itch.get_auth().get_oauth_redirect_uri())
+	_log("OAuth -> scope=%s" % Itch.get_auth().get_oauth_scope())
 
 
 func _on_build_url_pressed() -> void:
 	var cid : String = client_id_edit.text.strip_edges()
 	var ruri : String = redirect_uri_edit.text.strip_edges()
 	var state : String = state_edit.text.strip_edges()
-	var url : String = auth.build_oauth_authorize_url(cid, ruri, state)
+	var url : String = Itch.get_auth().build_oauth_authorize_url(cid, ruri, state)
 	if ruri.is_empty():
 		_log("Authorize URL (no redirect_uri): %s" % url)
 	else:
@@ -97,7 +96,7 @@ func _on_open_browser_pressed() -> void:
 	var cid := client_id_edit.text.strip_edges()
 	var ruri := redirect_uri_edit.text.strip_edges()
 	var state := state_edit.text.strip_edges()
-	auth.start_oauth_authorization(cid, ruri, state)
+	Itch.get_auth().start_oauth_authorization(cid, ruri, state)
 	if ruri.is_empty():
 		_log("Opened browser for OAuth authorization (no redirect_uri)")
 	else:
@@ -149,7 +148,7 @@ func _on_btn_validate_token_pressed() -> void:
 		_error("Token is too short or invalid")
 
 func _on_use_token_pressed() -> void:
-	var token := auth.get_oauth_token()
+	var token := Itch.get_auth().get_oauth_token()
 	if token.is_empty():
 		_error("No token saved. Save a token first.")
 		return
