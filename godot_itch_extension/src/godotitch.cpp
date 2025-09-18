@@ -271,6 +271,7 @@ void Itch::_perform_request(const String &url, const PackedStringArray &headers)
 		UtilityFunctions::print("Itch: _perform_request called but http_request is null");
 		return;
 	}
+
 	if (!http_request->is_inside_tree())
 	{
 		UtilityFunctions::print("Itch: _perform_request - HTTPRequest not yet inside tree, deferring again");
@@ -278,11 +279,13 @@ void Itch::_perform_request(const String &url, const PackedStringArray &headers)
 		return;
 	}
 
-	UtilityFunctions::print(String("Itch: _perform_request issuing request to: ") + url);
+	// UtilityFunctions::print(String("Itch: _perform_request issuing request to: ") + url);
 	// Print pointer address for diagnostics
-	UtilityFunctions::print(String("Itch: http_request ptr: ") + String::num_int64((int64_t)http_request));
+	// UtilityFunctions::print(String("Itch: http_request ptr: ") + String::num_int64((int64_t)http_request));
+
 	// Invoke via Variant call to route through Godot's method binding layer
 	Variant ret = http_request->call("request", url, headers);
+
 	// Log return value if any
 	if (ret.get_type() != Variant::NIL)
 	{
@@ -311,8 +314,6 @@ void Itch::post_request_check()
 		UtilityFunctions::print("Itch: post_request_check - http_request is null");
 		return;
 	}
-	UtilityFunctions::print(String("Itch: post_request_check - http_request ptr: ") + String::num_int64((int64_t)http_request));
-	UtilityFunctions::print(String("Itch: post_request_check - is_inside_tree: ") + (http_request->is_inside_tree() ? "true" : "false"));
 }
 
 // Utility Methods - delegate to modular architecture
@@ -335,7 +336,6 @@ void Itch::initialize_with_scene(Node *scene_node)
 		{
 			UtilityFunctions::print("Itch: Adding HTTPRequest to scene_node");
 			scene_node->add_child(http_request);
-			UtilityFunctions::print(String("Itch: HTTPRequest is_inside_tree after add_child: ") + String(http_request->is_inside_tree() ? "true" : "false"));
 		}
 	}
 }

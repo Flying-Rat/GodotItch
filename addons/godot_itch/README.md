@@ -14,7 +14,7 @@ A Godot 4 plugin + GDExtension to interact with the itch.io API from your game. 
 - Credentials info: `Itch.get_credentials_info()`
 - User profile: `Itch.get_me()` (requires `profile:me` scope)
 - Async API with signals (`api_response`, `api_error`)
-- Debug logging and Project Settings integration
+- Project Settings integration
 
 ## Installation
 
@@ -30,7 +30,6 @@ Configure in Project Settings → `godot_itch`:
 - `oauth_client_id` — OAuth client ID from your itch developer settings
 - `oauth_redirect_uri` — Redirect URI (leave blank to use out-of-band: `urn:ietf:wg:oauth:2.0:oob`)
 - `oauth_scope` — Set to `profile:me` (currently the only supported scope)
-- `advanced/debug_logging` — Optional verbose logging
 
 Notes:
 - If launched via the itch app, the plugin will use the provided short-lived launcher token automatically.
@@ -100,14 +99,6 @@ Signals:
   - `res://tests/credentials_info_test.tscn`
   - `res://tests/get_me_test.tscn`
 - Or use the minimal showcase: `res://addons/godot_itch/godot_itch_showcase.tscn`.
-
-## Debug Mode
-
-Enable verbose logging in Project Settings:
-
-```
-godot_itch/advanced/debug_logging = true
-```
 
 ## Troubleshooting
 

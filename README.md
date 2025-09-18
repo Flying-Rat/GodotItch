@@ -26,9 +26,6 @@ Configure under **Project Settings > godot_itch**:
 - `oauth_redirect_uri`: Redirect URI (leave blank for out-of-band: `urn:ietf:wg:oauth:2.0:oob`)
 - `oauth_scope`: Set to `profile:me` (currently the only supported scope)
 
-Optional:
-- `advanced/debug_logging`: Enable verbose logs
-
 ### 3. Basic Usage (Get Credentials + Me)
 ```gdscript
 extends Control
