@@ -74,7 +74,7 @@ Auth::~Auth()
 }
 
 // Override virtual initialization from Subsystem<Auth>
-void Auth::initialize_instance() 
+void Auth::initialize_instance()
 {
     if (initialized)
     {
@@ -95,7 +95,7 @@ void Auth::initialize_instance()
 }
 
 // Override virtual shutdown from Subsystem<Auth>
-void Auth::shutdown_instance() 
+void Auth::shutdown_instance()
 {
     if (!initialized)
     {
@@ -121,7 +121,7 @@ void Auth::do_detect_launch_source()
     {
         UtilityFunctions::print("Auth: Detecting launch source via environment variable...");
         String env_key = os->get_environment("ITCHIO_API_KEY");
-        if (env_key.is_empty()) 
+        if (env_key.is_empty())
         {
             // some environments/tools use underscore form
             env_key = os->get_environment("ITCH_IO_API_KEY");
@@ -288,6 +288,7 @@ String Auth::get_oauth_scope() const
     {
         return "profile:me";
     }
+
     Variant v = ps->get_setting(SETTING_OAUTH_SCOPE);
     if (v.get_type() == Variant::STRING)
     {

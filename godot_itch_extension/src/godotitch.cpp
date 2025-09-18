@@ -13,7 +13,6 @@ static Itch *s_singleton = nullptr;
 void Itch::_bind_methods()
 {
 	// Itch.io API wrappers
-	ClassDB::bind_method(D_METHOD("verify_download_key", "download_key"), &Itch::verify_download_key);
 
 	// Utility methods
 	ClassDB::bind_method(D_METHOD("set_game_id", "game_id"), &Itch::set_game_id);
@@ -25,7 +24,6 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("get_godotitch_version"), &Itch::get_godotitch_version);
 
 	// Module access - expose all subsystems
-	ClassDB::bind_method(D_METHOD("get_entitlements"), &Itch::get_entitlements);
 	ClassDB::bind_method(D_METHOD("get_core"), &Itch::get_core);
 	ClassDB::bind_method(D_METHOD("get_auth"), &Itch::get_auth);
 	ClassDB::bind_method(D_METHOD("get_user"), &Itch::get_user);
@@ -42,9 +40,6 @@ void Itch::_bind_methods()
 
 	// New local hook for api_response
 	ClassDB::bind_method(D_METHOD("_on_api_response", "endpoint", "data"), &Itch::_on_api_response);
-	// Entitlements signal handlers
-	ClassDB::bind_method(D_METHOD("_on_entitlement_verified", "success", "data"), &Itch::_on_entitlement_verified);
-	ClassDB::bind_method(D_METHOD("_on_entitlement_error", "error_message"), &Itch::_on_entitlement_error);
 
 	// OAuth hooks (for integration to call after external flow)
 	ClassDB::bind_method(D_METHOD("oauth_login_success", "user"), &Itch::oauth_login_success);
@@ -89,18 +84,9 @@ Itch::Itch()
 
 	// Don't create HTTPRequest here - wait for initialize_with_scene()
 	s_singleton = this;
-	auth = Auth::get_singleton();
 
 	// Connect our own api_response signal to local handler
 	connect("api_response", Callable(this, "_on_api_response"));
-
-	// Connect entitlements signals to facade methods
-	Entitlements *entitlements = Entitlements::get_singleton();
-	if (entitlements)
-	{
-		entitlements->connect("entitlement_verified", Callable(this, "_on_entitlement_verified"));
-		entitlements->connect("entitlement_error", Callable(this, "_on_entitlement_error"));
-	}
 }
 
 Itch::~Itch()
@@ -144,11 +130,6 @@ bool Itch::has_api_key_present() const
 }
 
 // Module access methods
-Entitlements *Itch::get_entitlements() const
-{
-	return Entitlements::get_singleton();
-}
-
 Core *Itch::get_core() const
 {
 	return Core::get_singleton();
@@ -202,21 +183,6 @@ String Itch::_build_api_url(const String &endpoint) const
 {
 	// Use JWT endpoints; endpoint should start with '/'
 	return String("https://itch.io/api/1/jwt") + endpoint;
-}
-
-void Itch::verify_download_key(const String &download_key)
-{
-	// Delegate to the Entitlements module
-	Entitlements *entitlements = get_entitlements();
-	if (entitlements)
-	{
-		entitlements->verify_entitlement(download_key);
-	}
-	else
-	{
-		UtilityFunctions::push_error("Entitlements module not available");
-		emit_signal("verify_download_key_result", false, Dictionary());
-	}
 }
 
 void Itch::get_credentials_info()
@@ -308,15 +274,6 @@ void Itch::initialize_with_scene(Node *scene_node)
 			UtilityFunctions::print(String("Itch: HTTPRequest is_inside_tree after add_child: ") + String(http_request->is_inside_tree() ? "true" : "false"));
 		}
 	}
-
-	// Also give subsystems a chance to initialize with the scene node so they can
-	// create and attach their own HTTPRequest nodes if needed.
-	Entitlements *ent = Entitlements::get_singleton();
-	if (ent)
-	{
-		UtilityFunctions::print("Itch: Initializing Entitlements with scene node");
-		ent->initialize_with_scene(scene_node);
-	}
 }
 
 void Itch::_on_request_completed(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body)
@@ -383,23 +340,6 @@ void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
 	emit_signal("verify_download_key_result", verified, data);
 }
 
-// Entitlements signal handlers
-void Itch::_on_entitlement_verified(bool success, const Dictionary &data)
-{
-	// Forward the entitlements signal to the facade's verify_download_key_result signal
-	emit_signal("verify_download_key_result", success, data);
-}
-
-void Itch::_on_entitlement_error(const String &error_message)
-{
-	// Forward the entitlements error as a verify_download_key_result failure
-	Dictionary error_data;
-	error_data["error"] = error_message;
-	emit_signal("verify_download_key_result", false, error_data);
-}
-
-// OAuth settings setters
-// OAuth settings setters - delegate to Auth
 void Itch::set_oauth_client_id(const String &client_id)
 {
 	Auth::get_singleton()->set_oauth_client_id(client_id);
@@ -415,7 +355,6 @@ void Itch::set_oauth_scope(const String &scope)
 	Auth::get_singleton()->set_oauth_scope(scope);
 }
 
-// OAuth settings getters - delegate to Auth
 String Itch::get_oauth_client_id() const
 {
 	return Auth::get_singleton()->get_oauth_client_id();
