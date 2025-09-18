@@ -92,9 +92,6 @@ void Auth::initialize_instance()
     // call internal helper
     do_detect_launch_source();
 
-    // Load any previously cached OAuth token
-    load_token_from_cache();
-
     initialized = true;
     UtilityFunctions::print("Auth: Initialization complete");
 }
@@ -433,7 +430,6 @@ void godot::Auth::get_credentials_info()
 void Auth::set_oauth_token(const String &token)
 {
     oauth_token = token;
-    save_token_to_cache();
 }
 
 String Auth::get_oauth_token() const

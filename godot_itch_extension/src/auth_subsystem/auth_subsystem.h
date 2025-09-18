@@ -25,8 +25,6 @@ namespace godot
 
         // Token management
         String oauth_token = "";
-        void save_token_to_cache();
-        void load_token_from_cache();
 
         // Launch detection (moved from Core class)
         bool launched_via_itch = false;

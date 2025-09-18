@@ -27,14 +27,9 @@ void Entitlements::_bind_methods()
 {
     // Bind core entitlements methods
     ClassDB::bind_method(D_METHOD("verify_entitlement", "download_key"), &Entitlements::verify_entitlement);
-    ClassDB::bind_method(D_METHOD("is_entitled", "download_key"), &Entitlements::is_entitled);
-    ClassDB::bind_method(D_METHOD("get_entitlement_record", "download_key"), &Entitlements::get_entitlement_record);
 
     // Initialization methods
     ClassDB::bind_method(D_METHOD("initialize_with_scene", "scene_node"), &Entitlements::initialize_with_scene);
-
-    // Cache management
-    ClassDB::bind_method(D_METHOD("has_cached_entitlement", "download_key"), &Entitlements::has_cached_entitlement);
 
     // Internal HTTP response handler
     ClassDB::bind_method(D_METHOD("_on_verification_response", "result", "response_code", "headers", "body"), &Entitlements::_on_verification_response);
@@ -47,7 +42,6 @@ void Entitlements::_bind_methods()
 Entitlements::Entitlements()
 { 
     // Constructor - keep minimal logging
-    UtilityFunctions::print("Entitlements: constructed"); 
 }
 
 Entitlements::~Entitlements()
@@ -85,19 +79,17 @@ void Entitlements::_cleanup_http_request()
 
 
 // Override virtual initialization from Subsystem<Entitlements>
-void Entitlements::initialize_instance() {
+void Entitlements::initialize_instance() 
+{
     // Initialization started
 
     // Get Core dependencies
     core = godot::Core::get_singleton();
-    if (!core) {
+    if (!core)
+    {
         UtilityFunctions::push_error("Entitlements: Core module not available");
         return;
     }
-
-
-    // HTTPRequest will be created later in initialize_with_scene() when we have access to scene tree
-
     instance_initialized = true;
 }
 
@@ -106,7 +98,6 @@ void Entitlements::initialize_with_scene(Node *scene_node)
     // No scene-specific setup required for current temporary HTTPRequest approach
 }
 
-// Override virtual shutdown from Subsystem<Entitlements>
 void Entitlements::shutdown_instance()
 {
     // Shutting down
@@ -118,8 +109,6 @@ void Entitlements::shutdown_instance()
     pending_download_key = "";
     instance_initialized = false;
 }
-
-
 
 String Entitlements::_build_verification_url(const String& download_key) const
 {
@@ -343,26 +332,3 @@ void Entitlements::_on_verification_response(int result, int response_code, cons
     }
 }
 
-bool Entitlements::is_entitled(const String& download_key) const
-{
-    Dictionary cached_result = _get_cached_verification(download_key);
-    if (cached_result.is_empty()) {
-        return false;
-    }
-
-    // Check if the response indicates a valid entitlement
-    // itch.io API returns a "download_key" object when valid
-    if (cached_result.has("download_key")) {
-        Variant dk = cached_result["download_key"];
-        // Valid if we have a dictionary object with key data
-        return dk.get_type() == Variant::DICTIONARY;
-    }
-
-    // Fallback: check for download_keys array (alternative API format)
-    if (cached_result.has("download_keys") && cached_result["download_keys"].get_type() == Variant::ARRAY) {
-        Array download_keys = cached_result["download_keys"];
-        return download_keys.size() > 0;
-    }
-
-    return false;
-}
