@@ -111,10 +111,6 @@ text = "Validate Token"
 layout_mode = 2
 text = "Save Token"
 
-[node name="BtnLoadToken" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
-layout_mode = 2
-text = "Load Token"
-
 [node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
@@ -185,7 +181,6 @@ text = "Clear Output"
 [connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnOpenBrowser" to="." method="_on_open_browser_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnValidateToken" to="." method="_on_btn_validate_token_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnSaveToken" to="." method="_on_save_token_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnLoadToken" to="." method="_on_load_token_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/ApiTestButtonBox/BtnCredentialsInfo" to="." method="_on_btn_credentials_info_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/ApiTestButtonBox/BtnGetMe" to="." method="_on_btn_get_me_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBoxContainer/BtnClearOutput" to="." method="_on_btn_clear_output_pressed"]

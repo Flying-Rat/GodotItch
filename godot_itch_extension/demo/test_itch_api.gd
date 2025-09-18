@@ -8,6 +8,9 @@ extends Control
 
 func _ready():
 	output.clear()
+	
+	Itch.initialize_with_scene(self)
+	
 	var auth = Itch.get_auth()
 	_log("=== Auth UI Test ===")
 	if auth == null:
@@ -34,14 +37,6 @@ func _on_save_token_pressed() -> void:
 	Itch.get_auth().set_oauth_token(token)
 	_log("Saved OAuth token: %s" % _mask(token))
 
-func _on_load_token_pressed() -> void:
-	var token = Itch.get_auth().get_oauth_token()
-	if token.is_empty():
-		_error("OAuth token is empty")
-		return
-
-	token_edit.text = token
-	_log("Loaded OAuth token: %s" % _mask(token))
 
 func _on_init_pressed() -> void:
 	_log("Auth: is_initialized: %s" % str(Itch.get_auth().is_initialized()))
@@ -146,6 +141,25 @@ func _on_api_response(endpoint: String, data: Dictionary) -> void:
 	if endpoint == "verify_download_key":
 		# Handled also by verify_purchase_result
 		pass
+	elif endpoint == "get_me":
+		var user = data.get("user", {})
+		if typeof(user) == TYPE_DICTIONARY:
+			var username = user.get("username", "?")
+			var display_name = user.get("display_name", "?")
+			var uid = str(user.get("id", "?"))
+			var url = user.get("url", "")
+			_log("Me: %s (%s), id=%s%s" % [username, display_name, uid, url.is_empty() if "" else ", url=" + url])
+		else:
+			_error("Malformed get_me response: missing user dictionary")
+	elif endpoint == "credentials_info":
+		var scopes = data.get("scopes", [])
+		var expires_at = str(data.get("expires_at", ""))
+		_log("Credentials scopes: %s" % JSON.stringify(scopes))
+		if not expires_at.is_empty():
+			_log("JWT expires_at: %s" % expires_at)
+		else:
+			_log("No expires_at present (likely API key)")
+
 
 func _on_api_error(endpoint: String, error_message: String, response_code: int) -> void:
 	_error("API Error %s (%d): %s" % [endpoint, response_code, error_message])

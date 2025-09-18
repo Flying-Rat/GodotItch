@@ -16,6 +16,7 @@ config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
 [godot_itch]
+
 game_id=""
 oauth_client_id=""
 oauth_scope="profile:me"
