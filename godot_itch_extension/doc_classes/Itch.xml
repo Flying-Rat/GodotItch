@@ -54,12 +54,6 @@
 				On error, emits [signal api_error].
 			</description>
 		</method>
-		<method name="get_game_id" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns the configured itch.io game ID used by API requests.
-			</description>
-		</method>
 		<method name="get_games" qualifiers="const">
 			<return type="Games" />
 			<description>
@@ -154,13 +148,6 @@
 			<return type="void" />
 			<description>
 				Internal helper to process any pending HTTP requests or callbacks. Call within _process() if needed.
-			</description>
-		</method>
-		<method name="set_game_id">
-			<return type="void" />
-			<param index="0" name="game_id" type="String" />
-			<description>
-				Sets the itch.io game ID for subsequent API operations.
 			</description>
 		</method>
 		<method name="set_oauth_client_id">

@@ -73,9 +73,6 @@ namespace godot
         // Itch.io API methods
         bool itchInitEx(uint32_t app_id = 0, bool embed_callbacks = false);
 
-        // Utility methods
-        void set_game_id(const String &game_id);
-        String get_game_id() const;
 
         // OAuth helpers
         void set_oauth_client_id(const String &client_id);

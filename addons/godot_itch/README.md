@@ -26,7 +26,6 @@ A Godot 4 plugin + GDExtension to interact with the itch.io API from your game. 
 
 Configure in Project Settings → `godot_itch`:
 
-- `game_id` — Your game ID on itch.io
 - `oauth_client_id` — OAuth client ID from your itch developer settings
 - `oauth_redirect_uri` — Redirect URI (leave blank to use out-of-band: `urn:ietf:wg:oauth:2.0:oob`)
 - `oauth_scope` — Set to `profile:me` (currently the only supported scope)

@@ -14,9 +14,6 @@ void Itch::_bind_methods()
 {
 	// Itch.io API wrappers
 
-	// Utility methods
-	ClassDB::bind_method(D_METHOD("set_game_id", "game_id"), &Itch::set_game_id);
-	ClassDB::bind_method(D_METHOD("get_game_id"), &Itch::get_game_id);
 
 	// Launch detection getters
 	ClassDB::bind_method(D_METHOD("is_launched_via_itch"), &Itch::is_launched_via_itch);
@@ -149,13 +146,6 @@ Games *Itch::get_games() const
 	return Games::get_singleton();
 }
 
-// These methods are now handled by Core and Auth modules
-// get_api_key_from_settings() -> Auth::get_api_key()
-// get_game_id_from_settings() -> Core::get_game_id()
-
-// get_game_id_from_settings() removed - use get_game_id() which delegates to Core
-
-// OAuth methods are implemented inline in godotitch.h
 
 void Itch::_setup_http_request()
 {
@@ -316,16 +306,6 @@ void Itch::post_request_check()
 	}
 }
 
-// Utility Methods - delegate to modular architecture
-void Itch::set_game_id(const String &game_id)
-{
-	Core::get_singleton()->set_game_id(game_id);
-}
-
-String Itch::get_game_id() const
-{
-	return Core::get_singleton()->get_game_id();
-}
 
 void Itch::initialize_with_scene(Node *scene_node)
 {

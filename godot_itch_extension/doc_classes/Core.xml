@@ -4,29 +4,15 @@
 		Lightweight core services for initializing and configuring GodotItch.
 	</brief_description>
 	<description>
-		Provides access to persistent configuration such as the itch.io [code]game_id[/code].
 		This subsystem is used internally by other modules and typically accessed through the [code]Itch[/code] facade.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_game_id" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns the configured itch.io game ID used for API calls. If not set, returns an empty string.
-			</description>
-		</method>
 		<method name="is_initialized" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns true if Core has been successfully initialized.
-			</description>
-		</method>
-		<method name="set_game_id">
-			<return type="void" />
-			<param index="0" name="game_id" type="String" />
-			<description>
-				Sets the itch.io game ID for subsequent API requests. Pass an empty string to clear the value.
 			</description>
 		</method>
 	</methods>
