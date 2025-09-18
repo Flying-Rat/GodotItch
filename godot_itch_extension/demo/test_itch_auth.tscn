@@ -68,14 +68,6 @@ text = "State (optional)"
 layout_mode = 2
 placeholder_text = "opaque state"
 
-[node name="LabelDownloadKey" type="Label" parent="Panel/VBoxContainer/OauthBox/Inputs"]
-layout_mode = 2
-text = "Download Key"
-
-[node name="DownloadKey" type="LineEdit" parent="Panel/VBoxContainer/OauthBox/Inputs"]
-layout_mode = 2
-placeholder_text = "Paste download key or URL"
-
 [node name="Buttons" type="HBoxContainer" parent="Panel/VBoxContainer/OauthBox"]
 layout_mode = 2
 theme_override_constants/separation = 10
