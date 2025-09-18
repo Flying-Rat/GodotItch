@@ -5,7 +5,6 @@ extends Control
 @onready var redirect_uri_edit: LineEdit = $Panel/VBoxContainer/OauthBox/Inputs/RedirectUri
 @onready var state_edit: LineEdit = $Panel/VBoxContainer/OauthBox/Inputs/State
 @onready var token_edit: LineEdit = $Panel/VBoxContainer/OauthBox/Inputs/Token
-@onready var download_key_edit: LineEdit = $Panel/VBoxContainer/DownloadKeyHBox/Inputs/DownloadKey
 
 func _ready():
 	output.clear()
@@ -24,7 +23,6 @@ func _ready():
 	if Itch:
 		Itch.api_response.connect(_on_api_response)
 		Itch.api_error.connect(_on_api_error)
-		Itch.verify_download_key_result.connect(_on_verify_purchase)
 		Itch.get_auth().auth_result.connect(_on_auth_result)
 
 
@@ -109,16 +107,12 @@ func _on_btn_credentials_info_pressed() -> void:
 	Itch.get_credentials_info()
 	_log("Requested credentials info")
 
-func _on_btn_verify_key_pressed() -> void:
-	var key := download_key_edit.text.strip_edges()
-	if key.is_empty():
-		_error("Download key is required")
-		return
+func _on_btn_get_me_pressed() -> void:
 	if not Itch:
 		_error("Itch not available")
 		return
-	Itch.verify_download_key(key)
-	_log("Requested verify_download_key")
+	Itch.get_me()
+	_log("Requested get_me")
 
 
 func _mask(s: String) -> String:
@@ -156,15 +150,11 @@ func _on_api_response(endpoint: String, data: Dictionary) -> void:
 func _on_api_error(endpoint: String, error_message: String, response_code: int) -> void:
 	_error("API Error %s (%d): %s" % [endpoint, response_code, error_message])
 
-func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
-	if verified:
-		_log("[color=green]Download key is VALID![/color]")
-	else:
-		_error("Download key is INVALID!")
-
 
 func _on_btn_clear_output_pressed() -> void:
 	output.text = ""
 
+
 func _on_auth_result(success : bool, data: Dictionary) -> void:
 	print("Auth result success=%s data=%s" % [success, JSON.stringify(data, "  ")])
+	output.append_text("Auth result success=%s data=%s" % [success, JSON.stringify(data, "  ")])

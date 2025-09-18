@@ -1,134 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://kdvxrm6b2cec"]
+[gd_scene load_steps=2 format=3 uid="uid://djxg6yilc6yyb"]
 
-[sub_resource type="GDScript" id="GDScript_5xp0x"]
-script/source = "extends Control
+[ext_resource type="Script" uid="uid://capwhiq2xo3ka" path="res://test_itch_api.gd" id="1_g0s3y"]
 
-@onready var output: RichTextLabel = $Panel/VBox/MarginContainer/Scroll/Output
-@onready var download_key_line_edit: LineEdit = $Panel/VBox/Buttons/DownloadKey
-
-# Simple test to verify the Itch extension loads properly
-
-var error_occurred : bool = false
-var download_key : String = \"\"
-var game_id : String
-var api_key : String
-
-
-func _ready():
-	print(\"=== Itch GDExtension Test ===\")
-
-	# Test 1: Check if Itch singleton exists
-	if Itch:
-		print(\"✓ Itch singleton found\")
-		print(\"  Version: \", Itch.get_godotitch_version())
-		Itch.api_response.connect(_on_api_response)
-		Itch.api_error.connect(_on_api_error)
-		Itch.verify_purchase_result.connect(_on_verify_purchase)
-	else:
-		print(\"✗ Itch singleton NOT found\")
-		return
-
-	# Test 2: Check basic functionality
-	await get_tree().process_frame
-
-	# Try to initialize (without scene - should not crash)
-	error_occurred = false
-	print(\"✓ Basic method calls work\")
-
-	if Itch.has_method(\"get_game_id\"):
-		game_id = Itch.get_game_id()
-	else:
-		error_occurred = true
-
-	print(\"  API Key set: \", \"YES\" if !api_key.is_empty() else \"NO\")
-	print(\"  Game ID set: \", \"YES\" if !game_id.is_empty() else \"NO\")
-
-	# Test scene initialization
-	if Itch.has_method(\"initialize_with_scene\"):
-		Itch.initialize_with_scene(self)
-		print(\"✓ Scene initialization successful\")
-	else:
-		error_occurred = true
-
-	if error_occurred:
-		print(\"✗ Error during testing:\")
-		print(\"  Extension may not be properly loaded\")
-		return
-
-
-func _on_api_response(endpoint: String, data: Dictionary):
-	var text = \"[b]API Response:[/b] %s\\n%s\\n\" % [endpoint, JSON.stringify(data, \"  \")]
-	output.append_text(text)
-
-	match endpoint:
-		\"get_me\":
-			if data.has(\"user\"):
-				var user = data[\"user\"]
-				print(\"  User: \", user.get(\"username\", \"Unknown\"))
-				print(\"  Display Name: \", user.get(\"display_name\", \"N/A\"))
-
-		\"get_my_games\":
-			if data.has(\"games\"):
-				var games = data[\"games\"]
-				print(\"  Found \", games.size(), \" games\")
-				for game in games:
-					print(\"    - \", game.get(\"title\", \"Unknown Game\"))
-
-		\"get_download_key\":
-			if data.has(\"download_key\"):
-				var download_key_data = data[\"download_key\"]
-				print(\"  Download key: \", download_key_data.get(\"key\", \"Unknown\"))
-			else:
-				print(\"  Download key not found or verification failed\")
-
-		\"get_game_purchases\":
-			if data.has(\"purchases\"):
-				var purchases = data[\"purchases\"]
-				print(\"  Found \", purchases.size(), \" purchases\")
-
-		\"get_game_uploads\":
-			if data.has(\"uploads\"):
-				var uploads = data[\"uploads\"]
-				print(\"  Found \", uploads.size(), \" uploads\")
-
-func _on_api_error(endpoint: String, error_message: String, response_code: int):
-	var text = \"[color=red][b]API Error:[/b] %s (%d) - %s[/color]\\n\" % [endpoint, response_code, error_message]
-	output.append_text(text)
-
-	if response_code == 401:
-		print(\"  This usually means your API key is invalid or missing\")
-	elif response_code == 404:
-		print(\"  This usually means the resource (user/game) was not found\")
-	elif response_code == 403:
-		print(\"  This usually means you don't have permission to access this resource\")
-
-	error_occurred = true
-
-func _on_verify_purchase(verified: bool, data: Dictionary) -> void:
-	if verified:
-		output.append_text(\"[color=green]Download key is VALID![/color]\\n\")
-	else:		
-		output.append_text(\"[color=red]Download key is INVALID![/color]\\n\")
-
-
-func _on_btn_verify_purchase_pressed() -> void:
-	var download_key_text = download_key_line_edit.text.strip_edges()
-	if download_key_text.is_empty():
-		output.append_text(\"[color=red]Download key is empty![/color]\")
-		return
-	download_key = download_key_text
-	output.append_text(\"[b]Request:[/b] verify_purchase %s\\n\" % download_key)
-	Itch.verify_download_key(download_key)
-"
-
-[node name="TestItchApi" type="Control"]
+[node name="TestAuth" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = SubResource("GDScript_5xp0x")
+script = ExtResource("1_g0s3y")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
@@ -138,48 +19,173 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="Panel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="OAuthLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "OAuth Setup"
+
+[node name="OauthBox" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 5
-
-[node name="BtnRunTests" type="Button" parent="Panel/VBox/Buttons"]
-layout_mode = 2
-text = "Run Tests"
-
-[node name="DownloadKey" type="LineEdit" parent="Panel/VBox/Buttons"]
+[node name="Inputs" type="GridContainer" parent="Panel/VBoxContainer/OauthBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "download key"
+columns = 2
 
-[node name="BtnVerifyKey" type="Button" parent="Panel/VBox/Buttons"]
+[node name="LabelToken" type="Label" parent="Panel/VBoxContainer/OauthBox/Inputs"]
 layout_mode = 2
-text = "Verify Key"
+text = "OAuth Token"
 
-[node name="MarginContainer" type="MarginContainer" parent="Panel/VBox"]
+[node name="Token" type="LineEdit" parent="Panel/VBoxContainer/OauthBox/Inputs"]
+layout_mode = 2
+placeholder_text = "Paste token from itch.io"
+
+[node name="LabelClient" type="Label" parent="Panel/VBoxContainer/OauthBox/Inputs"]
+layout_mode = 2
+text = "Client ID"
+
+[node name="ClientId" type="LineEdit" parent="Panel/VBoxContainer/OauthBox/Inputs"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "itch OAuth client_id"
+
+[node name="LabelRedirect" type="Label" parent="Panel/VBoxContainer/OauthBox/Inputs"]
+layout_mode = 2
+text = "Redirect URI"
+
+[node name="RedirectUri" type="LineEdit" parent="Panel/VBoxContainer/OauthBox/Inputs"]
+layout_mode = 2
+placeholder_text = "https://example.com/oauth/callback"
+
+[node name="LabelState" type="Label" parent="Panel/VBoxContainer/OauthBox/Inputs"]
+layout_mode = 2
+text = "State (optional)"
+
+[node name="State" type="LineEdit" parent="Panel/VBoxContainer/OauthBox/Inputs"]
+layout_mode = 2
+placeholder_text = "opaque state"
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/VBoxContainer/OauthBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
+
+[node name="BtnInit" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Init"
+
+[node name="BtnLaunchInfo" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Launch Info"
+
+[node name="BtnSaveOAuth" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Save OAuth"
+
+[node name="BtnShowOAuth" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Show OAuth"
+
+[node name="BtnBuildUrl" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Build URL"
+
+[node name="BtnOpenBrowser" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Open Browser"
+
+[node name="BtnValidateToken" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Validate Token"
+
+[node name="BtnSaveToken" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Save Token"
+
+[node name="BtnLoadToken" type="Button" parent="Panel/VBoxContainer/OauthBox/Buttons"]
+layout_mode = 2
+text = "Load Token"
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="ApiLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "API TEST"
+
+[node name="ApiTestButtonBox" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="BtnCredentialsInfo" type="Button" parent="Panel/VBoxContainer/ApiTestButtonBox"]
+layout_mode = 2
+text = "Credentials Info"
+
+[node name="BtnGetMe" type="Button" parent="Panel/VBoxContainer/ApiTestButtonBox"]
+layout_mode = 2
+text = "Get Me"
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_right = 20
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
-[node name="Scroll" type="ScrollContainer" parent="Panel/VBox/MarginContainer"]
+[node name="Scroll" type="ScrollContainer" parent="Panel/VBoxContainer/Margin"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Output" type="RichTextLabel" parent="Panel/VBox/MarginContainer/Scroll"]
+[node name="Output" type="RichTextLabel" parent="Panel/VBoxContainer/Margin/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+focus_mode = 2
 bbcode_enabled = true
+text = "
+"
 fit_content = true
+scroll_following = true
+selection_enabled = true
 
-[connection signal="pressed" from="Panel/VBox/Buttons/BtnRunTests" to="." method="_on_run_tests_button_pressed"]
-[connection signal="pressed" from="Panel/VBox/Buttons/BtnVerifyKey" to="." method="_on_btn_verify_purchase_pressed"]
+[node name="HSeparator3" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="BtnClearOutput" type="Button" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+text = "Clear Output"
+
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnInit" to="." method="_on_init_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnLaunchInfo" to="." method="_on_launch_info_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnSaveOAuth" to="." method="_on_save_oauth_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnShowOAuth" to="." method="_on_show_oauth_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnBuildUrl" to="." method="_on_build_url_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnOpenBrowser" to="." method="_on_open_browser_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnValidateToken" to="." method="_on_btn_validate_token_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnSaveToken" to="." method="_on_save_token_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/OauthBox/Buttons/BtnLoadToken" to="." method="_on_load_token_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ApiTestButtonBox/BtnCredentialsInfo" to="." method="_on_btn_credentials_info_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ApiTestButtonBox/BtnGetMe" to="." method="_on_btn_get_me_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HBoxContainer/BtnClearOutput" to="." method="_on_btn_clear_output_pressed"]
