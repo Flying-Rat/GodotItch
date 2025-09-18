@@ -351,26 +351,35 @@ void godot::Auth::get_credentials_info()
 {
     UtilityFunctions::push_warning("Auth: get_credentials_info called");
 
-    // Prefer OAuth (JWT) if available; otherwise use launcher key
-    const String oauth = get_oauth_token();
-    const String launcher_key = get_launch_api_key();
-    const bool use_jwt = !oauth.is_empty();
+    // Prefer OAuth/API key if available; otherwise use launcher key via unified accessor
+    const String token = get_bearer_token();
+    if (token.is_empty()) {
+        UtilityFunctions::push_error("Auth: No OAuth token or launcher key available");
+        emit_signal("auth_error", "User not authenticated (missing OAuth token and launcher key)");
+        return;
+    }
+
+    // Detect if token looks like a JWT (three segments separated by '.')
+    int dot_count = 0;
+    for (int i = 0; i < token.length(); i++) {
+        if (token[i] == '.') {
+            dot_count++;
+        }
+    }
+    const bool looks_like_jwt = (dot_count == 2);
 
     String url;
     PackedStringArray headers;
     headers.push_back(String("User-Agent: ") + USER_AGENT);
+    headers.push_back(String("Authorization: Bearer ") + token);
 
-    if (use_jwt) {
+    if (looks_like_jwt) {
         url = "https://itch.io/api/1/jwt/credentials/info";
-        headers.push_back("Authorization: Bearer " + oauth);
-        UtilityFunctions::print("Auth: Using OAuth JWT for credentials/info");
-    } else if (!launcher_key.is_empty()) {
-        url = "https://itch.io/api/1/" + launcher_key + "/credentials/info";
-        UtilityFunctions::print("Auth: Using launcher key for credentials/info");
+        UtilityFunctions::print("Auth: Using JWT for credentials/info");
     } else {
-        UtilityFunctions::push_error("Auth: No OAuth token or launcher key available");
-        emit_signal("auth_error", "User not authenticated (missing OAuth token and launcher key)");
-        return;
+        // Treat as API key; use header-based auth to avoid leaking key in URL
+        url = "https://itch.io/api/1/key/credentials/info";
+        UtilityFunctions::print("Auth: Using API key for credentials/info");
     }
 
     UtilityFunctions::print("Auth: Making direct HTTP request to: ", url);

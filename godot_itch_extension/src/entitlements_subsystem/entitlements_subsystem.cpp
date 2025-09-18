@@ -124,7 +124,23 @@ String Entitlements::_build_verification_url(const String& download_key) const
         return "";
     }
 
-    return "https://itch.io/api/1/jwt/game/" + target_game_id + "/download_keys?download_key=" + download_key;
+    // Determine endpoint based on the type of credential available
+    String token;
+    if (Auth::get_singleton()) {
+        token = Auth::get_singleton()->get_bearer_token();
+    }
+
+    // Heuristic: JWT tokens have exactly two dots (header.payload.signature)
+    int dot_count = 0;
+    for (int i = 0; i < token.length(); i++) {
+        if (token[i] == '.') {
+            dot_count++;
+        }
+    }
+    const bool looks_like_jwt = (dot_count == 2);
+
+    String auth_kind = looks_like_jwt ? "jwt" : "key";
+    return "https://itch.io/api/1/" + auth_kind + "/game/" + target_game_id + "/download_keys?download_key=" + download_key;
 }
 
 bool Entitlements::_is_cache_valid(const Dictionary& cached_data) const
