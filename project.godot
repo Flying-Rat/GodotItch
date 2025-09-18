@@ -27,9 +27,11 @@ window/stretch/mode="canvas_items"
 enabled=PackedStringArray("res://addons/godot_itch/plugin.cfg")
 
 [godot_itch]
+
 oauth_client_id=""
 oauth_redirect_uri="urn:ietf:wg:oauth:2.0:oob"
 oauth_scope="profile:me"
+game_id=""
 
 [rendering]
 
