@@ -85,8 +85,6 @@ namespace godot
         // OAuth flow management
         String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const;
         void start_oauth_authorization(const String &client_id = "", const String &redirect_uri = "", const String &state = "");
-
-        void get_credentials_info();
     };
 }
 

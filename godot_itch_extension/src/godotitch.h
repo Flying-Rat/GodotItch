@@ -47,7 +47,7 @@ namespace godot
         bool is_user_logged_in = false;
 
         void _setup_http_request();
-        String _build_api_url(const String& endpoint) const;
+        String _build_api_url(const String& endpoint, bool use_jwt_key = false) const;
 
     protected:
         static void _bind_methods();
@@ -89,7 +89,9 @@ namespace godot
         Dictionary get_current_user() const;
         String get_current_user_name() const;
 
+        // Itch.io API calls
         void get_credentials_info();
+        void get_me();
 
         // Build the authorization URL for itch.io OAuth
         String build_oauth_authorize_url(const String &client_id = "", const String &redirect_uri = "", const String &state = "") const;

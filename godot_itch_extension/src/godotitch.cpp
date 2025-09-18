@@ -61,7 +61,10 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("is_user_authenticated"), &Itch::is_user_authenticated);
 	ClassDB::bind_method(D_METHOD("get_current_user"), &Itch::get_current_user);
 	ClassDB::bind_method(D_METHOD("get_current_user_name"), &Itch::get_current_user_name);
+
+	// Itch.io API methods
 	ClassDB::bind_method(D_METHOD("get_credentials_info"), &Itch::get_credentials_info);
+	ClassDB::bind_method(D_METHOD("get_me"), &Itch::get_me);
 
 	// Signals
 	ADD_SIGNAL(MethodInfo("api_response", PropertyInfo(Variant::STRING, "endpoint"),
@@ -69,8 +72,7 @@ void Itch::_bind_methods()
 	ADD_SIGNAL(MethodInfo("api_error", PropertyInfo(Variant::STRING, "endpoint"),
 	                      PropertyInfo(Variant::STRING, "error_message"),
 	                      PropertyInfo(Variant::INT, "response_code")));
-	ADD_SIGNAL(MethodInfo("verify_download_key_result", PropertyInfo(Variant::BOOL, "is_verified"),
-	                      PropertyInfo(Variant::DICTIONARY, "data")));
+
 	// Auth signals
 	ADD_SIGNAL(MethodInfo("user_logged_in", PropertyInfo(Variant::DICTIONARY, "user")));
 	ADD_SIGNAL(MethodInfo("user_logged_out"));
@@ -151,7 +153,6 @@ Games *Itch::get_games() const
 }
 
 // These methods are now handled by Core and Auth modules
-// ensure_project_settings() -> Core::ensure_project_settings()
 // get_api_key_from_settings() -> Auth::get_api_key()
 // get_game_id_from_settings() -> Core::get_game_id()
 
@@ -179,25 +180,71 @@ void Itch::_setup_http_request()
 	}
 }
 
-String Itch::_build_api_url(const String &endpoint) const
+String godot::Itch::_build_api_url(const String &endpoint, bool use_jwt_key) const
 {
-	// Use JWT endpoints; endpoint should start with '/'
-	return String("https://itch.io/api/1/jwt") + endpoint;
+    if (use_jwt_key)
+    {
+        return String("https://itch.io/api/1/jwt") + endpoint;
+    }
+    return String("https://itch.io/api/1/key") + endpoint;
 }
 
 void Itch::get_credentials_info()
 {
 	// Delegate to the Auth module
 	Auth *auth = get_auth();
-	if (auth)
-	{
-		auth->get_credentials_info();
-	}
-	else
+	if (!auth)
 	{
 		UtilityFunctions::push_error("Auth module not available");
-		emit_signal("auth_result", false, Dictionary());
+		emit_signal("api_error", false, Dictionary());
 	}
+
+	String token = auth->get_bearer_token();
+	if (token.is_empty())
+	{
+		UtilityFunctions::push_error("No bearer token available for credentials info");
+		emit_signal("api_error", false, Dictionary());
+		return;
+	}
+
+	// Make http request to https://itch.io/api/1/KEY/credentials/info
+	String url = _build_api_url("/credentials/info", false);
+	PackedStringArray headers;
+	headers.append("Content-Type: application/json");
+	headers.append("Accept: application/json");
+	headers.append("Authorization: Bearer " + token);
+	pending_request_type = "credentials_info";
+	pending_request_data = Dictionary(); // no extra data
+	_perform_request(url, headers);
+}
+
+void Itch::get_me()
+{
+	// Delegate to the Auth module
+	Auth *auth = get_auth();
+	if (!auth)
+	{
+		UtilityFunctions::push_error("Auth module not available");
+		emit_signal("api_error", false, Dictionary());
+	}
+
+	String token = auth->get_bearer_token();
+	if (token.is_empty())
+	{
+		UtilityFunctions::push_error("No bearer token available for get_me");
+		emit_signal("api_error", false, Dictionary());
+		return;
+	}
+
+	// Make http request to https://itch.io/api/1/key/me
+	String url = _build_api_url("/me", false);
+	PackedStringArray headers;
+	headers.append("Content-Type: application/json");
+	headers.append("Accept: application/json");
+	headers.append("Authorization: Bearer " + token);
+	pending_request_type = "get_me";
+	pending_request_data = Dictionary(); // no extra data
+	_perform_request(url, headers);
 }
 
 void Itch::_perform_request(const String &url, const PackedStringArray &headers)

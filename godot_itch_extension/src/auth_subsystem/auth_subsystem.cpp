@@ -56,9 +56,6 @@ void Auth::_bind_methods()
     ADD_SIGNAL(MethodInfo("auth_result", PropertyInfo(Variant::BOOL, "success"), PropertyInfo(Variant::DICTIONARY, "data")));
     ADD_SIGNAL(MethodInfo("auth_error", PropertyInfo(Variant::STRING, "error_message")));
 
-    // Public API
-    ClassDB::bind_method(D_METHOD("get_credentials_info"), &Auth::get_credentials_info);
-
     // Internal HTTP callback
     ClassDB::bind_method(D_METHOD("_on_auth_result", "result", "response_code", "headers", "body"), &Auth::_on_auth_result);
 }
@@ -345,92 +342,6 @@ void Auth::start_oauth_authorization(const String &client_id, const String &redi
         {
             UtilityFunctions::push_error("Failed to open OAuth authorization URL in browser.");
         }
-    }
-}
-
-void godot::Auth::get_credentials_info()
-{
-    UtilityFunctions::push_warning("Auth: get_credentials_info called");
-
-    // Prefer OAuth/API key if available; otherwise use launcher key via unified accessor
-    const String token = get_bearer_token();
-    if (token.is_empty()) {
-        UtilityFunctions::push_error("Auth: No OAuth token or launcher key available");
-        emit_signal("auth_error", "User not authenticated (missing OAuth token and launcher key)");
-        return;
-    }
-
-    // Detect if token looks like a JWT (three segments separated by '.')
-    int dot_count = 0;
-    for (int i = 0; i < token.length(); i++) {
-        if (token[i] == '.') {
-            dot_count++;
-        }
-    }
-    const bool looks_like_jwt = (dot_count == 2);
-
-    String url;
-    PackedStringArray headers;
-    headers.push_back(String("User-Agent: ") + USER_AGENT);
-    headers.push_back(String("Authorization: Bearer ") + token);
-
-    if (looks_like_jwt) {
-        url = "https://itch.io/api/1/jwt/credentials/info";
-        UtilityFunctions::print("Auth: Using JWT for credentials/info");
-    } else {
-        // Treat as API key; use header-based auth to avoid leaking key in URL
-        url = "https://itch.io/api/1/key/credentials/info";
-        UtilityFunctions::print("Auth: Using API key for credentials/info");
-    }
-
-    UtilityFunctions::print("Auth: Making direct HTTP request to: ", url);
-
-    // Create a temporary HTTPRequest for this single operation
-    HTTPRequest* temp_request = memnew(HTTPRequest);
-    if (!temp_request) {
-        emit_signal("auth_error", "Failed to create temporary HTTP request");
-        return;
-    }
-
-    // Configure the temporary request
-    temp_request->set_use_threads(false);
-    temp_request->set_timeout(HTTP_TIMEOUT_SECONDS);
-
-    // Add to scene tree first (required for HTTPRequest to work)
-    SceneTree* scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-    Node* scene_root = scene_tree ? scene_tree->get_current_scene() : nullptr;
-    if (scene_root) {
-        scene_root->add_child(temp_request);
-
-        // Connect signal AFTER adding to scene tree
-        Error connect_result = temp_request->connect("request_completed", Callable(this, "_on_auth_result"));
-        if (connect_result != OK) {
-            UtilityFunctions::push_error("Auth: Failed to connect HTTP signal");
-            temp_request->queue_free();
-            emit_signal("auth_error", "Failed to connect HTTP signal");
-            return;
-        }
-
-        Error result = temp_request->request(url, headers);
-        UtilityFunctions::print("Auth: HTTP request call completed with result:", String::num_int64(result));
-
-        if (result != OK) {
-            // Disconnect before cleanup
-            if (temp_request->is_connected("request_completed", Callable(this, "_on_auth_result"))) {
-                temp_request->disconnect("request_completed", Callable(this, "_on_auth_result"));
-            }
-            temp_request->queue_free();
-            emit_signal("auth_error", "Failed to start HTTP request: " + String::num_int64(result));
-            return;
-        }
-
-        // Store reference to clean up later
-        http_request = temp_request;
-        UtilityFunctions::print("Auth: Started credentials/info request");
-    } else {
-        temp_request->queue_free();
-        emit_signal("auth_error", "Cannot access scene tree for HTTP request");
-        return;
     }
 }
 
