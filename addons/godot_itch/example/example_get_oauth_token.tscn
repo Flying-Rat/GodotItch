@@ -79,6 +79,10 @@ text = "Validate Token"
 layout_mode = 2
 text = "Save Token"
 
+[node name="GetCredentialsInfo" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+text = "Get Credentials Info"
+
 [node name="Output" type="RichTextLabel" parent="VBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -88,3 +92,4 @@ bbcode_enabled = true
 [connection signal="pressed" from="VBox/Buttons/OpenBrowser" to="." method="_on_open_browser_pressed"]
 [connection signal="pressed" from="VBox/Buttons/ValidateToken" to="." method="_on_validate_token_pressed"]
 [connection signal="pressed" from="VBox/Buttons/SaveToken" to="." method="_on_save_token_pressed"]
+[connection signal="pressed" from="VBox/Buttons/GetCredentialsInfo" to="." method="_on_get_credentials_info_pressed"]

@@ -1,0 +1,57 @@
+[gd_scene load_steps=3 format=3 uid="uid://ccr6c5gsnqmpj"]
+
+[ext_resource type="Script" uid="uid://bre60okhh0jjq" path="res://addons/godot_itch/example/example_get_me.gd" id="1_v4f8b"]
+
+[sub_resource type="Theme" id="Theme_y0s6e"]
+
+[node name="ExampleGetMe" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_y0s6e")
+script = ExtResource("1_v4f8b")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="VBox"]
+layout_mode = 2
+text = "Example: get_me()"
+
+[node name="Hint" type="Label" parent="VBox"]
+layout_mode = 2
+text = "Init attaches HTTPRequest. Ensure you have an OAuth token saved or launch via itch app."
+
+[node name="Actions" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="BtnInit" type="Button" parent="VBox/Actions"]
+layout_mode = 2
+text = "Init"
+
+[node name="BtnGetMe" type="Button" parent="VBox/Actions"]
+layout_mode = 2
+text = "Get Me"
+
+[node name="Output" type="RichTextLabel" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+autowrap_mode = 2
+
+[connection signal="pressed" from="VBox/Actions/BtnInit" to="." method="_on_btn_init_pressed"]
+[connection signal="pressed" from="VBox/Actions/BtnGetMe" to="." method="_on_btn_get_me_pressed"]

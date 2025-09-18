@@ -5,19 +5,21 @@ extends Control
 @onready var placeholder_label = $VBox/ContentArea/PlaceholderLabel
 
 @export var scenes: Array = [
-	{ "scene": preload("res://addons/godot_itch/example/example_get_oauth_token.tscn"), "name": "Get OAuth Token" }, 
-	{ "scene": preload("res://addons/godot_itch/example/example_verification.tscn"), "name": "Verification" }
+	{ "scene": preload("res://addons/godot_itch/example/example_get_oauth_token.tscn"), "name": "Get OAuth Token" },
+	{ "scene": preload("res://addons/godot_itch/example/example_get_me.tscn"), "name": "Get Me Info" }
 ]
 
 var current_instance = null
 var buttons = []
 var active_index = 0
 
+var instancies = []
+
 func _ready():
 	# Clear existing buttons
 	for child in top_buttons.get_children():
 		child.queue_free()
-	
+
 	# Dynamically create buttons
 	for i in range(scenes.size()):
 		var button = Button.new()
@@ -27,22 +29,27 @@ func _ready():
 		top_buttons.add_child(button)
 		buttons.append(button)
 		button.pressed.connect(_on_button_pressed.bind(i))
-	
+		instancies.append(scenes[i]["scene"].instantiate())
+
 	# Load first scene by default
 	switch_to_scene(0)
 	update_button_styles()
 
 func switch_to_scene(index: int):
-	clear_content()
-	current_instance = scenes[index]["scene"].instantiate()
-	content_area.add_child(current_instance)
+	hide_all_scenes()
+	current_instance = instancies[index]
+	if current_instance and current_instance.is_inside_tree():
+		current_instance.show()
+	else:
+		content_area.add_child(current_instance)
+
 	placeholder_label.visible = false
 
-func clear_content():
-	if current_instance:
-		current_instance.queue_free()
-		current_instance = null
-	placeholder_label.visible = true
+func hide_all_scenes():
+	for instance in instancies:
+		if instance and instance.is_inside_tree():
+			instance.hide()
+
 
 func _on_button_pressed(index: int):
 	active_index = index
@@ -69,5 +76,5 @@ func update_button_styles():
 			stylebox.border_width_bottom = 0
 			stylebox.bg_color = Color(0.1, 0.1, 0.1, 1)  # Darker background
 			buttons[i].modulate = Color(0.7, 0.7, 0.7, 1)  # Dimmed
-		
+
 		buttons[i].add_theme_stylebox_override("normal", stylebox)

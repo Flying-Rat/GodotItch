@@ -12,6 +12,7 @@ config_version=5
 
 config/name="Itch"
 config/version="1.0.0"
+run/main_scene="uid://cbijtr7dhs1ea"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.png"
 
