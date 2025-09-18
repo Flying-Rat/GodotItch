@@ -103,8 +103,6 @@ namespace godot
 
         // HTTP callback
         void _on_request_completed(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body);
-        // Hook for own api_response signal
-        void _on_api_response(const String& endpoint, const Dictionary& data);
 
         // Internal deferred request helper
         void _perform_request(const String &url, const PackedStringArray &headers);

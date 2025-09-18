@@ -38,9 +38,6 @@ void Itch::_bind_methods()
 	ClassDB::bind_method(D_METHOD("_perform_request", "url", "headers"), &Itch::_perform_request);
 	ClassDB::bind_method(D_METHOD("post_request_check"), &Itch::post_request_check);
 
-	// New local hook for api_response
-	ClassDB::bind_method(D_METHOD("_on_api_response", "endpoint", "data"), &Itch::_on_api_response);
-
 	// OAuth hooks (for integration to call after external flow)
 	ClassDB::bind_method(D_METHOD("oauth_login_success", "user"), &Itch::oauth_login_success);
 	ClassDB::bind_method(D_METHOD("oauth_login_failed", "error"), &Itch::oauth_login_failed);
@@ -59,8 +56,8 @@ void Itch::_bind_methods()
 						 &Itch::start_oauth_authorization, DEFVAL(""), DEFVAL(""), DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("is_user_authenticated"), &Itch::is_user_authenticated);
-	ClassDB::bind_method(D_METHOD("get_current_user"), &Itch::get_current_user);
-	ClassDB::bind_method(D_METHOD("get_current_user_name"), &Itch::get_current_user_name);
+	// ClassDB::bind_method(D_METHOD("get_current_user"), &Itch::get_current_user);
+	// ClassDB::bind_method(D_METHOD("get_current_user_name"), &Itch::get_current_user_name);
 
 	// Itch.io API methods
 	ClassDB::bind_method(D_METHOD("get_credentials_info"), &Itch::get_credentials_info);
@@ -207,8 +204,17 @@ void Itch::get_credentials_info()
 		return;
 	}
 
-	// Make http request to https://itch.io/api/1/KEY/credentials/info
-	String url = _build_api_url("/credentials/info", false);
+	// Decide endpoint based on credential type (JWT vs API key)
+	int dot_count = 0;
+	for (int i = 0; i < token.length(); i++) {
+		if (token[i] == '.') {
+			dot_count++;
+		}
+	}
+	const bool looks_like_jwt = (dot_count == 2);
+
+	// Make http request to https://itch.io/api/1/{jwt|key}/credentials/info
+	String url = _build_api_url("/credentials/info", looks_like_jwt);
 	PackedStringArray headers;
 	headers.append("Content-Type: application/json");
 	headers.append("Accept: application/json");
@@ -236,8 +242,17 @@ void Itch::get_me()
 		return;
 	}
 
-	// Make http request to https://itch.io/api/1/key/me
-	String url = _build_api_url("/me", false);
+	// Decide endpoint based on credential type (JWT vs API key)
+	int dot_count = 0;
+	for (int i = 0; i < token.length(); i++) {
+		if (token[i] == '.') {
+			dot_count++;
+		}
+	}
+	const bool looks_like_jwt = (dot_count == 2);
+
+	// Make http request to https://itch.io/api/1/{jwt|key}/me
+	String url = _build_api_url("/me", looks_like_jwt);
 	PackedStringArray headers;
 	headers.append("Content-Type: application/json");
 	headers.append("Accept: application/json");
@@ -358,33 +373,6 @@ void Itch::_on_request_completed(int result, int response_code, const PackedStri
 	}
 
 	emit_signal("api_response", pending_request_type, response_data);
-}
-
-void Itch::_on_api_response(const String &endpoint, const Dictionary &data)
-{
-	// Derive verification result for download key requests
-	bool is_verify_type = endpoint == String("verify_download_key");
-	if (!is_verify_type)
-	{
-		return;
-	}
-
-	bool verified = false;
-	// For itch.io download key endpoint, success usually includes a "download_key" object
-	if (data.has("download_key"))
-	{
-		Variant dk = data["download_key"];
-		// Consider presence of object as verification success
-		verified = dk.get_type() == Variant::DICTIONARY || dk.get_type() == Variant::OBJECT;
-	}
-	// Fallback: If HTTP handled non-dict, check a generic "result"
-	if (!verified && data.has("result"))
-	{
-		verified = true; // any result treated as success here
-	}
-
-
-	emit_signal("verify_download_key_result", verified, data);
 }
 
 void Itch::set_oauth_client_id(const String &client_id)
