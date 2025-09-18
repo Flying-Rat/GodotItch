@@ -24,7 +24,7 @@ func _ready():
 	if Itch:
 		Itch.api_response.connect(_on_api_response)
 		Itch.api_error.connect(_on_api_error)
-		Itch.verify_purchase_result.connect(_on_verify_purchase)
+		Itch.verify_download_key_result.connect(_on_verify_purchase)
 		Itch.get_auth().auth_result.connect(_on_auth_result)
 
 
