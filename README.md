@@ -9,7 +9,7 @@ A Godot 4 plugin + GDExtension for interacting with the itch.io API. It supports
 - ✅ Credentials info: `get_credentials_info()`
 - ✅ User profile: `get_me()`
 - ✅ Async requests with signals (`api_response`, `api_error`)
-- ✅ Debug logging and in-editor settings panel
+- ✅ In-editor settings
 
 
 ## Quick Start
@@ -28,7 +28,7 @@ Configure under **Project Settings > godot_itch**:
 - `oauth_scope`: Set to `profile:me` (currently the only supported scope)
 
 ### OAuth setup on itch.io
-If you want users to authenticate via OAuth instead of an API key, create an OAuth application on itch.io and configure it for your project:
+If you want users to authenticate via OAuth create an OAuth application on itch.io and configure it for your project:
 
 1. Sign in to itch.io and go to your account developer settings: https://itch.io/dashboard/developers
 2. Under "OAuth clients" create a new client. Give it a name like "GodotItch Plugin".
@@ -113,8 +113,6 @@ Auth helpers (delegated to `Itch.get_auth()`):
 - OAuth scope limitation: itch.io currently only supports the `profile:me` scope for OAuth flows. That means only `get_me` and `credentials_info` are usable with OAuth at this time. itch.io has indicated they plan to extend scopes in the future.
 - “not JWT” error: This occurs if the JWT endpoint is called with an API key. The extension auto-detects and selects the correct endpoint; if you implement custom calls, use `/api/1/key/...` for API keys and `/api/1/jwt/...` for JWT tokens, always with `Authorization: Bearer <token>`.
 - No token available: If not launched from the itch app (no `ITCHIO_API_KEY`) and you haven’t performed OAuth, calls will fail. Start OAuth, then paste/save the token via `Itch.get_auth().set_oauth_token(...)`.
-- Debug logging: Enable `godot_itch/advanced/debug_logging` for verbose output.
-
 
 ## Testing
 
