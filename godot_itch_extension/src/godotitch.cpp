@@ -210,12 +210,6 @@ void Itch::verify_download_key(const String &download_key)
 	Entitlements *entitlements = get_entitlements();
 	if (entitlements)
 	{
-
-		pending_request_type = "verify_download_key";
-		pending_request_data.clear();
-		pending_request_data["download_key"] = download_key;
-		pending_request_data["game_id"] = Core::get_singleton()->get_game_id();
-
 		entitlements->verify_entitlement(download_key);
 	}
 	else
