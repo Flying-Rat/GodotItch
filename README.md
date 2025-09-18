@@ -19,12 +19,29 @@ A Godot 4 plugin + GDExtension for interacting with the itch.io API. It supports
 2. Enable the plugin in **Project Settings > Plugins**
 3. Restart Godot
 
+
+
 ### 2. Project Settings
 Configure under **Project Settings > godot_itch**:
-- `game_id`: Your itch.io Game ID
 - `oauth_client_id`: OAuth client_id from your itch developer settings
 - `oauth_redirect_uri`: Redirect URI (leave blank for out-of-band: `urn:ietf:wg:oauth:2.0:oob`)
 - `oauth_scope`: Set to `profile:me` (currently the only supported scope)
+
+### OAuth setup on itch.io
+If you want users to authenticate via OAuth instead of an API key, create an OAuth application on itch.io and configure it for your project:
+
+1. Sign in to itch.io and go to your account developer settings: https://itch.io/dashboard/developers
+2. Under "OAuth clients" create a new client. Give it a name like "GodotItch Plugin".
+3. For the Redirect URI use one of:
+  - `urn:ietf:wg:oauth:2.0:oob` (out-of-band) — useful for manual paste-back flows in the editor/demo.
+  - `http://localhost:PORT/callback` — if you implement a local callback handler. Replace PORT with your chosen port.
+4. Note the generated `client_id` (and `client_secret` if shown). For the Godot plugin you typically only need the `client_id`.
+5. In Godot's Project Settings > `godot_itch` set `oauth_client_id` to the client_id and `oauth_redirect_uri` to the redirect URI you chose.
+
+Notes:
+- Use the out-of-band `urn:ietf:wg:oauth:2.0:oob` redirect for a simple copy-paste flow: the plugin opens the authorization URL in the browser, the user copies the code back into the plugin UI.
+- If you use a localhost redirect, ensure your plugin or demo starts a small HTTP listener on the same port to receive the authorization code.
+- Keep client secrets private; store them only in secure locations if you need them. The demo and plugin generally only require `client_id`.
 
 ### 3. Basic Usage (Get Credentials + Me)
 ```gdscript
