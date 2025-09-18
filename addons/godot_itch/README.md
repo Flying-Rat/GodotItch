@@ -1,96 +1,120 @@
 # GodotItch Plugin
 
-A Godot plugin for itch.io purchase verification. Verify that players have legitimately purchased your game by validating their download keys against the itch.io API.
+A Godot 4 plugin + GDExtension to interact with the itch.io API from your game. It supports authentication via the itch app (launcher API key) or OAuth and exposes high-level calls through the `Itch` facade.
 
-## 🎮 Simple Demo
+## 🎮 Demo
 
-Try the basic demo to test the plugin:
-- **Direct Access**: Load `res://addons/godot_itch/godot_itch_showcase.tscn`
-- **Features**: Simple 3-field form with basic verification testing
-
-The demo provides a minimal example showing the essential plugin functionality.
+- Load `res://addons/godot_itch/godot_itch_showcase.tscn` for a minimal UI demonstrating core functionality.
+- Additional focused test scenes are available in the project under `res://tests/` (see Testing below).
 
 ## Features
 
-- Purchase verification using download keys or URLs
-- Simple API for integration
-- Debug logging support
-- Project settings integration
+- OAuth helper (open browser + save token)
+- Launcher detection (uses `ITCHIO_API_KEY` when launched from the itch app)
+- Credentials info: `Itch.get_credentials_info()`
+- User profile: `Itch.get_me()` (requires `profile:me` scope)
+- Async API with signals (`api_response`, `api_error`)
+- Debug logging and Project Settings integration
 
-## Table of Contents
+## Installation
 
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Quick Start](#quick-start)
-- [Testing](#testing)
-- [Debug Mode](#debug-mode)
-- [Error Codes](#error-codes)
-- [License](#license)
-
-1. Copy the `addons/godot_itch` folder into your project's `addons/` directory.
+1. Copy `addons/godot_itch` into your project’s `addons/` directory.
 2. Enable the plugin in Project Settings → Plugins.
 3. Restart the editor.
 
 ## Configuration
 
-Required project settings:
+Configure in Project Settings → `godot_itch`:
 
-- `godot_itch/api_key` — Your itch.io API key
-- `godot_itch/game_id` — Your game ID on itch.io
+- `game_id` — Your game ID on itch.io
+- `oauth_client_id` — OAuth client ID from your itch developer settings
+- `oauth_redirect_uri` — Redirect URI (leave blank to use out-of-band: `urn:ietf:wg:oauth:2.0:oob`)
+- `oauth_scope` — Set to `profile:me` (currently the only supported scope)
+- `advanced/debug_logging` — Optional verbose logging
 
-Important: You must set both `godot_itch/api_key` and `godot_itch/game_id` in Project Settings (Project → Project Settings → Itch) before using the plugin. The plugin will not function without them.
-
-Optional:
-
-- `godot_itch/debug_logging` — Enable debug output (default: `false`)
+Notes:
+- If launched via the itch app, the plugin will use the provided short-lived launcher token automatically.
+- For OAuth, you must start the flow, then paste and save the token to make authenticated calls.
 
 ## Quick Start
 
 ```gdscript
+extends Control
+
 func _ready() -> void:
+    # 1) Initialize HTTPRequest usage
     Itch.initialize_with_scene(self)
-    Itch.verify_download_key_result.connect(_on_verify_download_key_result)
 
-func _on_verify_download_key_result(verified: bool, data: Dictionary) -> void:
-    if verified:
-        print("Verification succeeded:", data)
-    else:
-        print("Verification failed:", data)
+    # 2) Connect signals
+    Itch.api_response.connect(_on_api_response)
+    Itch.api_error.connect(_on_api_error)
 
-# To verify a purchase
-func verify_purchase(download_key: String) -> void:
-    # Set required project settings if not already set
-    ProjectSettings.set_setting("godot_itch/api_key", "your_api_key")
-    ProjectSettings.set_setting("godot_itch/game_id", "your_game_id")
-    
-    Itch.verify_purchase(download_key)
+    # 3) Authenticate (either via itch launcher or OAuth)
+    # Itch.get_auth().start_oauth_authorization("<client_id>", "<redirect_uri>", "state")
+    # Itch.get_auth().set_oauth_token("<pasted_token>")
+
+    # 4) Call endpoints
+    Itch.get_credentials_info()
+    Itch.get_me()
+
+func _on_api_response(endpoint: String, data: Dictionary) -> void:
+    match endpoint:
+        "credentials_info":
+            var scopes = data.get("scopes", [])
+            var expires_at = str(data.get("expires_at", ""))
+            print("Scopes:", scopes)
+            if not expires_at.is_empty():
+                print("JWT expires at:", expires_at)
+        "get_me":
+            var user = data.get("user", {})
+            print("User:", user.get("username", "?"), user.get("display_name", "?"))
+
+func _on_api_error(endpoint: String, error_message: String, response_code: int) -> void:
+    push_error("[%s] (%d) %s" % [endpoint, response_code, error_message])
 ```
+
+The plugin automatically selects the correct server path for your credential type:
+- API key → `/api/1/key/...`
+- OAuth JWT → `/api/1/jwt/...`
+In both cases, the token is sent in `Authorization: Bearer <token>`.
+
+## API Reference (Plugin Facade)
+
+- `Itch.initialize_with_scene(scene_node: Node)` — Attach internal HTTPRequest to your scene.
+- `Itch.get_credentials_info()` — Calls `/api/1/{key|jwt}/credentials/info`, emits `api_response("credentials_info", data)`.
+- `Itch.get_me()` — Calls `/api/1/{key|jwt}/me`, emits `api_response("get_me", data)`.
+
+Auth helpers via `Itch.get_auth()`:
+- `set_oauth_client_id(client_id: String)`
+- `set_oauth_redirect_uri(redirect_uri: String)`
+- `set_oauth_scope(scope: String)` (use `profile:me`)
+- `start_oauth_authorization(client_id: String = "", redirect_uri: String = "", state: String = "")`
+
+Signals:
+- `api_response(endpoint: String, data: Dictionary)`
+- `api_error(endpoint: String, error_message: String, response_code: int)`
 
 ## Testing
-Run the included test suite:
-```bash
-godot --headless tests/verify_download_key_test.tscn
+
+- Open and run these focused scenes in the editor:
+  - `res://tests/credentials_info_test.tscn`
+  - `res://tests/get_me_test.tscn`
+- Or use the minimal showcase: `res://addons/godot_itch/godot_itch_showcase.tscn`.
+
+## Debug Mode
+
+Enable verbose logging in Project Settings:
+
+```
+godot_itch/advanced/debug_logging = true
 ```
 
-### Debug Mode
+## Troubleshooting
 
-Enable debug logging:
-```
-godot_itch/debug_logging = true
-```
-
-This outputs detailed verification steps to the console.
-
-### Error Codes
-
-- **`INVALID_INPUT`** - Invalid key format or URL
-- **`CONFIG_ERROR`** - Missing API configuration
-- **`API_ERROR`** - Network or itch.io API errors
+- OAuth scope limitation: currently, itch.io only supports the `profile:me` scope for OAuth. With OAuth you can call `get_me` and `credentials_info`. itch.io has indicated more scopes may be added in the future.
+- “not JWT” error: happens when calling JWT endpoints with an API key. The plugin auto-detects the token type; if making custom requests, use `/key/...` for API keys and `/jwt/...` for OAuth tokens.
+- No token available: ensure you launched via the itch app (launcher token) or completed OAuth and saved the token.
 
 ## License
 
 MIT — see the repository `LICENSE` file for details.
-
----
-
-**Updated based on tests**: Using `Itch` class is recommended; `call_deferred()` is unnecessary for connecting/calling from `_ready()`.
